@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인 테스트</title>
+</head>
+<h2>WeCam 로그인</h2>
+<form id="loginForm">
+    <label for="email">이메일:</label><br>
+    <input type="email" id="email" name="email" required><br><br>
+
+    <label for="password">비밀번호:</label><br>
+    <input type="password" id="password" name="password" required><br><br>
+
+    <button type="submit">로그인</button>
+</form>
+
+<div id="afterLogin" style="display:none;">
+    <p>로그인 성공!</p>
+    <button onclick="goToAffiliation()">소속 인증 조회  페이지로</button>
+    <button onclick="goToAffiliationApprove()">소속 인증 승인 페이지로</button>
+
+</div>
+
+<p id="result"></p>
+
+<script>
+    const form = document.getElementById('loginForm');
+    const result = document.getElementById('result');
+    const afterLogin = document.getElementById('afterLogin');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const payload = {
+            email: form.email.value,
+            password: form.password.value
+        };
+
+        try {
+            const response = await fetch('/public/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                result.innerText = `로그인 성공: ${data.role} ${data.accessToken}`;
+                localStorage.setItem('accessToken', data.accessToken);
+                afterLogin.style.display = 'block';
+            } else {
+                result.innerText = `실패: ${data.message || '로그인 실패'}`;
+            }
+        } catch (err) {
+            result.innerText = '네트워크 에러';
+        }
+    });
+
+    function goToAffiliation() {
+        window.location.href = "/affiliation_test.html";
+    }
+
+    function goToAffiliationApprove() {
+        window.location.href = "/affiliation_approve_test.html";
+    }
+</script>

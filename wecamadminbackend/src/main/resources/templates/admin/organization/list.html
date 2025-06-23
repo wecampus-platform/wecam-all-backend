@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>워크스페이스 승인 요청 목록</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin: 20px auto;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        .approve-btn {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .reject-btn {
+            padding: 5px 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h2 style="text-align: center;">워크스페이스 승인 요청 목록</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>번호</th>
+        <th>워크스페이스 이름</th>
+        <th>입력한 대학</th>
+        <th>선택한 대학</th>
+        <th>타겟 조직 이름</th>
+        <th>상태</th>
+        <th>요청일</th>
+        <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="request, stat : ${requestList}">
+        <td th:text="${stat.count}">1</td>
+        <td th:text="${request.councilName}">워크스페이스명</td>
+        <td th:text="${request.schoolName}">대학이름</td>
+        <td th:text="${request.schoolId_Sel}">대학이름</td>
+        <td th:text="${request.target_OrgName}">타겟조직이름</td>
+        <td th:text="${request.status}">PENDING</td>
+        <td th:text="${#temporals.format(request.createdAt, 'yyyy-MM-dd HH:mm')}">2025-06-02</td>
+        <td>
+            <form th:action="@{'/api/admin/workspace-requests/' + ${request.requestId} + '/approve'}" method="post" style="display:inline;">
+                <button type="submit" class="approve-btn">승인</button>
+            </form>
+            <form th:action="@{'/api/admin/workspace-requests/' + ${request.requestId} + '/reject'}" method="post" style="display:inline; margin-left: 5px;">
+                <button type="submit" class="reject-btn">반려</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

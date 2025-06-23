@@ -1,0 +1,13 @@
+// WeCam-project/build.gradle
+
+plugins {
+    id 'java'   // 최소 java plugin
+}
+
+group = 'org.example'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}

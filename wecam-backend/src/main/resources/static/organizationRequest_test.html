@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>Organization Request Form Test</title>
+</head>
+<body>
+<h1>조직 요청 테스트 폼</h1>
+
+<form id="organizationForm">
+    <label>
+        학교 ID (선택):
+        <input type="number" name="selectSchoolId" placeholder="예: 1 (없으면 비워둠)">
+    </label>
+    <br>
+
+    <label>
+        단과대 ID (선택):
+        <input type="number" name="selectCollegeOrganizationId" placeholder="예: 10 (없으면 비워둠)">
+    </label>
+    <br>
+
+    <label>
+        학과 ID (선택):
+        <input type="number" name="selectDepartmentOrganizationId" placeholder="예: 20 (없으면 비워둠)">
+    </label>
+    <br>
+
+    <label>
+        학교명 (입력):
+        <input type="text" name="inputSchoolName" placeholder="예: 테스트대학교">
+    </label>
+    <br>
+
+    <label>
+        단과명 (입력):
+        <input type="text" name="inputCollegeName" placeholder="예: 테스트단과대학">
+    </label>
+    <br>
+
+    <label>
+        학과명 (입력):
+        <input type="text" name="inputDepartmentName" placeholder="예: 테스트학과">
+    </label>
+    <br>
+
+    <label>
+        학생회명:
+        <input type="text" name="councilName" placeholder="예: 테스트학생회">
+    </label>
+    <br>
+
+    <label>
+        조직 타입:
+        <select name="organizationType">
+            <option value="UNIVERSITY">UNIVERSITY (총학생회)</option>
+            <option value="COLLEGE">COLLEGE (단과대)</option>
+            <option value="DEPARTMENT" selected>DEPARTMENT (학과)</option>
+        </select>
+    </label>
+    <br><br>
+
+    <button type="submit">조직 요청 보내기</button>
+</form>
+
+<h2>응답 결과</h2>
+<pre id="result"></pre>
+
+<script>
+    document.getElementById("organizationForm").addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const token = localStorage.getItem("accessToken");
+
+        const data = {
+            selectSchoolId: form.selectSchoolId.value ? Number(form.selectSchoolId.value) : null,
+            selectCollegeOrganizationId: form.selectCollegeOrganizationId.value ? Number(form.selectCollegeOrganizationId.value) : null,
+            selectDepartmentOrganizationId: form.selectDepartmentOrganizationId.value ? Number(form.selectDepartmentOrganizationId.value) : null,
+            inputSchoolName: form.inputSchoolName.value,
+            inputCollegeName: form.inputCollegeName.value,
+            inputDepartmentName: form.inputDepartmentName.value,
+            councilName: form.councilName.value,
+            organizationType: form.organizationType.value
+        };
+
+        const response = await fetch("client/organization-request/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + token
+
+            },
+            body: JSON.stringify(data)
+        });
+
+        const resultText = await response.text();
+        document.getElementById("result").textContent = resultText;
+    });
+</script>
+</body>
+</html>

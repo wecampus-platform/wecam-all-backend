@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>마이페이지</title>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f4f4f4;
+            margin: 20px;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+        }
+        .info-value {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>마이페이지</h2>
+    <div class="info-row"><span class="info-label">이름:</span> <span id="username" class="info-value"></span></div>
+    <div class="info-row"><span class="info-label">전화번호:</span> <span id="phoneNumber" class="info-value"></span></div>
+    <div class="info-row"><span class="info-label">이메일:</span> <span id="userEmail" class="info-value"></span></div>
+    <div class="info-row"><span class="info-label">학교 ID:</span> <span id="universityId" class="info-value"></span></div>
+    <div class="info-row"><span class="info-label">조직 ID:</span> <span id="organizationId" class="info-value"></span></div>
+    <div class="info-row"><span class="info-label">학적 상태:</span> <span id="academicStatus" class="info-value"></span></div>
+    <div class="info-row"><span class="info-label">역할:</span> <span id="role" class="info-value"></span></div>
+    <div class="info-row"><span class="info-label">학년:</span> <span id="studentGrade" class="info-value"></span></div>
+    <div class="info-row"><span class="info-label">소속 인증:</span> <span id="isAuthentication" class="info-value"></span></div>
+    <div class="info-row"><span class="info-label">학생회비 인증:</span> <span id="isCouncilFee" class="info-value"></span></div>
+    <div class="info-row"><span class="info-label">닉네임:</span> <span id="nickName" class="info-value"></span></div>
+    <div class="info-row"><span class="info-label">학번:</span> <span id="studentId" class="info-value"></span></div>
+    <!-- 중첩 제거 -->
+    <div class="info-row"><span class="info-label">조직 계층 (문자열):</span> <span id="organizationPath" class="info-value"></span></div>
+    <div class="info-row"><span class="info-label">조직 계층 (리스트):</span>
+        <ul id="organizationList" class="info-value" style="margin-left: 10px;"></ul>
+    </div>
+</div>
+
+<script>
+    // 실제 API 호출
+    fetch("/client/user/mypage", {
+        method: "GET",
+        credentials: "include", // 세션 or 쿠키 인증 필요 시
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + localStorage.getItem("accessToken") // 필요한 경우
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("마이페이지 정보를 불러오는 데 실패했습니다.");
+            }
+            return response.json();
+        })
+        .then(data => {
+            // 1. 일반 필드 출력
+            Object.entries(data).forEach(([key, value]) => {
+                const element = document.getElementById(key);
+                if (element && !Array.isArray(value)) {
+                    element.textContent = value;
+                }
+            });
+
+            // 2. 조직 계층 처리
+            const pathElement = document.getElementById("organizationPath");
+            const listElement = document.getElementById("organizationList");
+
+            if (data.organizationHierarchyList && Array.isArray(data.organizationHierarchyList)) {
+                pathElement.textContent = data.organizationHierarchyList.join(" > ");
+                data.organizationHierarchyList.forEach(name => {
+                    const li = document.createElement("li");
+                    li.textContent = name;
+                    listElement.appendChild(li);
+                });
+            }
+        })
+        .catch(error => {
+            alert(error.message);
+            console.error(error);
+        });
+</script>
+</body>
+</html>

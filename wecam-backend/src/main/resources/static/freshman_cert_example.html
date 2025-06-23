@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>신입생 인증 테스트</title>
+</head>
+<body>
+<h2>신입생 인증 업로드</h2>
+<input type="file" id="upload" />
+<button onclick="send()">인증 요청</button>
+
+<p id="response"></p>
+
+<script>
+    async function send() {
+        const fileInput = document.getElementById('upload');
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        const token = localStorage.getItem("accessToken");
+        console.log("accessToken:", token); // 이게 null이면 로그인 다시 해야 함
+        if (!token) {
+            alert("⚠ 로그인 먼저 해주세요.");
+            return;
+        }
+
+        const response = await fetch("/client/user/affiliation/freshman", {
+            method: "POST",
+            headers: {
+                Authorization: "Bearer " + token
+            },
+            body: formData
+        });
+
+        const resultText = await response.text();
+        document.getElementById("response").innerText = resultText;
+    }
+</script>
+</body>
+</html>

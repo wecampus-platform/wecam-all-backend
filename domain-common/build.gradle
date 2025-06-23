@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // JPA Entity 어노테이션 사용 용도
+    implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+
+    // Validation 어노테이션 사용 용도
+    implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+
+    // Hibernate Core
+    implementation 'org.hibernate.orm:hibernate-core:6.4.4.Final'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    // Test
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}

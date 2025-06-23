@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/domain-common/Wecam-project.domain-common.main.iml" filepath="$PROJECT_DIR$/.idea/modules/domain-common/Wecam-project.domain-common.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/wecam-backend/Wecam-project.wecam-backend.main.iml" filepath="$PROJECT_DIR$/.idea/modules/wecam-backend/Wecam-project.wecam-backend.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/wecamadminbackend/Wecam-project.wecamadminbackend.main.iml" filepath="$PROJECT_DIR$/.idea/modules/wecamadminbackend/Wecam-project.wecamadminbackend.main.iml" />
+    </modules>
+  </component>
+</project>

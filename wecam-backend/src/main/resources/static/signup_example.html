@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>회원가입</title>
+</head>
+<body>
+<h2>WeCam 회원가입</h2>
+<form id="registerForm">
+    <label for="email">이메일:</label><br>
+    <input type="email" id="email" required><br><br>
+
+    <label for="password">비밀번호:</label><br>
+    <input type="password" id="password" required><br><br>
+
+    <label for="phone">휴대폰 번호:</label><br>
+    <input type="text" id="phone" required><br><br>
+
+    <label for="name">이름:</label><br>
+    <input type="text" id="name" required><br><br>
+
+    <label for="enrollYear">입학 연도:</label><br>
+    <input type="text" id="enrollYear" placeholder="예: 2023" required><br><br>
+
+    <label for="schoolId">학교 ID:</label><br>
+    <input type="number" id="schoolId" required><br><br>
+
+    <label for="organizationId">조직 ID:</label><br>
+    <input type="number" id="organizationId" required><br><br>
+
+    <button type="submit">회원가입</button>
+</form>
+
+<p id="result"></p>
+
+<script>
+    const form = document.getElementById('registerForm');
+    const result = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const payload = {
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            phoneNumber: document.getElementById('phone').value,
+            name: document.getElementById('name').value,
+            enrollYear: document.getElementById('enrollYear').value,
+            selectSchoolId: parseInt(document.getElementById('schoolId').value),
+            selectOrganizationId: parseInt(document.getElementById('organizationId').value)
+        };
+
+        try {
+            const response = await fetch('public/auth/sign/student', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                result.innerText = '🎉 회원가입 완료!';
+            } else {
+                const err = await response.json();
+                result.innerText = `❌ 실패: ${err.message || '회원가입 실패'}`;
+            }
+        } catch (err) {
+            result.innerText = '🚨 네트워크 오류';
+        }
+    });
+</script>
+</body>
+</html>

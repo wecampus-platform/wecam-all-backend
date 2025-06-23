@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Response Viewer</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+        pre { background: white; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+<h2>Response Body</h2>
+<pre id="output">로딩 중...</pre>
+
+<script>
+    fetch("/api/test") // 테스트용 엔드포인트
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(err => {
+            document.getElementById("output").textContent = "에러 발생: " + err;
+        });
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/wecam-backend/src/main/resources/db/migration/V4__ModifyAffiliation_cert&amp;user&amp;user_information.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/wecam-backend/src/main/resources/db/schema.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/wecamadminbackend/src/main/resources/db/migration/V1__admin_adminUser.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/wecamadminbackend/src/main/resources/db/seed/R__admin_user_seed.sql" dialect="MySQL" />
+  </component>
+</project>

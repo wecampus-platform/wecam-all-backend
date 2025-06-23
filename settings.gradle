@@ -1,0 +1,4 @@
+// settings.gradle
+include 'wecam-backend'
+include 'wecamadminbackend'
+include 'domain-common'

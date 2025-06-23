@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>학생회 소속 인증 요청 조회 테스트</title>
+</head>
+<body>
+<h2>소속 인증 요청 목록 조회</h2>
+
+<label for="councilName">학생회 이름 (화면용)</label><br>
+<input type="text" id="councilName" value="컴공학생회"><br><br>
+
+<label for="councilId">councilId</label><br>
+<input type="number" id="councilId" value="1"><br><br>
+
+<button onclick="fetchRequests()">조회하기</button>
+
+<h3>결과</h3>
+<pre id="result"></pre>
+
+<script>
+    async function fetchRequests() {
+        const councilName = document.getElementById("councilName").value;
+        const councilId = document.getElementById("councilId").value;
+        const token = localStorage.getItem("accessToken");
+
+        console.log(token);
+
+        console.log("저장된 accessToken:", token);
+        if (!token) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
+
+        const url = `/admin/council/${encodeURIComponent(councilName)}/affiliation/requests?councilId=${councilId}`;
+        console.log("요청 URL:", url);
+
+        try {
+            const res = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Accept": "application/json"
+                }
+            });
+
+            console.log("응답 상태 코드:", res.status);
+            if (!res.ok) throw new Error(`오류: ${res.status}`);
+
+            const data = await res.json();
+            console.log("응답 데이터:", data);
+            document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+            console.error("요청 실패:", e);
+            document.getElementById("result").textContent = e.message;
+        }
+    }
+</script>
+</body>
+</html>
+<!--<!DOCTYPE html>-->
+<!--<html lang="ko">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>토큰 확인 테스트</title>-->
+<!--</head>-->
+<!--<body>-->
+<!--<h2>🔥 저장된 Access Token 보기</h2>-->
+<!--<pre id="tokenDisplay">로딩 중...</pre>-->
+
+<!--<script>-->
+<!--    const token = localStorage.getItem("accessToken");-->
+<!--    document.getElementById("tokenDisplay").innerText = token ? token : "토큰 없음 (로그인 안됨)";-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
