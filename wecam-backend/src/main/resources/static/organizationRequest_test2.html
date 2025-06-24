@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>조직 요청 생성</title>
+</head>
+<body>
+<h2>조직 요청 생성</h2>
+
+<label>Access Token: <input type="text" id="tokenInput" style="width: 300px;" /></label><br><br>
+
+<label>학교 선택:
+    <select id="schoolSelect">
+        <option value="">학교 선택</option>
+    </select>
+</label><br><br>
+
+<label>단과대학 선택:
+    <select id="collegeSelect" disabled>
+        <option value="">단과 선택</option>
+    </select>
+</label><br><br>
+
+<label>학과 선택:
+    <select id="departmentSelect" disabled>
+        <option value="">학과 선택</option>
+    </select>
+</label><br><br>
+
+<label>학생회 이름: <input type="text" id="councilNameInput" /></label><br><br>
+
+<label>조직 타입:
+    <select id="orgTypeSelect">
+        <option value="UNIVERSITY">UNIVERSITY</option>
+        <option value="COLLEGE">COLLEGE</option>
+        <option value="DEPARTMENT">DEPARTMENT</option>
+    </select>
+</label><br><br>
+
+<button onclick="submitRequest()">조직 요청 제출</button>
+
+<script>
+    const apiBase = "http://localhost:8080"; // 백엔드 주소
+    const schoolSelect = document.getElementById("schoolSelect");
+    const collegeSelect = document.getElementById("collegeSelect");
+    const departmentSelect = document.getElementById("departmentSelect");
+    const orgTypeSelect = document.getElementById("orgTypeSelect");
+
+    // 학교 목록 불러오기
+    fetch(`${apiBase}/public/schools`)
+        .then(res => res.json())
+        .then(data => {
+            const values = Array.isArray(data) ? data : Object.values(data); // 👈 여기
+            console.log("받은 학교 리스트:", values);
+            values.forEach(school => {
+                const option = document.createElement("option");
+                option.value = school.id;
+                option.textContent = school.name;
+                schoolSelect.appendChild(option);
+            });
+        });
+
+    // 학교 선택 시 단과대학 로드
+    schoolSelect.addEventListener("change", () => {
+        const schoolId = schoolSelect.value;
+        resetSelect(collegeSelect, "단과 선택");
+        resetSelect(departmentSelect, "학과 선택");
+        collegeSelect.disabled = true;
+        departmentSelect.disabled = true;
+
+        if (!schoolId) return;
+
+        fetch(`${apiBase}/public/schools/${schoolId}/organizations?level=1`)
+            .then(res => res.json())
+            .then(data => {
+                const values = Array.isArray(data) ? data : Object.values(data);
+                console.log("받은 단과대학 리스트:", values);
+                values.forEach(college => {
+                    const option = document.createElement("option");
+                    option.value = college.id;
+                    option.textContent = college.name;
+                    collegeSelect.appendChild(option);
+                });
+                collegeSelect.disabled = false;
+            });
+    });
+
+    collegeSelect.addEventListener("change", () => {
+        const collegeId = collegeSelect.value;
+        resetSelect(departmentSelect, "학과 선택");
+        departmentSelect.disabled = true;
+
+        if (!collegeId) return;
+
+        fetch(`${apiBase}/public/organizations/${collegeId}/children`)
+            .then(res => res.json())
+            .then(data => {
+                const values = Array.isArray(data) ? data : Object.values(data);
+                console.log("받은 학과 리스트:", values); // 🔍 실제 응답 확인
+
+                values.forEach(dept => {
+                    const option = document.createElement("option");
+                    option.value = dept.id;              // ✅ key 이름 수정
+                    option.textContent = dept.name;      // ✅ key 이름 수정
+                    departmentSelect.appendChild(option);
+                });
+                departmentSelect.disabled = false;
+            });
+    });
+
+
+    // 조직 타입에 따라 필수 선택 요소 활성화
+    orgTypeSelect.addEventListener("change", () => {
+        const type = orgTypeSelect.value;
+        collegeSelect.disabled = (type === "UNIVERSITY");
+        departmentSelect.disabled = (type !== "DEPARTMENT");
+    });
+
+    function resetSelect(selectElement, defaultText) {
+        selectElement.innerHTML = '';
+        const defaultOption = document.createElement("option");
+        defaultOption.value = '';
+        defaultOption.textContent = defaultText;
+        selectElement.appendChild(defaultOption);
+    }
+
+    function submitRequest() {
+        const token = document.getElementById("tokenInput").value.trim();
+        const schoolId = schoolSelect.value ? Number(schoolSelect.value) : null;
+        const collegeId = collegeSelect.value ? Number(collegeSelect.value) : null;
+        const departmentId = departmentSelect.value ? Number(departmentSelect.value) : null;
+        const councilName = document.getElementById("councilNameInput").value.trim();
+        const orgType = orgTypeSelect.value;
+
+        // 유효성 검사
+        if (!token) {
+            alert("토큰을 입력하세요.");
+            return;
+        }
+        if (!schoolId) {
+            alert("학교를 선택하세요.");
+            return;
+        }
+        if (!councilName) {
+            alert("학생회 이름을 입력하세요.");
+            return;
+        }
+        if (orgType === "COLLEGE" && !collegeId) {
+            alert("단과대학을 선택하세요.");
+            return;
+        }
+        if (orgType === "DEPARTMENT" && (!collegeId || !departmentId)) {
+            alert("단과대학과 학과를 모두 선택하세요.");
+            return;
+        }
+
+        const payload = {
+            selectSchoolId: schoolId,
+            selectCollegeOrganizationId: collegeId,
+            selectDepartmentOrganizationId: departmentId,
+            inputSchoolName: "",
+            inputCollegeName: "",
+            inputDepartmentName: "",
+            councilName: councilName,
+            organizationType: orgType
+        };
+
+        fetch(`${apiBase}/client/organization-request/create`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(res => {
+                if (res.ok) {
+                    alert("🎉 조직 요청이 성공적으로 제출되었습니다.");
+                } else {
+                    return res.text().then(text => { throw new Error(text); });
+                }
+            })
+            .catch(err => alert("🚨 요청 실패: " + err.message));
+    }
+</script>
+</body>
+</html>

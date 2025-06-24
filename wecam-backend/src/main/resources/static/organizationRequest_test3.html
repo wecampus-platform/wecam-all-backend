@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Organization Request Form Test</title>
+</head>
+<body>
+<h1>조직 요청 테스트 폼</h1>
+
+<form id="organizationForm">
+  <label>
+    학교 선택:
+    <select id="schoolSelect">
+      <option value="">학교 선택</option>
+    </select>
+  </label>
+  또는 직접 입력:
+  <input type="text" id="inputSchoolName" name="inputSchoolName" placeholder="예: 테스트대학교">
+  <br>
+
+  <label>
+    단과대학 선택:
+    <select id="collegeSelect" disabled>
+      <option value="">단과 선택</option>
+    </select>
+  </label>
+  또는 직접 입력:
+  <input type="text" id="inputCollegeName" name="inputCollegeName" placeholder="예: 테스트단과대학">
+  <br>
+
+  <label>
+    학과 선택:
+    <select id="departmentSelect" disabled>
+      <option value="">학과 선택</option>
+    </select>
+  </label>
+  또는 직접 입력:
+  <input type="text" id="inputDepartmentName" name="inputDepartmentName" placeholder="예: 테스트학과">
+  <br>
+
+  <label>
+    학생회명:
+    <input type="text" name="councilName" placeholder="예: 테스트학생회">
+  </label>
+  <br>
+
+  <label>
+    조직 타입:
+    <select name="organizationType" id="orgTypeSelect">
+      <option value="UNIVERSITY">UNIVERSITY (총학생회)</option>
+      <option value="COLLEGE">COLLEGE (단과대)</option>
+      <option value="DEPARTMENT" selected>DEPARTMENT (학과)</option>
+    </select>
+  </label>
+  <br><br>
+
+  <button type="submit">조직 요청 보내기</button>
+</form>
+
+<h2>응답 결과</h2>
+<pre id="result"></pre>
+
+<script>
+  const apiBase = "http://localhost:8080";
+  const schoolSelect = document.getElementById("schoolSelect");
+  const collegeSelect = document.getElementById("collegeSelect");
+  const departmentSelect = document.getElementById("departmentSelect");
+  const orgTypeSelect = document.getElementById("orgTypeSelect");
+
+  // 초기 학교 리스트 로딩
+  fetch(`${apiBase}/public/schools`)
+          .then(res => res.json())
+          .then(data => {
+            const values = Array.isArray(data) ? data : Object.values(data);
+            values.forEach(school => {
+              const option = document.createElement("option");
+              option.value = school.id;
+              option.textContent = school.name;
+              schoolSelect.appendChild(option);
+            });
+          });
+
+  schoolSelect.addEventListener("change", () => {
+    const schoolId = schoolSelect.value;
+    resetSelect(collegeSelect, "단과 선택");
+    resetSelect(departmentSelect, "학과 선택");
+    collegeSelect.disabled = true;
+    departmentSelect.disabled = true;
+
+    if (!schoolId) return;
+
+    fetch(`${apiBase}/public/schools/${schoolId}/organizations?level=1`)
+            .then(res => res.json())
+            .then(data => {
+              const values = Array.isArray(data) ? data : Object.values(data);
+              values.forEach(college => {
+                const option = document.createElement("option");
+                option.value = college.id;
+                option.textContent = college.name;
+                collegeSelect.appendChild(option);
+              });
+              collegeSelect.disabled = false;
+            });
+  });
+
+  collegeSelect.addEventListener("change", () => {
+    const collegeId = collegeSelect.value;
+    resetSelect(departmentSelect, "학과 선택");
+    departmentSelect.disabled = true;
+
+    if (!collegeId) return;
+
+    fetch(`${apiBase}/public/organizations/${collegeId}/children`)
+            .then(res => res.json())
+            .then(data => {
+              const values = Array.isArray(data) ? data : Object.values(data);
+              values.forEach(dept => {
+                const option = document.createElement("option");
+                option.value = dept.id;
+                option.textContent = dept.name;
+                departmentSelect.appendChild(option);
+              });
+              departmentSelect.disabled = false;
+            });
+  });
+
+  function resetSelect(selectElement, defaultText) {
+    selectElement.innerHTML = '';
+    const defaultOption = document.createElement("option");
+    defaultOption.value = '';
+    defaultOption.textContent = defaultText;
+    selectElement.appendChild(defaultOption);
+  }
+
+  document.getElementById("organizationForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const form = event.target;
+    // const token = localStorage.getItem("accessToken");
+
+    const data = {
+      selectSchoolId: form.schoolSelect.value ? Number(form.schoolSelect.value) : null,
+      selectCollegeOrganizationId: form.collegeSelect.value ? Number(form.collegeSelect.value) : null,
+      selectDepartmentOrganizationId: form.departmentSelect.value ? Number(form.departmentSelect.value) : null,
+      inputSchoolName: form.inputSchoolName.value,
+      inputCollegeName: form.inputCollegeName.value,
+      inputDepartmentName: form.inputDepartmentName.value,
+      councilName: form.councilName.value,
+      organizationType: form.organizationType.value
+    };
+
+    const response = await fetch("client/organization-request/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMDAyQDEwMDIiLCJyb2xlIjoiVU5BVVRIIiwiaWF0IjoxNzUwNzg1NDYzLCJleHAiOjE3NTA3ODcyNjN9.5CpQ587ua2XVvVymALuaUKpHOJ5frfsrLZuyZMeGXYk"
+      },
+      body: JSON.stringify(data)
+    });
+
+    const resultText = await response.text();
+    document.getElementById("result").textContent = resultText;
+  });
+</script>
+</body>
+</html>

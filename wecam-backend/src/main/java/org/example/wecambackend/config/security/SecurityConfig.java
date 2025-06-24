@@ -38,6 +38,8 @@ public class SecurityConfig {
                 "/freshman_cert_example.html",
                 "/mypage_example.html",
                 "/organizationRequest_test.html",
+                "/organizationRequest_test2.html",
+                "/organizationRequest_test3.html",
                 "/css/**",
                 "/js/**",
                 "/images/**"
