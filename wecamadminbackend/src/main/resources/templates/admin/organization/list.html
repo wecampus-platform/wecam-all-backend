@@ -60,7 +60,7 @@
         <td th:text="${request.status}">PENDING</td>
         <td th:text="${#temporals.format(request.createdAt, 'yyyy-MM-dd HH:mm')}">2025-06-02</td>
         <td>
-            <form th:action="@{'/api/admin/workspace-requests/' + ${request.requestId} + '/approve'}" method="post" style="display:inline;">
+            <form th:action="@{'/admin/organization/' + ${request.requestId} + '/approve'}" method="post" style="display:inline;">
                 <button type="submit" class="approve-btn">승인</button>
             </form>
             <form th:action="@{'/api/admin/workspace-requests/' + ${request.requestId} + '/reject'}" method="post" style="display:inline; margin-left: 5px;">

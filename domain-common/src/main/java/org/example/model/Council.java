@@ -2,6 +2,7 @@ package org.example.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.enums.UserRole;
 import org.example.model.user.User;
 
 import java.time.LocalDateTime;
@@ -39,4 +40,11 @@ public class Council {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_user_id",nullable = false)
     private User user;
+
+    @PrePersist
+    public void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+        this.startDate = now;
+        this.endDate = now.plusDays(365); // 가입일 기준 30일 유효 //TODO: 추후 설정 가능하게 해야 함.
+    }
 }

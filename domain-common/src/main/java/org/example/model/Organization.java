@@ -48,4 +48,34 @@ public class Organization extends BaseTimeEntity {
     @OneToMany(mappedBy = "parent") ///조회용입니다.........
     @Builder.Default
     private List<Organization> children = new ArrayList<>();
+
+    public static Organization createUniversity(String name, University university) {
+        return Organization.builder()
+                .organizationName(name)
+                .organizationType(OrganizationType.UNIVERSITY)
+                .level(0)
+                .university(university)
+                .build();
+    }
+
+    public static Organization createCollege(String name, University university, Organization parent) {
+        return Organization.builder()
+                .organizationName(name)
+                .organizationType(OrganizationType.COLLEGE)
+                .level(1)
+                .university(university)
+                .parent(parent)
+                .build();
+    }
+
+    public static Organization createDepartment(String name, University university, Organization parent) {
+        return Organization.builder()
+                .organizationName(name)
+                .organizationType(OrganizationType.DEPARTMENT)
+                .level(2)
+                .university(university)
+                .parent(parent)
+                .build();
+    }
+
 }

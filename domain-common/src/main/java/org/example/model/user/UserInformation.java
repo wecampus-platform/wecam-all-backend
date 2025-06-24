@@ -50,7 +50,8 @@ public class UserInformation extends BaseTimeEntity {
     @Column(name = "is_authentication", nullable = false)
     private Boolean isAuthentication;
 
+    @Builder.Default
     @Column(name = "is_council_fee", nullable = false)
-    private Boolean isCouncilFee;
+    private Boolean isCouncilFee = false;
 
 }

@@ -84,6 +84,10 @@ public class OrganizationRequestService {
                     throw new IllegalArgumentException("이미 학생회가 존재하는 조직입니다.");
                 }
                 builder.targetOrganization(parentOrg);
+
+                if (stats == OrganizationType.DEPARTMENT && requestDto.getInputDepartmentName() != null && !requestDto.getInputDepartmentName().isBlank()) {
+                    builder.departmentName(requestDto.getInputDepartmentName());
+                }
             }
 
         } else if (requestDto.getInputSchoolName() != null) {

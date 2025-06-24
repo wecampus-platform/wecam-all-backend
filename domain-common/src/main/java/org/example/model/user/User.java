@@ -74,6 +74,13 @@ public class User {
     @Column(name = "role")
     private UserRole role;
 
+
+    /**사용자 활동여부 **/
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserStatus status = UserStatus.ACTIVE;
+
     /** 시스템 슈퍼유저 여부 (True인 경우 플랫폼 전체 관리 권한) */
     @Column(name = "is_superuser", nullable = false)
     private Boolean isSuperuser;

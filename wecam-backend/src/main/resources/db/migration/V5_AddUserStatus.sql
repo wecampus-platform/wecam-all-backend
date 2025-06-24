@@ -1,0 +1,3 @@
+-- V5_AddUserStatus.sql
+
+ALTER TABLE user ADD COLUMN status VARCHAR(20) DEFAULT 'ACTIVE' NOT NULL;

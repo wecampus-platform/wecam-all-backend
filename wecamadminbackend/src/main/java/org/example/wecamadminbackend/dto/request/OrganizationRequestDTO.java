@@ -26,15 +26,19 @@ public class OrganizationRequestDTO {
     private String schoolId_Sel;
     private String target_OrgName;
 
-    public OrganizationRequestDTO(Long requestId, String email, RequestStatus status, LocalDateTime createdAt, String councilName, String schoolName, String org,String target_OrgName) {
+    public OrganizationRequestDTO(Long requestId, String email, RequestStatus status,
+                                  LocalDateTime createdAt, String councilName, String schoolName,
+                                  Organization targetOrganization) {
         this.requestId = requestId;
         this.email = email;
         this.status = status;
-        this.createdAt =createdAt;
+        this.createdAt = createdAt;
         this.councilName = councilName;
         this.schoolName = schoolName;
-        this.schoolId_Sel = org;
-        this.target_OrgName = target_OrgName;
+
+        if (targetOrganization != null) {
+            this.target_OrgName = targetOrganization.getOrganizationName();
+        }
     }
 }
 
