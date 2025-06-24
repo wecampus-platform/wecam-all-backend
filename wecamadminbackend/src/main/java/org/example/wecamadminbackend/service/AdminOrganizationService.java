@@ -107,7 +107,7 @@ public class AdminOrganizationService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 조직이 존재하지 않습니다."));
 
 // 4. 학생회 중복 체크
-        if (councilRepository.existsCouncilorganizationByOrganization_OrganizationId(org.getOrganizationId())) {
+        if (councilRepository.existsCouncilByOrganization_OrganizationId(org.getOrganizationId())) {
             throw new IllegalStateException("이미 학생회가 존재합니다.");
         }
 
