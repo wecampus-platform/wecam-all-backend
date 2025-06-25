@@ -1,4 +1,46 @@
 -- auto-generated definition
+create table university
+(
+    created_at     datetime(6)  null,
+    school_id      bigint auto_increment
+        primary key,
+    updated_at     datetime(6)  null,
+    school_name    varchar(20)  not null,
+    school_address varchar(100) null
+);
+
+-- auto-generated definition
+create table organization
+(
+    organization_id   bigint auto_increment
+        primary key,
+    created_at        datetime(6)                                           null,
+    updated_at        datetime(6)                                           null,
+    level             int                                                   null,
+    organization_name varchar(50)                                           not null,
+    organization_type enum ('COLLEGE', 'DEPARTMENT', 'MAJOR', 'UNIVERSITY') null,
+    parent_id         bigint                                                null,
+    school_id         bigint                                                not null,
+    constraint FKc30yedjwp9qw1f3nn2ytda7tj
+        foreign key (parent_id) references organization (organization_id)
+);
+
+-- auto-generated definition
+create table `user`
+(
+    user_pk_id        bigint auto_increment
+        primary key,
+    created_at        datetime(6)  not null,
+    email             varchar(255) not null,
+    expires_at        datetime(6)  not null,
+    is_authentication bit          not null,
+    is_email_verified bit          not null,
+    updated_at        datetime(6)  null,
+    constraint UKob8kqyqqgmefl0aco34akdtpe
+        unique (email)
+);
+
+-- auto-generated definition
 create table affiliation_certification
 (
     ocr_enroll_year       varchar(4)                                                       null,
@@ -25,7 +67,6 @@ create table affiliation_certification
     constraint FKjlk72m2i57aoaqt3e6fw9e7od
         foreign key (school_pk_id) references university (school_id)
 );
-
 
 -- auto-generated definition
 create table affiliation_file
@@ -76,22 +117,6 @@ create table council_member
         foreign key (council_id) references council (council_id)
 );
 
--- auto-generated definition
-create table organization
-(
-    organization_id   bigint auto_increment
-        primary key,
-    created_at        datetime(6)                                           null,
-    updated_at        datetime(6)                                           null,
-    level             int                                                   null,
-    organization_name varchar(50)                                           not null,
-    organization_type enum ('COLLEGE', 'DEPARTMENT', 'MAJOR', 'UNIVERSITY') null,
-    parent_id         bigint                                                null,
-    school_id         bigint                                                not null,
-    constraint FKc30yedjwp9qw1f3nn2ytda7tj
-        foreign key (parent_id) references organization (organization_id)
-);
-
 create index FKmfmy536ffhgfnjv9elwb5vp7h
     on organization (school_id);
 
@@ -113,32 +138,6 @@ create table organization_request
         foreign key (organization_id) references organization (organization_id),
     constraint FKe504d8i53mk8vef8105bgdcrl
         foreign key (user_pk_id) references user (user_pk_id)
-);
-
--- auto-generated definition
-create table university
-(
-    created_at     datetime(6)  null,
-    school_id      bigint auto_increment
-        primary key,
-    updated_at     datetime(6)  null,
-    school_name    varchar(20)  not null,
-    school_address varchar(100) null
-);
-
--- auto-generated definition
-create table user
-(
-    user_pk_id        bigint auto_increment
-        primary key,
-    created_at        datetime(6)  not null,
-    email             varchar(255) not null,
-    expires_at        datetime(6)  not null,
-    is_authentication bit          not null,
-    is_email_verified bit          not null,
-    updated_at        datetime(6)  null,
-    constraint UKob8kqyqqgmefl0aco34akdtpe
-        unique (email)
 );
 
 -- auto-generated definition
