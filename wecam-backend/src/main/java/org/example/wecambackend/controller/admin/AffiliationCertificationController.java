@@ -39,7 +39,6 @@ public class AffiliationCertificationController {
         return ResponseEntity.ok(list);
     }
 
-
     @HasAffiliationApprovalAuthority
     @Operation(
             summary = "학생회 관리자 페이지 소속 인증 요청 승인",
@@ -56,7 +55,5 @@ public class AffiliationCertificationController {
         affiliationCertificationAdminService.approveAffiliationRequest(id, councilId, currentUser);
         return ResponseEntity.ok("소속 인증 요청이 승인되었습니다.");
     }
-
-
 
 }
