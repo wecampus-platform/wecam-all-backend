@@ -31,4 +31,3 @@ jobs:
           EOF
       - name: 배포용 remote 설정
         run: git remote set-url origin https://x-access-token:${{ secrets.WORKFLOW_TOKEN }}@github.com/wecampus-platform/wecam-all-backend.git
-        working-directory: wecam-all-backend
