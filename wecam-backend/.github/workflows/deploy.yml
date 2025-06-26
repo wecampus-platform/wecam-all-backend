@@ -1,0 +1,30 @@
+name: Deploy to GCP
+
+on:
+  push:
+    branches: [ main ]  # 또는 deploy 브랜치 등
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to GCP instance
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd /home/panda_ys_kim/wecam-all-backend  # 루트 디렉토리
+            git pull origin main
+            ./gradlew :wecam-backend:build
+            pkill -f 'java -jar' || true
+            nohup java -jar wecam-backend/build/libs/*.jar > app.log 2>&1 &
+          EOF
