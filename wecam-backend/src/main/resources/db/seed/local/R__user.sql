@@ -1,4 +1,3 @@
-#학생회장 한명 만들어둠.
 INSERT INTO user (
     is_authentication, is_email_verified, is_superuser,
     created_at, expires_at, organization_id, updated_at,
@@ -11,7 +10,7 @@ INSERT INTO user (
 
 INSERT INTO user_private (
     user_pk_id, password, phone_number, password_update_at
-) VALUES (2, '$2a$10$D7ekb1rNGPRcdgwzgeiRIOrIBYi1636Ndl1fuy3d.3N5tupyJ8usa', 'yqjOjarKLwjBNw5gU2b2htrwGE1RLPHe', NOW());
+) VALUES (1, '$2a$10$D7ekb1rNGPRcdgwzgeiRIOrIBYi1636Ndl1fuy3d.3N5tupyJ8usa', 'yqjOjarKLwjBNw5gU2b2htrwGE1RLPHe', NOW());
 
 INSERT INTO user_information (
     user_pk_id,
@@ -27,7 +26,7 @@ INSERT INTO user_information (
     created_at,
     updated_at
 ) VALUES (
-             2,
+             1,
              '홍길동',
              '학생회장',
              NULL,
@@ -49,7 +48,7 @@ INSERT INTO council (
     end_date,
     is_active
 ) VALUES (
-             2,             -- 학생회장 user_pk_id
+             1,             -- 학생회장 user_pk_id
              303,           -- 컴공
              '세론',
              NOW(),
@@ -65,7 +64,7 @@ INSERT INTO council_member (
     member_type,
     is_active
 ) VALUES (
-             2,
+             1,
              1,
              1,                 -- 최고 등급
              'PRESIDENT',

@@ -1,2 +1,0 @@
--- ALTER TABLE user
---     ADD COLUMN is_superuser BOOLEAN NOT NULL DEFAULT FALSE COMMENT '시스템 슈퍼유저 여부 (True인 경우 플랫폼 전체 관리 권한)';

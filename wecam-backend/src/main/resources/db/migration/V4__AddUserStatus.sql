@@ -1,3 +1,0 @@
--- -- V4__AddUserStatus.sql
---
--- ALTER TABLE `user` ADD COLUMN status VARCHAR(20) DEFAULT 'ACTIVE' NOT NULL;
