@@ -23,8 +23,14 @@ jobs:
       - name: Deploy to GCP instance
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            cd /home/panda_ys_kim/wecam-all-backend  # 루트 디렉토리
-            git pull origin main
+            # 프로젝트 디렉토리가 없으면 clone, 있으면 pull
+            if [ ! -d "wecam-all-backend" ]; then
+              git clone https://github.com/wecampus-platform/wecam-all-backend.git
+            else
+              cd wecam-all-backend
+              git pull origin main
+            fi
+             cd wecam-all-backend
             ./gradlew :wecam-backend:build
             pkill -f 'java -jar' || true
             nohup java -jar wecam-backend/build/libs/*.jar > app.log 2>&1 &
