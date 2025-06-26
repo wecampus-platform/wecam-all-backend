@@ -22,8 +22,8 @@ public class AffiliationFileService {
 
         String originalFileName = file.getOriginalFilename();
         AffiliationFile affiliationFile = AffiliationFile.builder()
-                .affiliationCertification(cert)
-                .id(cert.getId()) //복합키 설정
+                .userId(cert.getId().getUserId()) // EmbeddedId → 필드 분해
+                .authenticationType(cert.getId().getAuthenticationType())
                 .filePath(path)
                 .fileName(originalFileName)
                 .uuid(uuid)

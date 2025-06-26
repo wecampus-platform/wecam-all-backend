@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.5'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.flywaydb.flyway' version '9.22.3' // ✅ 추가
 }
 
 group = 'org.example'
@@ -37,6 +38,7 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+
     // mysql
     runtimeOnly 'com.mysql:mysql-connector-j'
 
@@ -69,6 +71,7 @@ dependencies {
     implementation 'org.flywaydb:flyway-mysql'
 
 
+
     implementation project(':domain-common')
 
 
@@ -76,4 +79,13 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+flyway {
+    url = 'jdbc:mysql://localhost:3306/wecam_local?serverTimezone=UTC'
+    user = 'wecan'
+    password = '250107'
+    schemas = ['wecam_local']
+    locations = ['classpath:db/migration', 'classpath:db/seed.local']
+    driver = 'com.mysql.cj.jdbc.Driver' // ✅ 추가
 }

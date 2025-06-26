@@ -2,11 +2,13 @@ package org.example.model.affiliation;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.enums.AuthenticationType;
 import org.example.model.enums.FileType;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@IdClass(AffiliationCertificationId.class)
 @Entity
 @Table(name = "affiliation_file")
 @Getter
@@ -16,17 +18,14 @@ import java.util.UUID;
 @Builder
 public class AffiliationFile {
 
-    @EmbeddedId
-    private AffiliationCertificationId id; // 복합키 사용
+    @Id
+    @Column(name = "pk_upload_userid")
+    private Long userId;
 
-
-    @MapsId // EmbeddedId와 완전히 동일한 키를 사용하여 맵핑할 때만 이 구조 가능
-    @OneToOne
-    @JoinColumns({
-            @JoinColumn(name = "pk_upload_userid", referencedColumnName = "pk_upload_userid"),
-            @JoinColumn(name = "authentication_type", referencedColumnName = "authentication_type")
-    })
-    private AffiliationCertification affiliationCertification;
+    @Id
+    @Enumerated(EnumType.STRING)
+    @Column(name = "authentication_type")
+    private AuthenticationType authenticationType;
 
     @Column(name = "uuid", nullable = false, columnDefinition = "BINARY(16)")
     private UUID uuid;
