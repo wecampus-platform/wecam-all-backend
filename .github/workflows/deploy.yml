@@ -23,17 +23,22 @@ jobs:
       - name: Deploy to GCP instance
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            # 프로젝트 디렉토리가 없으면 clone, 있으면 pull
+            # 프로젝트 디렉토리가 없으면 clone
             if [ ! -d "wecam-all-backend" ]; then
               git clone https://github.com/wecampus-platform/wecam-all-backend.git
-            else
-              cd wecam-all-backend
-              git pull origin main
             fi
-             cd wecam-all-backend
+          
+            cd wecam-all-backend
+            git pull origin main
+          
             ./gradlew :wecam-backend:build
+          
+            # 실행 중인 프로세스 종료
             pkill -f 'java -jar' || true
+          
+            # 새 애플리케이션 실행
             nohup java -jar wecam-backend/build/libs/*.jar > app.log 2>&1 &
           EOF
+
       - name: 배포용 remote 설정
         run: git remote set-url origin https://x-access-token:${{ secrets.WORKFLOW_TOKEN }}@github.com/wecampus-platform/wecam-all-backend.git
