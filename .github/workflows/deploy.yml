@@ -37,7 +37,7 @@ jobs:
             pkill -f 'java -jar' || true
           
             # 새 애플리케이션 실행
-            nohup java -jar wecam-backend/build/libs/*.jar > app.log 2>&1 &
+            nohup java -jar wecam-backend/build/libs/wecam-backend-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
           EOF
 
       - name: 배포용 remote 설정
