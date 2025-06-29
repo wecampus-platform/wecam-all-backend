@@ -86,6 +86,6 @@ flyway {
     user = 'wecan'
     password = '250107'
     schemas = ['wecam_local']
-    locations = ['classpath:db/migration', 'classpath:db/seed.local']
+    locations = ['classpath:db/migration', 'classpath:db/seed/local']
     driver = 'com.mysql.cj.jdbc.Driver' // ✅ 추가
 }
