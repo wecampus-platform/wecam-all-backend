@@ -19,11 +19,6 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Create .env on remote
-        run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            echo "${{ secrets.ENV_FILE }}" > ~/wecam-all-backend/.env
-          EOF
       
 
       - name: Deploy to GCP instance
