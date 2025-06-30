@@ -82,7 +82,7 @@ tasks.named('test') {
 }
 
 flyway {
-    url = 'jdbc:mysql://34.64.148.140:3306/wecam_local?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul'
+    url = 'jdbc:mysql://127.0.0.1:33306/wecam_local?serverTimezone=UTC'
     user = 'wecan'
     password = '250107'
     schemas = ['wecam_local']
