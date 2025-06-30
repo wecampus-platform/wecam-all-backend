@@ -36,6 +36,8 @@ jobs:
           
             cd wecam-all-backend
             git pull origin main
+            # 3. .env 파일 생성 (Secrets의 \n 줄바꿈 복원)
+            echo "${{ secrets.ENV_FILE }}" | sed 's/\\n/\n/g' > .env
                     
             ./gradlew :wecam-backend:build -x test
                     
