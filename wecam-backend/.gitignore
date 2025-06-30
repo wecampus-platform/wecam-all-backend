@@ -41,5 +41,4 @@ out/
 ###추가된 것. 필요시 기재바람.
 ../.env
 src/main/resources/application-prod.properties
-src/main/resources/application-local.properties
 uploads/**
