@@ -1,4 +1,4 @@
-package org.example.wecambackend.dto.responseDTO;
+package org.example.wecambackend.dto.requestDTO;
 
 import lombok.*;
 import org.example.model.enums.CodeType;
@@ -9,19 +9,11 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InvitationCodeResponse {
+public class InvitationCreateRequest {
 
-    private String code;
-    private String makeUser;
-    private Integer usageCount;
 
     private CodeType codeType;
-    private LocalDateTime createdAt;
-    private Boolean isActive;
     private Boolean isUsageLimit;
-
     private Integer usageLimit;
-
-
 
 }

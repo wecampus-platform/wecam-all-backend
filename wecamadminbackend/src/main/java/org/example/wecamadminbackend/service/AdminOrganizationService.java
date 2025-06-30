@@ -2,10 +2,8 @@ package org.example.wecamadminbackend.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.model.Council;
-import org.example.model.Organization;
-import org.example.model.OrganizationRequest;
-import org.example.model.University;
+import org.example.model.*;
+import org.example.model.enums.MemberRole;
 import org.example.model.enums.OrganizationType;
 import org.example.model.enums.RequestStatus;
 import org.example.model.enums.UserRole;
@@ -20,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -33,6 +32,7 @@ public class AdminOrganizationService {
     private final CouncilRepository councilRepository;
     private final UserInformationRepository userInformationRepository;
     private final UserRepository userRepository;
+    private final CouncilMemberRepository councilMemberRepository;
 
 
     @Transactional
@@ -70,6 +70,8 @@ public class AdminOrganizationService {
 
         //학생회장 _ 신청서 작성자 회원가입 완료 시키기
         organizationRequestRepository.save(request);
+
+
     }
 
     public List<OrganizationRequestDTO> getPendingRequests() {
@@ -111,14 +113,26 @@ public class AdminOrganizationService {
             throw new IllegalStateException("이미 학생회가 존재합니다.");
         }
 
+        User user = request.getUser();
 // 5. 학생회 생성
         Council council = Council.builder()
                 .organization(org)
                 .councilName(councilName)
-                .user(request.getUser())
+                .user(user)
                 .isActive(true)
                 .build();
         councilRepository.save(council);
+
+        // 6. 학생회 멤버 추가
+        CouncilMember councilMember = CouncilMember.builder()
+                .council(council)
+                .memberLevel(0)
+                .memberRole(MemberRole.PRESIDENT)
+                .memberType("")
+                .isActive(true)
+                .user(user)
+                .build();
+        councilMemberRepository.save(councilMember);
 
 
     }
@@ -225,14 +239,27 @@ public class AdminOrganizationService {
         user.setAuthentication(Boolean.TRUE);
 
         userRepository.save(user);
+        Optional<UserInformation> optionalInfo = userInformationRepository.findByUser(user);
 
-        UserInformation info = UserInformation.builder()
-                .user(user)
-                .university(uni)
-                .name(presidentSignupInfoDTO.getUserName())
-                .isAuthentication(Boolean.TRUE)
-                .build();
+        UserInformation info;
+
+        if (optionalInfo.isPresent()) {
+            // 이미 존재하면 업데이트
+            info = optionalInfo.get();
+            info.setUniversity(uni);
+            info.setName(presidentSignupInfoDTO.getUserName());
+            info.setIsAuthentication(true);
+        } else {
+            //없으면 새로 생성
+            info = UserInformation.builder()
+                    .user(user)
+                    .university(uni)
+                    .name(presidentSignupInfoDTO.getUserName())
+                    .isAuthentication(true)
+                    .build();
+        }
 
         userInformationRepository.save(info);
+
     }
 }
