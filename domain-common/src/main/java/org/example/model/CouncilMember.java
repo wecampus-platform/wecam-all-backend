@@ -41,5 +41,5 @@ public class CouncilMember {
     private MemberRole memberRole;
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
+    private Boolean isActive=true;
 }

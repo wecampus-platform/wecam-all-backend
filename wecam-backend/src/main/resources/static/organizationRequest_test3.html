@@ -166,8 +166,9 @@
     const response = await fetch("http://localhost:8080/client/organization-request/create", {
       method: "POST",
       headers: {
-        // 'Content-Type' 자동 설정됨, 절대 수동 지정하면 안됨
-        Authorization: "Bearer " + "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkb25naW5AcHVzYW4uYWMua3IiLCJyb2xlIjoiVU5BVVRIIiwiaWF0IjoxNzUxMzU2MzgxLCJleHAiOjE3NTEzNTgxODF9.AOls7J1bF3cBfbRcR1W2ayuowC2cFyO6-ehDXLihrcc"
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0NDQ0QDQ0NDQiLCJyb2xlIjoiQ09VTkNJTCIsImlhdCI6MTc1MTMwNjYxMywiZXhwIjoxNzUxMzA4NDEzfQ.QsyYLpPJi-m1CouIEW-zd7fo1gavMf8UrvKNRu1Iazw"
+
       },
       body: formData
     });

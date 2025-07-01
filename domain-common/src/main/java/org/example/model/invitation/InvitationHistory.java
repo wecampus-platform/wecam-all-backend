@@ -32,3 +32,4 @@ public class InvitationHistory {
     @JoinColumn(name = "target_user_id")
     private User user;
 }
+

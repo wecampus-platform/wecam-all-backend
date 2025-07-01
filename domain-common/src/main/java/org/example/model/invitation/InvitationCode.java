@@ -4,9 +4,10 @@ package org.example.model.invitation;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.model.Council;
+import org.example.model.Organization;
 import org.example.model.common.BaseTimeEntity;
 import org.example.model.enums.CodeType;
-import org.example.model.organization.Organization;
+
 import org.example.model.user.User;
 
 @Entity
@@ -66,3 +67,4 @@ public class InvitationCode extends BaseTimeEntity {
     private Boolean isActive =true;
 
 }
+

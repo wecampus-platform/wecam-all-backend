@@ -7,4 +7,5 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
 
     Boolean existsByUserUserPkIdAndCouncil_Organization_organizationIdAndIsActiveTrue(Long userId, Long organizationId);
 
+    boolean existsByUserUserPkIdAndCouncil_IdAndIsActiveTrue(Long id, Long councilId);
 }

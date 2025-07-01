@@ -37,3 +37,4 @@ CREATE TABLE invitation_history (
 
 ALTER TABLE invitation_code
     ADD CONSTRAINT uq_invitation_code UNIQUE (code);
+
