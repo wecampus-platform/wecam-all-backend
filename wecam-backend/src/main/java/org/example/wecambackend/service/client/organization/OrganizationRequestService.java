@@ -1,16 +1,21 @@
-package org.example.wecambackend.service.client;
+package org.example.wecambackend.service.client.organization;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.example.wecambackend.dto.requestDTO.OrganizationRequestRequest;
-import org.example.model.Organization;
-import org.example.model.OrganizationRequest;
+import org.example.wecambackend.dto.requestDTO.OrganizationRegisterRequest;
+import org.example.model.organization.Organization;
+import org.example.model.organization.OrganizationRequest;
 import org.example.model.user.User;
 import org.example.model.user.UserSignupInformation;
 import org.example.model.enums.OrganizationType;
 import org.example.model.enums.RequestStatus;
 import org.example.wecambackend.repos.*;
+import org.example.wecambackend.repos.organization.OrganizationRepository;
+import org.example.wecambackend.repos.organization.OrganizationRequestRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,11 +26,11 @@ public class OrganizationRequestService {
     private final OrganizationRequestRepository organizationRequestRepository;
     private final CouncilRepository councilRepository;
     private final UserSignupInformationRepository userSignupInformationRepository;
-
+    private final OrganizationRequestFileService organizationRequestFileService;
 
     //TODO : 추후 학생회장 가입 정보와 학생회 만들 때 설정할지 말지 (우선 우리단대 같은 경우 3,4학년이 공과대학 소속이지만 정의대 회장으로 활동이 가능한 점을 생각해서 대학교만 해둠. 부산대 , 서울대 이정도만)
     @Transactional
-    public void createOrganizationRequest(OrganizationRequestRequest requestDto, Long userId) {
+    public void createOrganizationRequest(OrganizationRegisterRequest requestDto, List<MultipartFile> files, Long userId) {
 
         // 유저 조회
         User user = userRepository.findById(userId)
@@ -99,9 +104,17 @@ public class OrganizationRequestService {
             throw new IllegalArgumentException("학교 정보가 누락되었습니다. 학교를 선택하거나 입력해야 합니다.");
         }
 
-            // 최종 저장
+        // 최종 저장
         OrganizationRequest request = builder.build();
         organizationRequestRepository.save(request);
-    }
 
+        // 파일 저장 로직
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                if (file != null && !file.isEmpty()) {
+                    organizationRequestFileService.storeRequestFile(file, request);
+                }
+            }
+        }
+    }
 }

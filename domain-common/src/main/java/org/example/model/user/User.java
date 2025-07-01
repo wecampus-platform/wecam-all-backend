@@ -2,7 +2,7 @@ package org.example.model.user;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.model.Organization;
+import org.example.model.organization.Organization;
 import org.example.model.University;
 import org.example.model.enums.UserRole;
 
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  * 인증, 가입일, 조직 소속, 권한 등을 관리합니다.
  */
 @Entity
-@Table(name = "user")
+@Table(name = "`user`")
 @Getter
 @Setter
 @NoArgsConstructor

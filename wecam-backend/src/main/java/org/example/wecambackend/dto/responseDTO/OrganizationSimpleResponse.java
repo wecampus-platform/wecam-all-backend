@@ -2,7 +2,7 @@ package org.example.wecambackend.dto.responseDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.example.model.Organization;
+import org.example.model.organization.Organization;
 
 @Getter
 @AllArgsConstructor

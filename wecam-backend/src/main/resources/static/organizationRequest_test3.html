@@ -7,10 +7,10 @@
 <body>
 <h1>조직 요청 테스트 폼</h1>
 
-<form id="organizationForm">
+<form id="organizationForm" enctype="multipart/form-data">
   <label>
     학교 선택:
-    <select id="schoolSelect">
+    <select id="schoolSelect" name="selectSchoolId">
       <option value="">학교 선택</option>
     </select>
   </label>
@@ -20,7 +20,7 @@
 
   <label>
     단과대학 선택:
-    <select id="collegeSelect" disabled>
+    <select id="collegeSelect" name="selectCollegeOrganizationId" disabled>
       <option value="">단과 선택</option>
     </select>
   </label>
@@ -30,7 +30,7 @@
 
   <label>
     학과 선택:
-    <select id="departmentSelect" disabled>
+    <select id="departmentSelect" name="selectDepartmentOrganizationId" disabled>
       <option value="">학과 선택</option>
     </select>
   </label>
@@ -51,6 +51,12 @@
       <option value="COLLEGE">COLLEGE (단과대)</option>
       <option value="DEPARTMENT" selected>DEPARTMENT (학과)</option>
     </select>
+  </label>
+  <br><br>
+
+  <label>
+    신청서 파일 업로드 (다중 가능):
+    <input type="file" name="requestFiles" multiple required>
   </label>
   <br><br>
 
@@ -136,12 +142,12 @@
     event.preventDefault();
 
     const form = event.target;
-    // const token = localStorage.getItem("accessToken");
+    const formData = new FormData();
 
     const data = {
-      selectSchoolId: form.schoolSelect.value ? Number(form.schoolSelect.value) : null,
-      selectCollegeOrganizationId: form.collegeSelect.value ? Number(form.collegeSelect.value) : null,
-      selectDepartmentOrganizationId: form.departmentSelect.value ? Number(form.departmentSelect.value) : null,
+      selectSchoolId: document.getElementById("schoolSelect").value ? Number(document.getElementById("schoolSelect").value) : null,
+      selectCollegeOrganizationId: document.getElementById("collegeSelect").value ? Number(document.getElementById("collegeSelect").value) : null,
+      selectDepartmentOrganizationId: document.getElementById("departmentSelect").value ? Number(document.getElementById("departmentSelect").value) : null,
       inputSchoolName: form.inputSchoolName.value,
       inputCollegeName: form.inputCollegeName.value,
       inputDepartmentName: form.inputDepartmentName.value,
@@ -149,13 +155,21 @@
       organizationType: form.organizationType.value
     };
 
-    const response = await fetch("client/organization-request/create", {
+    formData.append("request", new Blob([JSON.stringify(data)], { type: "application/json" }));
+
+    // 다중 파일 추가
+    const files = form.requestFiles.files;
+    for (let i = 0; i < files.length; i++) {
+      formData.append("files", files[i]);
+    }
+
+    const response = await fetch("http://localhost:8080/client/organization-request/create", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMDAyQDEwMDIiLCJyb2xlIjoiVU5BVVRIIiwiaWF0IjoxNzUwNzg1NDYzLCJleHAiOjE3NTA3ODcyNjN9.5CpQ587ua2XVvVymALuaUKpHOJ5frfsrLZuyZMeGXYk"
+        // 'Content-Type' 자동 설정됨, 절대 수동 지정하면 안됨
+        Authorization: "Bearer " + "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkb25naW5AcHVzYW4uYWMua3IiLCJyb2xlIjoiVU5BVVRIIiwiaWF0IjoxNzUxMzU2MzgxLCJleHAiOjE3NTEzNTgxODF9.AOls7J1bF3cBfbRcR1W2ayuowC2cFyO6-ehDXLihrcc"
       },
-      body: JSON.stringify(data)
+      body: formData
     });
 
     const resultText = await response.text();

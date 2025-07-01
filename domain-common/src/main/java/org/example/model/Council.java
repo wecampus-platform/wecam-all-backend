@@ -2,7 +2,7 @@ package org.example.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.model.enums.UserRole;
+import org.example.model.organization.Organization;
 import org.example.model.user.User;
 
 import java.time.LocalDateTime;

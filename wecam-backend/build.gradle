@@ -42,6 +42,9 @@ dependencies {
     // mysql
     runtimeOnly 'com.mysql:mysql-connector-j'
 
+    // h2
+    testImplementation 'com.h2database:h2'
+
     // java-dotenv 라이브러리를 추가_local용
     implementation 'io.github.cdimascio:java-dotenv:5.2.2'
 

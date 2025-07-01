@@ -7,7 +7,7 @@ import org.example.model.enums.OrganizationType;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrganizationRequestRequest {
+public class OrganizationRegisterRequest {
 
     // 학교 선택한 경우 (학교는 select 기반 → schoolOrg 찾기용으로 사용 , 학교도 선택 안했을 수도 있음.)
     private Long selectSchoolId;
