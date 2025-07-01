@@ -2,3 +2,6 @@
 include 'wecam-backend' // 클라이언트 기준 서버
 include 'wecamadminbackend' //서버마스터 서버
 include 'domain-common' //공통 entity
+include 'wecam-backend:src:test:resources'
+findProject(':wecam-backend:src:test:resources')?.name = 'resources'
+

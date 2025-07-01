@@ -1,14 +1,9 @@
 package org.example.wecamadminbackend.dto.request;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.example.model.Organization;
+import org.example.model.organization.Organization;
 import org.example.model.enums.RequestStatus;
-import org.example.wecamadminbackend.util.PhoneEncryptor;
-
-import java.time.LocalDateTime;
 
 import java.time.LocalDateTime;
 

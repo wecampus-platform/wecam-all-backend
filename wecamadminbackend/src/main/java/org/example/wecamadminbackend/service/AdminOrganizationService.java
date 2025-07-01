@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.*;
 import org.example.model.enums.MemberRole;
+
 import org.example.model.enums.OrganizationType;
 import org.example.model.enums.RequestStatus;
 import org.example.model.enums.UserRole;

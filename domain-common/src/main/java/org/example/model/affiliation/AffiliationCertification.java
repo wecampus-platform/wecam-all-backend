@@ -2,7 +2,7 @@ package org.example.model.affiliation;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.model.Organization;
+import org.example.model.organization.Organization;
 import org.example.model.University;
 import org.example.model.user.User;
 import org.example.model.enums.AuthenticationStatus;

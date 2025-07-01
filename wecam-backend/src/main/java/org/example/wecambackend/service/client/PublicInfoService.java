@@ -3,7 +3,7 @@ package org.example.wecambackend.service.client;
 import lombok.RequiredArgsConstructor;
 import org.example.wecambackend.dto.responseDTO.OrganizationSimpleResponse;
 import org.example.wecambackend.dto.responseDTO.UniversitySimpleResponse;
-import org.example.wecambackend.repos.OrganizationRepository;
+import org.example.wecambackend.repos.organization.OrganizationRepository;
 import org.example.wecambackend.repos.SchoolRepository;
 import org.springframework.stereotype.Service;
 
