@@ -49,6 +49,7 @@ jobs:
             pkill -f 'java -jar' || true
 
             # 7. 새 프로세스 실행
+            cd wecam-all-backend
             nohup java -jar wecam-backend/build/libs/wecam-backend-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
           EOF
 
