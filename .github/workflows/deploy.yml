@@ -2,7 +2,7 @@ name: Deploy to GCP
 
 on:
   push:
-    branches: [ main ]  # 또는 deploy 브랜치 등
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -19,27 +19,36 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      
-
       - name: Deploy to GCP instance
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            # 프로젝트 디렉토리가 없으면 clone
+            set -e  # 오류 발생 시 즉시 종료
+
+            # 1. 프로젝트 디렉토리 없으면 clone
             if [ ! -d "wecam-all-backend" ]; then
               git clone https://github.com/wecampus-platform/wecam-all-backend.git
             fi
-          
+
             cd wecam-all-backend
+
+            # 2. 로컬 변경 초기화 후 최신 코드 pull
+            git reset --hard HEAD
+            git clean -fd
             git pull origin main
-            # 3. .env 파일 생성 (Secrets의 \n 줄바꿈 복원)
+
+            # 3. .env 파일 덮어쓰기
             echo "${{ secrets.ENV_FILE }}" | sed 's/\\n/\n/g' > .env
-                    
+
+            # 4. Gradle 실행 권한 보장
+            chmod +x ./gradlew
+
+            # 5. 빌드 (테스트 생략)
             ./gradlew :wecam-backend:build -x test
-                    
-            # 실행 중인 프로세스 종료
+
+            # 6. 기존 프로세스 종료
             pkill -f 'java -jar' || true
-          
-            # 새 애플리케이션 실행
+
+            # 7. 새 프로세스 실행
             nohup java -jar wecam-backend/build/libs/wecam-backend-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
           EOF
 
