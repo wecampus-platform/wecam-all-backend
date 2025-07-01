@@ -8,6 +8,8 @@ import org.example.model.enums.MemberRole;
 import org.example.model.enums.OrganizationType;
 import org.example.model.enums.RequestStatus;
 import org.example.model.enums.UserRole;
+import org.example.model.organization.Organization;
+import org.example.model.organization.OrganizationRequest;
 import org.example.model.user.User;
 import org.example.model.user.UserInformation;
 import org.example.model.user.UserSignupInformation;

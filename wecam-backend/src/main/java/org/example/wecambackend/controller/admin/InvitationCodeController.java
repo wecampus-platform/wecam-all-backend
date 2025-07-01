@@ -4,11 +4,10 @@ package org.example.wecambackend.controller.admin;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.example.model.enums.CodeType;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
 import org.example.wecambackend.dto.requestDTO.InvitationCreateRequest;
-import org.example.wecambackend.dto.requestDTO.OrganizationRequestRequest;
-import org.example.wecambackend.dto.responseDTO.AffiliationVerificationResponse;
 import org.example.wecambackend.dto.responseDTO.InvitationCodeResponse;
 import org.example.wecambackend.service.admin.InvitationCodeService;
 import org.springframework.http.ResponseEntity;
@@ -45,14 +44,15 @@ public class InvitationCodeController {
     @Operation(
             summary = "학생회 관리자 페이지 초대코드 생성",
             description = "해당 학생회가 관리하는 조직 - 초대 코드 생성")
-    @PostMapping("/create/student-invitation")
+    @PostMapping("/create/{codeType}/student-invitation")
     public ResponseEntity<?> makeInvitationCodeStudent(
             @PathVariable String councilName, // ← 화면용
             @RequestParam("councilId") Long councilId,
             @RequestBody InvitationCreateRequest requestDto,
+            @PathVariable CodeType codeType,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        invitationCodeService.createInvitationCodeByStudent(requestDto,userDetails.getId(),councilId);
+        invitationCodeService.createInvitationCode(codeType,requestDto,userDetails.getId(),councilId);
         return ResponseEntity.ok("초대 코드 생성이 완료되었습니다.");
     }
 

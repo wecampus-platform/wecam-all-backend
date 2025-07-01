@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,5 +23,12 @@ public interface InvitationCodeRepository extends JpaRepository<InvitationCode,L
 
     boolean existsByCode(String code);
 
-    Optional<InvitationCode> findByCodeAndCodeType(String code, CodeType codeType);
+    Optional<InvitationCode> findByCodeAndCodeTypeAndIsActive(String code, CodeType codeType,Boolean isActive);
+
+
+    @Query(" select ic.organization.university.schoolId "+
+    "FROM InvitationCode ic " +
+    "WHERE ic.code =: code ")
+    Long findSchoolIdByCode(@Param("code") String code);
+
 }

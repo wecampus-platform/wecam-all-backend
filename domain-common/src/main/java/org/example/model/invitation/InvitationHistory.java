@@ -31,5 +31,10 @@ public class InvitationHistory {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "target_user_id")
     private User user;
+
+    @PrePersist
+    protected void onCreate() {
+        this.usedAt = LocalDateTime.now();
+    }
 }
 

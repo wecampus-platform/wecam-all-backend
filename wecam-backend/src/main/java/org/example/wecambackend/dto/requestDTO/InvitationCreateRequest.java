@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 public class InvitationCreateRequest {
 
 
-    private CodeType codeType;
     private Boolean isUsageLimit;
     private Integer usageLimit;
 
