@@ -23,7 +23,7 @@ public class OrganizationRequestFileService {
     private static final String BASE_DIR = System.getProperty("user.dir") + "/upload/organization_request/";
 
     // DB에 저장되는 상대경로 상수
-    private static final String RELATIVE_PATH = "/upload/organization_request/";
+    private static final String RELATIVE_PATH = "/uploads/organization_request/";
 
     public void storeRequestFile(MultipartFile file, OrganizationRequest request) {
         try {
