@@ -44,13 +44,31 @@ jobs:
 
             # 5. 빌드 (테스트 생략)
             ./gradlew :wecam-backend:build -x test
-
+          
             # 6. 기존 프로세스 종료
+            echo "🔴 기존 프로세스 종료 시도..."
             pkill -f 'java -jar' || true
 
+            sleep 2
+
+            # 6-1. 8080 포트 점유 확인 (없어야 정상 종료된 것)
+            echo "🔍 8080 포트 점유 여부 확인:"
+            lsof -i:8080 || echo "✅ 8080 포트 비어 있음"
+
             # 7. 새 프로세스 실행
-            cd wecam-all-backend
+            echo "🟢 새 프로세스 실행 시작..."
             nohup java -jar wecam-backend/build/libs/wecam-backend-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+
+            sleep 5
+
+            # 7-1. 프로세스 확인
+            echo "🔍 현재 실행 중인 java 프로세스:"
+            ps -ef | grep 'java -jar' | grep -v grep || echo "❌ 실행된 프로세스 없음"
+
+            # 7-2. 8080 포트 상태 재확인
+            echo "🔍 포트 8080 재확인:"
+            lsof -i:8080 || echo "❌ 포트 열려 있지 않음"
+
           EOF
 
       - name: 배포용 remote 설정
