@@ -4,9 +4,11 @@ package org.example.wecambackend.service.admin;
 import lombok.RequiredArgsConstructor;
 import org.example.model.Council;
 import org.example.model.Organization;
+import org.example.model.enums.CodeType;
 import org.example.model.invitation.InvitationCode;
 import org.example.model.invitation.InvitationHistory;
 import org.example.model.user.User;
+import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.dto.requestDTO.InvitationCreateRequest;
 import org.example.wecambackend.dto.responseDTO.InvitationCodeResponse;
 import org.example.wecambackend.repos.CouncilRepository;
@@ -81,5 +83,29 @@ public class InvitationCodeService {
             sb.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
         }
         return sb.toString();
+    }
+
+    // 클라이언트 코드 사용 전체 비즈니스 로직
+    // 코드가 존재하는지
+    // 코드의 타입과 선택한 타입이 일치하는지
+    // 타입별 분기 -> 학생 타입 일 때 학생회 타입 일 때
+    // 학생회 멤버 타입 -> 학교검사만 (대학교 검사) - organization 의 schoolId 와 가입자 signupInformation 의 Select_schoolId를 비교 ,
+    // 학생의 information , user 테이블 정보 수정
+    // 학생 학생회 멤버 추가
+    // 학생 멤버 타입 ->  
+    @Transactional
+    public void usedCode(String code, UserDetailsImpl userDetails, CodeType codeType){
+        InvitationCode invitationCode = findByCode(code,codeType);
+
+    }
+
+
+    // 코드가 존재하는지
+    // 코드의 타입과 선택한 타입이 일치하는지
+    public InvitationCode findByCode(String code,CodeType codeType) {
+        InvitationCode invitationCode = invitationCodeRepository.findByCodeAndCodeType(code,codeType)
+                .orElseThrow(()-> new IllegalArgumentException("해당 코드가 존재하지 않습니다."));
+        return invitationCode;
+
     }
 }
