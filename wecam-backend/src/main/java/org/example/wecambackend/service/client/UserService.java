@@ -2,7 +2,7 @@ package org.example.wecambackend.service.client;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.model.Organization;
+import org.example.model.organization.Organization;
 import org.example.model.University;
 import org.example.model.user.User;
 import org.example.model.enums.AuthenticationType;

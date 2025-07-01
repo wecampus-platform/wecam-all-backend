@@ -2,6 +2,7 @@ package org.example.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.organization.Organization;
 import org.example.model.common.BaseTimeEntity;
 
 import java.util.ArrayList;

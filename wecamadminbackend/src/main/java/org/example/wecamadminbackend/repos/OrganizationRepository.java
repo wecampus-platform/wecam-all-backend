@@ -1,6 +1,6 @@
 package org.example.wecamadminbackend.repos;
 
-import org.example.model.Organization;
+import org.example.model.organization.Organization;
 import org.example.model.enums.OrganizationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

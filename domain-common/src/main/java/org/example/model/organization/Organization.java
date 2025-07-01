@@ -1,7 +1,8 @@
-package org.example.model;
+package org.example.model.organization;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.University;
 import org.example.model.common.BaseTimeEntity;
 import org.example.model.enums.OrganizationType;
 import org.hibernate.annotations.BatchSize;

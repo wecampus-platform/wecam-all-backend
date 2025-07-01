@@ -1,6 +1,6 @@
-package org.example.wecambackend.repos;
+package org.example.wecambackend.repos.organization;
 
-import org.example.model.Organization;
+import org.example.model.organization.Organization;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

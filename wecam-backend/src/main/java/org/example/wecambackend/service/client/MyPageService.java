@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.dto.responseDTO.MyPageResponse;
-import org.example.model.Organization;
+import org.example.model.organization.Organization;
 import org.example.model.user.User;
 import org.example.model.user.UserInformation;
 import org.example.wecambackend.repos.UserInformationRepository;
