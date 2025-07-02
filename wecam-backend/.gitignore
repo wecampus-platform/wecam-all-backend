@@ -42,4 +42,5 @@ out/
 .env
 src/main/resources/application-prod.properties
 /upload
+/uploads
 .DS_Store

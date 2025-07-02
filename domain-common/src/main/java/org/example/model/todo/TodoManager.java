@@ -1,0 +1,32 @@
+package org.example.model.todo;
+
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.example.model.common.BaseTimeEntity;
+import org.example.model.user.User;
+
+@Entity
+@Getter
+@Table(name = "todo_manager")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class TodoManager extends BaseTimeEntity {
+
+    // 복합키: 할일 ID + 사용자 ID 조합
+    @EmbeddedId
+    private TodoManagerId id;
+
+    // 할일 엔티티 (FK)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("todoId")
+    @JoinColumn(name = "todo_id", nullable = false)
+    private Todo todo;
+
+    // 담당자 엔티티 (FK)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("userPkId")
+    @JoinColumn(name = "user_pk_id", nullable = false)
+    private User user;
+
+}
