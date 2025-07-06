@@ -1,18 +1,27 @@
 package org.example.wecambackend.config.security.aspect;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.model.enums.UserRole;
+import org.example.wecambackend.exception.UnauthorizedException;
 import org.example.wecambackend.repos.CouncilMemberRepository;
 import org.example.wecambackend.util.CurrentUserUtil;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 @Aspect
 @Component
@@ -26,42 +35,39 @@ public class RoleCheckAspect {
         checkUserRole(UserRole.STUDENT);
     }
 
-    @Before("@annotation(org.example.wecambackend.config.security.annotation.IsCouncil)")
-    public void checkCouncil(JoinPoint joinPoint) {
-        UserDetailsImpl currentUser = getCurrentUser();
+    private final RedisTemplate<String, String> redisTemplate;
 
-        if (currentUser.getRole() != UserRole.COUNCIL) {
-            throw new AccessDeniedException("학생회 권한이 없습니다.");
+    @Before("@within(org.example.wecambackend.config.security.annotation.IsCouncil) || " +
+            "@annotation(org.example.wecambackend.config.security.annotation.IsCouncil)")
+    public void verifyCouncilConsistency(JoinPoint joinPoint) throws BadRequestException {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        String councilIdHeader = request.getHeader("X-Council-Id");
+
+        if (councilIdHeader == null) {
+            throw new UnauthorizedException("X-Council-Id 헤더가 없습니다.");
         }
 
-        MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
-        Method method = methodSignature.getMethod();
-        Object[] args = joinPoint.getArgs();
+        Long headerCouncilId = Long.valueOf(councilIdHeader);
 
-        // 파라미터 이름 추출
-        String[] paramNames = methodSignature.getParameterNames();
-
-        Long councilId = null;
-
-        for (int i = 0; i < paramNames.length; i++) {
-            if ("councilId".equals(paramNames[i]) && args[i] instanceof Long) {
-                councilId = (Long) args[i];
-                break;
-            }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!(authentication.getPrincipal() instanceof UserDetailsImpl userDetails)) {
+            throw new UnauthorizedException("인증되지 않은 사용자입니다.");
         }
 
-        if (councilId == null) {
-            throw new IllegalArgumentException("councilId 파라미터가 필요합니다.");
+        Long userId = userDetails.getId();
+        String redisKey = "currentCouncil:" + userId;
+        String redisValue = redisTemplate.opsForValue().get(redisKey);
+
+        if (redisValue == null) {
+            throw new UnauthorizedException("학생회 불일치!");
         }
 
-        boolean isCouncilMember = councilMemberRepository.existsByUserUserPkIdAndCouncil_IdAndIsActiveTrue(
-                currentUser.getId(), councilId);
+        Long currentCouncilId = Long.valueOf(redisValue);
 
-        if (!isCouncilMember) {
-            throw new AccessDeniedException("요청한 학생회에 소속되지 않았습니다.");
+        if (!currentCouncilId.equals(headerCouncilId)) {
+            throw new UnauthorizedException("학생회 불일치!");
         }
     }
-
 
     @Before("@annotation(org.example.wecambackend.config.security.annotation.IsUnauth)")
     public void checkUnauth() {

@@ -8,6 +8,7 @@ import org.example.model.user.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -32,9 +33,10 @@ public class Todo extends BaseTimeEntity {
     private LocalDateTime dueAt;
 
     // 진행 상태 (진행 전, 진행 중, 진행 완료)
+    //기본값 진행 전 설정
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ProgressStatus progressStatus;
+    private ProgressStatus progressStatus = ProgressStatus.NOT_STARTED;
 
     // 할일 생성자 (할당자)
     @ManyToOne(fetch = FetchType.LAZY)
@@ -48,4 +50,14 @@ public class Todo extends BaseTimeEntity {
     // 할일 담당자 목록
     @OneToMany(mappedBy = "todo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TodoManager> managers;
+
+    /** 업데이트 시 자동으로 수정 시각 갱신 */
+    @Builder
+    public Todo(String title, String content, LocalDateTime dueAt, ProgressStatus progressStatus, User createUser) {
+        this.title = title;
+        this.content = content;
+        this.dueAt = dueAt;
+        this.progressStatus = progressStatus != null ? progressStatus : ProgressStatus.NOT_STARTED;
+        this.createUser = createUser;
+    }
 }

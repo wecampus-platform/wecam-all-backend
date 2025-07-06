@@ -1,101 +1,79 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8" />
-    <title>Organization Request Form Test</title>
+    <meta charset="UTF-8">
+    <title>할일 등록 테스트</title>
 </head>
 <body>
-<h1>조직 요청 테스트 폼</h1>
+<h2>할일 등록</h2>
 
-<form id="organizationForm">
-    <label>
-        학교 ID (선택):
-        <input type="number" name="selectSchoolId" placeholder="예: 1 (없으면 비워둠)">
-    </label>
-    <br>
+<form id="todoForm">
+    <label>토큰: <input type="text" id="token" /></label><br><br>
+    <label>제목: <input type="text" id="title" /></label><br><br>
+    <label>내용:<br>
+        <textarea id="content" rows="5" cols="40"></textarea>
+    </label><br><br>    <label>마감일: <input type="datetime-local" id="dueAt" /></label><br><br>
+    <label>담당자 ID(쉼표로 구분): <input type="text" id="managers" /></label><br><br>
 
-    <label>
-        단과대 ID (선택):
-        <input type="number" name="selectCollegeOrganizationId" placeholder="예: 10 (없으면 비워둠)">
-    </label>
-    <br>
+    <label>첨부 파일: <input type="file" id="files" multiple /></label><br><br>
 
-    <label>
-        학과 ID (선택):
-        <input type="number" name="selectDepartmentOrganizationId" placeholder="예: 20 (없으면 비워둠)">
-    </label>
-    <br>
-
-    <label>
-        학교명 (입력):
-        <input type="text" name="inputSchoolName" placeholder="예: 테스트대학교">
-    </label>
-    <br>
-
-    <label>
-        단과명 (입력):
-        <input type="text" name="inputCollegeName" placeholder="예: 테스트단과대학">
-    </label>
-    <br>
-
-    <label>
-        학과명 (입력):
-        <input type="text" name="inputDepartmentName" placeholder="예: 테스트학과">
-    </label>
-    <br>
-
-    <label>
-        학생회명:
-        <input type="text" name="councilName" placeholder="예: 테스트학생회">
-    </label>
-    <br>
-
-    <label>
-        조직 타입:
-        <select name="organizationType">
-            <option value="UNIVERSITY">UNIVERSITY (총학생회)</option>
-            <option value="COLLEGE">COLLEGE (단과대)</option>
-            <option value="DEPARTMENT" selected>DEPARTMENT (학과)</option>
-        </select>
-    </label>
-    <br><br>
-
-    <button type="submit">조직 요청 보내기</button>
+    <button type="submit">제출</button>
 </form>
 
-<h2>응답 결과</h2>
-<pre id="result"></pre>
-
 <script>
-    document.getElementById("organizationForm").addEventListener("submit", async function (event) {
-        event.preventDefault();
+    document.getElementById("todoForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
 
-        const form = event.target;
-        const token = localStorage.getItem("accessToken");
+        const token = document.getElementById("token").value;
+        const title = document.getElementById("title").value;
+        const content = document.getElementById("content").value;
+        const dueAt = document.getElementById("dueAt").value;
+        const managersRaw = document.getElementById("managers").value;
+        const managers = managersRaw.trim() === ""
+            ? []
+            : managersRaw
+                .split(",")
+                .map(v => Number(v.trim()))
+                .filter(v => !isNaN(v));
 
-        const data = {
-            selectSchoolId: form.selectSchoolId.value ? Number(form.selectSchoolId.value) : null,
-            selectCollegeOrganizationId: form.selectCollegeOrganizationId.value ? Number(form.selectCollegeOrganizationId.value) : null,
-            selectDepartmentOrganizationId: form.selectDepartmentOrganizationId.value ? Number(form.selectDepartmentOrganizationId.value) : null,
-            inputSchoolName: form.inputSchoolName.value,
-            inputCollegeName: form.inputCollegeName.value,
-            inputDepartmentName: form.inputDepartmentName.value,
-            councilName: form.councilName.value,
-            organizationType: form.organizationType.value
+
+        const files = document.getElementById("files").files;
+
+        const formData = new FormData();
+
+        const jsonPayload = {
+            title,
+            content,
+            dueAt,
+            managers
         };
 
-        const response = await fetch("client/organization-request/create", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + token
+        formData.append("request", new Blob([JSON.stringify(jsonPayload)], { type: "application/json" }));
 
-            },
-            body: JSON.stringify(data)
-        });
+        console.log("🔍 최종 JSON payload:", JSON.stringify(jsonPayload));
+        console.log("🔍 변환된 managers 배열:", managers);
 
-        const resultText = await response.text();
-        document.getElementById("result").textContent = resultText;
+
+        for (let i = 0; i < files.length; i++) {
+            formData.append("files", files[i]);
+        }
+
+        try {
+            const response = await fetch("http://localhost:8080/admin/council/컴공/todo/8/create", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "X-Council-Id": "8" // 대소문자 정확히
+
+                },
+                body: formData
+            });
+
+            const result = await response.text();
+            alert("서버 응답: " + result);
+        } catch (err) {
+            alert("요청 실패: " + err);
+        }
     });
 </script>
 </body>

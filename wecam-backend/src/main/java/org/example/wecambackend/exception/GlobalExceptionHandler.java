@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.lang.reflect.UndeclaredThrowableException;
+
 //TODO : 왠지모르겠지만 이거 주석 처리 하니까 잘 뜸...Swagger 추후 다시 주석 풀어야됨.
 //위에 문제 해결, HIDDEN 다니까 괜찮아짐.
 @Hidden
@@ -75,5 +77,17 @@ public class GlobalExceptionHandler {
         log.warn("BaseException. error message: {}", exception.getMessage());
 
         return new BaseResponse(exception.getStatus(), exception.getData());
+    }
+
+    @ExceptionHandler(UndeclaredThrowableException.class)
+    public ResponseEntity<ErrorResponse> handleUndeclaredThrowableException(UndeclaredThrowableException ex) {
+        Throwable rootCause = ex.getUndeclaredThrowable();
+        String message = rootCause != null ? rootCause.getMessage() : "알 수 없는 AOP 오류입니다.";
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "AOP 내부 오류가 발생했습니다.",
+                message
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 }

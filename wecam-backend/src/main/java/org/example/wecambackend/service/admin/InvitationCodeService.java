@@ -126,6 +126,7 @@ public class InvitationCodeService {
                     .memberLevel(3)
                     .isActive(true)
                     .council(invitationCode.getCouncil())
+                    .user(user)
                     .memberType("")
                     .build();
             councilMemberRepository.save(councilMember);

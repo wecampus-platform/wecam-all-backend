@@ -2,6 +2,7 @@ package org.example.model.todo;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.model.common.BaseTimeEntity;
@@ -39,4 +40,16 @@ public class TodoFile extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "todo_id", nullable = false)
     private Todo todo;
+
+    @Builder
+    public TodoFile(UUID todoFileId, Todo todo, String originalFileName,
+                    String storedFileName, String filePath, String fileUrl) {
+        this.todoFileId = todoFileId;
+        this.todo = todo;
+        this.originalFileName = originalFileName;
+        this.storedFileName = storedFileName;
+        this.filePath = filePath;
+        this.fileUrl = fileUrl;
+    }
+
 }
