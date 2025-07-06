@@ -1,6 +1,8 @@
 package org.example.wecambackend.service.auth;
 
 import lombok.RequiredArgsConstructor;
+import org.example.model.CouncilMember;
+import org.example.model.enums.UserRole;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.auth.JwtTokenProvider;
@@ -8,6 +10,7 @@ import org.example.wecambackend.dto.auth.response.EmailDuplicateCheckResponse;
 import org.example.wecambackend.dto.auth.response.EmailPhoneDuplicateCheckResponse;
 import org.example.wecambackend.dto.auth.response.JwtResponse;
 import org.example.wecambackend.dto.auth.response.PhoneDuplicateCheckResponse;
+import org.example.wecambackend.dto.auto.CouncilSummary;
 import org.example.wecambackend.dto.auto.LoginRequest;
 import org.example.wecambackend.dto.auto.LoginResponse;
 import org.example.wecambackend.dto.requestDTO.RepresentativeRegisterRequest;
@@ -15,6 +18,7 @@ import org.example.wecambackend.dto.requestDTO.StudentRegisterRequest;
 import org.example.model.user.User;
 import org.example.model.user.UserPrivate;
 import org.example.model.user.UserSignupInformation;
+import org.example.wecambackend.repos.CouncilMemberRepository;
 import org.example.wecambackend.repos.UserPrivateRepository;
 import org.example.wecambackend.repos.UserRepository;
 import org.example.wecambackend.repos.UserSignupInformationRepository;
@@ -25,7 +29,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +49,7 @@ public class AuthService {
 
 
     //login
+    @Transactional
     public LoginResponse login(LoginRequest request) {
 
         // 이메일 유저 조회
@@ -69,6 +77,18 @@ public class AuthService {
 
         System.out.println("User 로그인 완료 :"+accessToken);
         System.out.println("user pk id : "+user.getUserPkId() +" user email : " +user.getEmail());
+        List<CouncilSummary> councils = new ArrayList<>();
+        if (role.equals("COUNCIL")) {
+            for (CouncilMember member : councilMemberRepository.findByUserUserPkIdAndIsActiveTrue(user.getUserPkId())) {
+                CouncilSummary councilSummary = new CouncilSummary(
+                        member.getCouncil().getId(),
+                        member.getCouncil().getCouncilName(),
+                        member.getMemberRole()
+                );
+                councils.add(councilSummary);
+            }
+        }
+        System.out.println(councils);
 
         // 응답 반환
         return LoginResponse.builder()
@@ -77,6 +97,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .role(role)
                 .auth(user.isAuthentication())
+                .councilList(councils)
                 .build();
     }
 
@@ -228,9 +249,10 @@ public class AuthService {
 
     public void logout(String refreshToken) {
         User user = getUserFromValidRefreshToken(refreshToken);
-
+        Long userId = user.getUserPkId();
         // Redis에서 삭제
-        redisTemplate.delete("RT:" + user.getUserPkId());
+        redisTemplate.delete("RT:" + userId);
+        redisTemplate.delete("currentCouncil:" + userId); // 예외는 발생하지 않음
     }
 
 
@@ -258,4 +280,6 @@ public class AuthService {
 
         return user;
     }
+
+    private final CouncilMemberRepository councilMemberRepository;
 }

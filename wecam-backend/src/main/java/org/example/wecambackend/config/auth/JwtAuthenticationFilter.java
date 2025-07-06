@@ -5,8 +5,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.example.model.enums.UserRole;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.model.user.User;
+import org.example.wecambackend.repos.CouncilMemberRepository;
 import org.example.wecambackend.repos.UserRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -58,13 +61,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 User user = userRepository.findByEmailWithPrivate(email)
                         .orElseThrow(() -> new RuntimeException("인증된 사용자를 찾을 수 없습니다."));
+                Long userId = user.getUserPkId();
+                UserRole userRole = user.getRole();
+                List<Long> councilIds = List.of();
+                if (userRole.equals(UserRole.COUNCIL)) {
+                    councilIds = councilMemberRepository.findCouncilIdByUserUserPkIdAndIsActiveTrue(userId);
+                }
 
                 UserDetailsImpl userDetails = new UserDetailsImpl(
-                        user.getUserPkId(),
+                        userId,
                         user.getEmail(),
-                        user.getRole(),
+                        userRole,
                         user.getOrganizationId(),
-                        user.isAuthentication()
+                        user.isAuthentication(),
+                        councilIds
                 );
 
                 UsernamePasswordAuthenticationToken authentication =
@@ -85,4 +95,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
+    private final CouncilMemberRepository councilMemberRepository;
 }

@@ -28,7 +28,7 @@ public interface InvitationCodeRepository extends JpaRepository<InvitationCode,L
 
     @Query(" select ic.organization.university.schoolId "+
     "FROM InvitationCode ic " +
-    "WHERE ic.code =: code ")
+    "WHERE ic.code = :code ")
     Long findSchoolIdByCode(@Param("code") String code);
 
 }

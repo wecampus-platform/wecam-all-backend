@@ -1,6 +1,7 @@
 package org.example.wecambackend.config.security;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.example.model.enums.UserRole;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -9,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+//서버 분산 시에는 레디스 로 구현 해야 함.
 public class UserDetailsImpl implements UserDetails {
 
     @Getter
@@ -22,8 +24,17 @@ public class UserDetailsImpl implements UserDetails {
     @Getter
     private final Boolean auth;
 
+    @Getter
+    private final List<Long> councilId;
+
+    @Setter @Getter
+    private Long currentCouncilId;
+    // COUNCIL 역할인 경우에만 사용 -> 여러개일 수 있음 , 비대위장 학생회장 겸임 가능함.
+
+
     //로그인 이후 JwtAuthenticationFilter에서 사용자 정보를 기반으로 객체 생성
-    public UserDetailsImpl(Long id, String email, UserRole role, Long organizationId, Boolean auth) {
+    public UserDetailsImpl(Long id, String email, UserRole role, Long organizationId, Boolean auth,List<Long> councilId ) {
+        this.councilId = councilId;
         this.id = id;
         this.email = email;
         this.role = role;

@@ -29,4 +29,18 @@ public class TodoManager extends BaseTimeEntity {
     @JoinColumn(name = "user_pk_id", nullable = false)
     private User user;
 
+
+    public static TodoManager of(Todo todo, User user) {
+        // 예외 검증도 여기서 할 수 있음
+        if (todo == null || user == null) {
+            throw new IllegalArgumentException("Todo와 User는 null일 수 없습니다.");
+        }
+
+        TodoManager tm = new TodoManager();
+        tm.todo = todo;
+        tm.user = user;
+        tm.id = new TodoManagerId();
+        return tm;
+    }
+
 }

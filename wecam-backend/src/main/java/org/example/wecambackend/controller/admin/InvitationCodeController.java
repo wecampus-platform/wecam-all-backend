@@ -2,6 +2,8 @@ package org.example.wecambackend.controller.admin;
 
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.model.enums.CodeType;
@@ -28,7 +30,10 @@ public class InvitationCodeController {
     @IsCouncil
     @Operation(
             summary = "학생회 관리자 페이지 발급한 초대코드 조회 요청",
-            description = "해당 학생회가 관리하는 조직에서 만든 초대 코드 전부 조회")
+            description = "해당 학생회가 관리하는 조직에서 만든 초대 코드 전부 조회",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)
+            })
     @GetMapping("/list")
     public ResponseEntity<List<InvitationCodeResponse>> getInvitationCodeRequests(
             @PathVariable String councilName, // ← 화면용
@@ -43,7 +48,10 @@ public class InvitationCodeController {
     //TODO : 각 학생회별 관리자 페이지에서 커스텀마이징으로 설정해둔 , 초대코드 생성 권한이 있는 학생회사람만 사용 가능하게끔 해야됨.
     @Operation(
             summary = "학생회 관리자 페이지 초대코드 생성",
-            description = "해당 학생회가 관리하는 조직 - 초대 코드 생성")
+            description = "해당 학생회가 관리하는 조직 - 초대 코드 생성",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)
+            })
     @PostMapping("/create/{codeType}/student-invitation")
     public ResponseEntity<?> makeInvitationCodeStudent(
             @PathVariable String councilName, // ← 화면용

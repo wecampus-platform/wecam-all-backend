@@ -24,21 +24,7 @@ import java.util.List;
 public class AffiliationCertificationController {
     private final AffiliationCertificationAdminService affiliationCertificationAdminService;
 
-    @IsCouncil
-    @Operation(
-            summary = "학생회 관리자 페이지 소속 인증 정보 리스트 조회 요청",
-            description = "해당 학생회가 관리하는 조직으로 들어온 소속 인증 요청 전부 조회")
-    @GetMapping("/requests")
-    public ResponseEntity<List<AffiliationVerificationResponse>> getAffiliationRequests(
-            @PathVariable String councilName, // ← 화면용
-            @RequestParam("councilId") Long councilId
-    ) {
-        List<AffiliationVerificationResponse> list =
-                affiliationCertificationAdminService.getRequestsByCouncilId(councilId);
 
-
-        return ResponseEntity.ok(list);
-    }
 
     @IsCouncil
     @HasAffiliationApprovalAuthority
