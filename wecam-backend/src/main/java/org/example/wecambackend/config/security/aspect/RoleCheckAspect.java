@@ -7,6 +7,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.model.enums.UserRole;
 import org.example.wecambackend.exception.UnauthorizedException;
@@ -67,6 +68,8 @@ public class RoleCheckAspect {
         if (!currentCouncilId.equals(headerCouncilId)) {
             throw new UnauthorizedException("학생회 불일치!");
         }
+        CouncilContextHolder.setCouncilId(currentCouncilId); // 무조건 클리어 해줘야된다.
+
     }
 
     @Before("@annotation(org.example.wecambackend.config.security.annotation.IsUnauth)")

@@ -34,6 +34,7 @@ public class Todo extends BaseTimeEntity {
 
     // 진행 상태 (진행 전, 진행 중, 진행 완료)
     //기본값 진행 전 설정
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProgressStatus progressStatus = ProgressStatus.NOT_STARTED;
@@ -60,4 +61,11 @@ public class Todo extends BaseTimeEntity {
         this.progressStatus = progressStatus != null ? progressStatus : ProgressStatus.NOT_STARTED;
         this.createUser = createUser;
     }
+
+    public void update(String title, String s, LocalDateTime dueAt) {
+        this.title = title;
+        this.content = s;
+        this.dueAt = dueAt;
+    }
+
 }

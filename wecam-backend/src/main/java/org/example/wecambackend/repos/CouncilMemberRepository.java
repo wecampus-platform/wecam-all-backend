@@ -2,6 +2,8 @@ package org.example.wecambackend.repos;
 
 import org.example.model.CouncilMember;
 import org.example.model.user.User;
+import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,4 +23,15 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
     @Query("SELECT cm.user FROM CouncilMember cm WHERE cm.user.userPkId = :userId AND cm.council.id = :councilId AND cm.isActive = true")
     Optional<User> findUserByUserUserPkIdAndCouncil_IdAndIsActiveTrue(Long userId, Long councilId);
     List<CouncilMember> findByUserUserPkIdAndIsActiveTrue( Long userPkId);
+
+
+    @Query("SELECT new org.example.wecambackend.dto.responseDTO.CouncilMemberResponse(" +
+            "ui.name, cm.memberRole, u.userPkId, cm.memberType) " +
+            "FROM CouncilMember cm " +
+            "JOIN cm.user u " +
+            "JOIN u.userInformation ui " +
+            "WHERE cm.council.id = :councilId AND cm.isActive = true")
+    List<CouncilMemberResponse> findAllActiveMembersByCouncilId(@Param("councilId") Long councilId);
+
+
 }

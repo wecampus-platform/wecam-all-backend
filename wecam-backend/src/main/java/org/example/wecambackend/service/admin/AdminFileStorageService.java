@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -68,6 +70,19 @@ public class AdminFileStorageService {
         return files.stream()
                 .map(file -> saveFile(file, folder))
                 .collect(Collectors.toList());
+    }
+
+    // 파일 삭제
+    public void deleteFile(String filePath) {
+        File file = new File(uploadDir + File.separator + filePath);
+        if (file.exists()) {
+            boolean deleted = file.delete();
+            if (!deleted) {
+                throw new RuntimeException("파일 삭제 실패: " + filePath);
+            }
+        } else {
+            throw new IllegalArgumentException("삭제할 파일이 존재하지 않음: " + filePath);
+        }
     }
 
 }
