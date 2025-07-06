@@ -16,4 +16,5 @@ public interface TodoRepository extends JpaRepository<Todo,Long> {
             "JOIN FETCH cu.userInformation ui " +
             "WHERE t.todoId = :todoId")
     Optional<Todo> findTodoWithCreator(@Param("todoId") Long todoId);
+
 }

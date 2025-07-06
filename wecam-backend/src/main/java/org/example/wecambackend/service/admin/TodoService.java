@@ -1,6 +1,7 @@
 package org.example.wecambackend.service.admin;
 
 import jakarta.persistence.EntityNotFoundException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.enums.ProgressStatus;
@@ -15,6 +16,7 @@ import org.example.wecambackend.dto.requestDTO.TodoUpdateRequest;
 import org.example.wecambackend.dto.responseDTO.AdminFileResponse;
 import org.example.wecambackend.dto.responseDTO.TodoDetailResponse;
 import org.example.wecambackend.exception.UnauthorizedException;
+
 import org.example.wecambackend.repos.*;
 import org.example.wecambackend.service.admin.Enum.UploadFolder;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 
 @Slf4j
 @Service
@@ -44,6 +47,7 @@ public class TodoService {
     // 1.  엔티티 저장 (userId, title, content, dueAt 등)
     // 2.  todo_manager 테이블에 request.getManagerIds() 리스트 insert
     // 3.  업로드 후 todo_file 테이블에 파일 정보 저장
+
     @Transactional
     public void createTodo(Long councilId,TodoCreateRequest request, List<MultipartFile> files, Long userId ) {
         User user = userRepository.findById(userId)
@@ -236,4 +240,5 @@ public class TodoService {
 
 
     private final UserInformationRepository userInformationRepository;
+
 }
