@@ -59,7 +59,10 @@ public class TodoController {
     @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
     @CheckOwner(entity = Todo.class, idParam = "todoId", authorGetter = "getCreateUser.getUserPkId")
     @PutMapping("/{todoId}/edit")
-    @Operation(summary = "할 일 수정 _ 기존 값에서 수정 , 작성자만 가능")
+    @Operation(summary = "할 일 수정 _ 기존 값에서 수정 , 작성자만 가능",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
+    )
     public ResponseEntity<?> updateTodo(
             @PathVariable Long todoId,
             @RequestPart("request") @Valid TodoUpdateRequest request,
@@ -76,7 +79,10 @@ public class TodoController {
     @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
     @CheckOwner(entity = Todo.class, idParam = "todoId", authorGetter = "getCreateUser.getUserPkId")
     @GetMapping("/{todoId}")
-    @Operation(summary = "할 일 상세 조회")
+    @Operation(summary = "할 일 상세 조회",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
+    )
     public ResponseEntity<TodoDetailResponse> getTodoDetail(@PathVariable Long todoId,
                                                             @PathVariable String councilName
     ) {
@@ -87,7 +93,10 @@ public class TodoController {
 
     @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
     @GetMapping("/list")
-    @Operation(summary = "할 일 태그별 전체 조회")
+    @Operation(summary = "할 일 태그별 전체 조회",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
+    )
     public ResponseEntity<List<TodoSimpleResponse>> getTodoList(
             @PathVariable String councilName,
             @AuthenticationPrincipal UserDetailsImpl userDetails
@@ -100,7 +109,10 @@ public class TodoController {
 
     @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
     @PatchMapping("/{todoId}/status")
-    @Operation(summary = "할 일 상세 조회 시 상태 변경 API")
+    @Operation(summary = "할 일 상세 조회 시 상태 변경 API",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
+    )
     public ResponseEntity<?> updateTodoStatus(
             @PathVariable Long todoId,
             @RequestBody TodoStatusUpdateRequest request,
@@ -116,7 +128,10 @@ public class TodoController {
 
     @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
     @DeleteMapping("/{todoId}/delete")
-    @Operation(summary = "할 일 delete _ 작성자만 가능!")
+    @Operation(summary = "할 일 delete _ 작성자만 가능!",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
+    )
     @CheckOwner(entity = Todo.class, idParam = "todoId", authorGetter = "getCreateUser.getUserPkId")
     public ResponseEntity<?> deleteTodo(@PathVariable Long todoId,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails,
