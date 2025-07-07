@@ -20,6 +20,7 @@ import org.example.wecambackend.dto.requestDTO.TodoStatusUpdateRequest;
 import org.example.wecambackend.dto.requestDTO.TodoUpdateRequest;
 import org.example.wecambackend.dto.responseDTO.TodoDetailResponse;
 import org.example.wecambackend.dto.responseDTO.TodoResponse;
+import org.example.wecambackend.dto.responseDTO.TodoSimpleResponse;
 import org.example.wecambackend.service.admin.TodoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -82,6 +83,16 @@ public class TodoController {
                                                             ) {
         TodoDetailResponse response = todoService.getTodoDetail(todoId);
         System.out.println("디버깅 응답: " + response);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/list")
+    @Operation(summary = "할 일 태그별 전체 조회")
+    public ResponseEntity<List<TodoSimpleResponse>> getTodoList(
+                                                            @PathVariable String councilName,
+                                                          @AuthenticationPrincipal UserDetailsImpl userDetails
+                                                          ) {
+        List<TodoSimpleResponse> response = todoService.getAllTodoList(userDetails.getId());
         return ResponseEntity.ok(response);
     }
 

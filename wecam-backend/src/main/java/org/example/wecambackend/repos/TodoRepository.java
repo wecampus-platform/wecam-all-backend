@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface TodoRepository extends JpaRepository<Todo,Long> {
@@ -17,4 +18,9 @@ public interface TodoRepository extends JpaRepository<Todo,Long> {
             "WHERE t.todoId = :todoId")
     Optional<Todo> findTodoWithCreator(@Param("todoId") Long todoId);
 
+    List<Todo> findAllByCreateUser_UserPkIdAndManagers_User_UserPkId(Long creatorId, Long managerId);
+
+    List<Todo> findAllByManagers_User_UserPkId(Long userId);
+
+    List<Todo> findAllByCreateUser_UserPkId(Long userId);
 }
