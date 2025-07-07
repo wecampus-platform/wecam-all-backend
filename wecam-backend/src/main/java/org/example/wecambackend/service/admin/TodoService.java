@@ -213,12 +213,18 @@ public class TodoService {
 
 
     @Transactional
-    public void updateTodoStatus(Long todoId, ProgressStatus newStatus) {
+    public void updateTodoStatus(Long todoId,Long userId, ProgressStatus newStatus) {
+        boolean isManager = todoManagerRepository.existsByTodo_TodoIdAndUser_UserPkId(todoId, userId);
+        if (!isManager) {
+            throw new UnauthorizedException("해당 할일의 매니저만 상태를 변경할 수 있습니다.");
+        }
+
         Todo todo = todoRepository.findById(todoId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 할 일이 존재하지 않습니다."));
-
         todo.setProgressStatus(newStatus);
     }
+
+
 
     @Transactional
     public void deleteTodo(Long todoId , Long userId) {
