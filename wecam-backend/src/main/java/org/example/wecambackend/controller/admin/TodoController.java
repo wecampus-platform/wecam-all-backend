@@ -96,6 +96,7 @@ public class TodoController {
     ) {
 
         todoService.updateTodoStatus(todoId,userDetails.getId(), request.getProgressStatus());
+
         return ResponseEntity.ok("진행 상태가 변경되었습니다.");
     }
 

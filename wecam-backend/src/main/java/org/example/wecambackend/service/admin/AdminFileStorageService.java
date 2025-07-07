@@ -83,4 +83,5 @@ public class AdminFileStorageService {
             throw new IllegalArgumentException("삭제할 파일이 존재하지 않음: " + filePath);
         }
     }
+
 }

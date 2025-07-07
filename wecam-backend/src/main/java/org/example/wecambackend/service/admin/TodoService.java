@@ -224,8 +224,6 @@ public class TodoService {
         todo.setProgressStatus(newStatus);
     }
 
-
-
     @Transactional
     public void deleteTodo(Long todoId , Long userId) {
         Todo todo = todoRepository.findById(todoId)
@@ -242,4 +240,5 @@ public class TodoService {
 
 
     private final UserInformationRepository userInformationRepository;
+
 }
