@@ -49,7 +49,7 @@ jobs:
       - name: Restart Backend Server
         run: |
           ssh -tt ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
-          set -ex
+          set +e   # <= 에러 무시, 종료코드 0 유지
           echo "----- 기존 서버 죽이기 시작 -----"
           pkill -f "java -jar" || true
           echo "----- 기존 서버 죽이기 완료 -----"
