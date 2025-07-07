@@ -22,7 +22,7 @@ jobs:
       - name: Deploy to GCP instance
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
-            set -e  # 오류 발생 시 즉시 종료
+            set -ex  # 오류 발생 시 즉시 종료
 
             # 1. 프로젝트 디렉토리 없으면 clone
             if [ ! -d "wecam-all-backend" ]; then
@@ -46,6 +46,7 @@ jobs:
             # 5. 빌드 (테스트 생략)
             ./gradlew :wecam-backend:build -x test
           
+            echo "⏹ Gradle build 종료 코드: $?"
             echo "!!!!!기존 프로세스 종료 시작!!!!!!!"
             # 6. 기존 프로세스 종료
             lsof -i:8080 || echo "✅ 8080 포트 비어 있음"
