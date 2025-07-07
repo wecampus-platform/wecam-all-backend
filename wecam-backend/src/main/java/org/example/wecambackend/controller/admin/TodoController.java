@@ -18,6 +18,7 @@ import org.example.wecambackend.dto.requestDTO.TodoStatusUpdateRequest;
 import org.example.wecambackend.dto.requestDTO.TodoUpdateRequest;
 import org.example.wecambackend.dto.responseDTO.TodoDetailResponse;
 import org.example.wecambackend.dto.responseDTO.TodoSimpleResponse;
+import org.example.wecambackend.dto.responseDTO.TodoSummaryResponse;
 import org.example.wecambackend.service.admin.TodoService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -140,5 +141,20 @@ public class TodoController {
         todoService.deleteTodo(todoId, userDetails.getId());
         return ResponseEntity.ok("할일 삭제 완료");
     }
+
+    @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
+    @GetMapping("/dashboard/todo-summary")
+    @Operation(summary = "할 일 summary _ 해당 학생회에서 만들어진 할일 기준임.",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
+    )
+    public ResponseEntity<TodoSummaryResponse> deleteTodo(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                          @PathVariable String councilName) {
+        Long councilId = CouncilContextHolder.getCouncilId();
+        TodoSummaryResponse response = todoService.getTodoSummary(councilId,userDetails.getId());
+        return ResponseEntity.ok(response);
+    }
+
+
 
 }

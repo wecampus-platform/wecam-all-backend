@@ -17,6 +17,7 @@ import org.example.wecambackend.dto.requestDTO.TodoUpdateRequest;
 import org.example.wecambackend.dto.responseDTO.AdminFileResponse;
 import org.example.wecambackend.dto.responseDTO.TodoDetailResponse;
 import org.example.wecambackend.dto.responseDTO.TodoSimpleResponse;
+import org.example.wecambackend.dto.responseDTO.TodoSummaryResponse;
 import org.example.wecambackend.exception.UnauthorizedException;
 import org.example.wecambackend.repos.*;
 import org.example.wecambackend.service.admin.Enum.UploadFolder;
@@ -24,6 +25,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,6 +45,7 @@ public class TodoService {
     private final AdminFileStorageService adminFileStorageService;
     private final TodoFileRepository todoFileRepository;
     private final CouncilMemberRepository councilMemberRepository;
+    private final CouncilRepository councilRepository;
 
     // 1.  엔티티 저장 (userId, title, content, dueAt 등)
     // 2.  todo_manager 테이블에 request.getManagerIds() 리스트 insert
@@ -316,5 +322,54 @@ public class TodoService {
         );
     }
 
-    private final CouncilRepository councilRepository;
+
+    @Transactional
+    public TodoSummaryResponse getTodoSummary(Long councilId, Long userId) {
+        LocalDate today = LocalDate.now();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime todayStart = now.toLocalDate().atStartOfDay();
+        LocalDateTime todayEnd = now.toLocalDate().atTime(LocalTime.MAX);
+        LocalDate startOfWeek = today.with(DayOfWeek.MONDAY);
+        LocalDate endOfWeek = today.with(DayOfWeek.SUNDAY);
+        LocalDateTime weekStart = startOfWeek.atStartOfDay();
+        LocalDateTime weekEnd = endOfWeek.atTime(LocalTime.MAX);
+
+        // 오늘 할 일
+        List<Todo> todayTodos = todoRepository.findByCouncil_IdAndManagers_User_UserPkIdAndDueAtBetween(
+                councilId, userId, todayStart,todayEnd);
+        int todayTotal = todayTodos.size();
+        int todayDone = (int) todayTodos.stream()
+                .filter(todo -> todo.getProgressStatus() == ProgressStatus.COMPLETED) // 완료한 일
+                .count();
+
+        // 이번 주 할 일
+        List<Todo> weekTodos = todoRepository.findByCouncil_IdAndManagers_User_UserPkIdAndDueAtBetween(
+                councilId, userId, weekStart, weekEnd);
+        int weekTotal = weekTodos.size();
+        int weekDone = (int) todayTodos.stream()
+                .filter(todo -> todo.getProgressStatus() == ProgressStatus.COMPLETED) // 완료한 일
+                .count();
+        int weekRate = (weekTotal == 0) ? 0 : (int) ((double) weekDone / weekTotal * 100);
+
+        // 받은 일 _ 담당자가 나인 학생회 할일
+        List<Todo> received = todoRepository.findAllByManagers_User_UserPkIdAndCouncil_Id(userId, councilId);
+        int receivedTotal = received.size();
+        int receivedDone = (int) todayTodos.stream()
+                .filter(todo -> todo.getProgressStatus() == ProgressStatus.COMPLETED) // 완료한 일
+                .count();
+
+        // 보낸 일
+        List<Todo> sent = todoRepository.findAllByCreateUser_UserPkIdAndCouncil_Id(userId,councilId);
+        int sentTotal = sent.size();
+        int sentDone =(int) todayTodos.stream()
+                .filter(todo -> todo.getProgressStatus() == ProgressStatus.COMPLETED) // 완료한 일
+                .count();
+
+        return TodoSummaryResponse.builder()
+                .todayTodo(new TodoSummaryResponse.CountPair(todayDone, todayTotal))
+                .weekTodo(new TodoSummaryResponse.RateTriple(weekDone, weekTotal, weekRate))
+                .receivedTodo(new TodoSummaryResponse.CountPair(receivedDone, receivedTotal))
+                .sentTodo(new TodoSummaryResponse.CountPair(sentDone, sentTotal))
+                .build();
+    }
 }
