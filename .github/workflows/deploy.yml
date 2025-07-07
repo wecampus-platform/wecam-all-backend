@@ -58,10 +58,11 @@ jobs:
           nohup java -jar wecam-backend/build/libs/wecam-backend-0.0.1-SNAPSHOT.jar > wecam-backend/server.log 2>&1 & disown
           sleep 5
           echo "✅ 서버 실행 명령 전송 완료"
+          exit 0
           EOF
-      - name: 서버 로그 확인
-        run: |
-          sleep 10
-          ssh -i ${{ secrets.SSH_KEY }} ubuntu@1.2.3.4 "tail -n 50 ~/wecam-all-backend/wecam-backend/server.log || echo '❌ 로그 없음'"
+#      - name: 서버 로그 확인
+#        run: |
+#          sleep 10
+#          ssh -i ${{ secrets.SSH_KEY }} ubuntu@1.2.3.4 "tail -n 50 ~/wecam-all-backend/wecam-backend/server.log || echo '❌ 로그 없음'"
       - name: 배포용 remote 설정
         run: git remote set-url origin https://x-access-token:${{ secrets.WORKFLOW_TOKEN }}@github.com/wecampus-platform/wecam-all-backend.git
