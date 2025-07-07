@@ -21,7 +21,7 @@ jobs:
 
       - name: Deploy to GCP instance
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             set -e  # 오류 발생 시 즉시 종료
 
             # 1. 프로젝트 디렉토리 없으면 clone
@@ -41,13 +41,16 @@ jobs:
 
             # 4. Gradle 실행 권한 보장
             chmod +x ./gradlew
+            echo "!!!!!빌드 시작!!!!!!!"
 
             # 5. 빌드 (테스트 생략)
             ./gradlew :wecam-backend:build -x test
           
+            echo "!!!!!기존 프로세스 종료 시작!!!!!!!"
             # 6. 기존 프로세스 종료
+            lsof -i:8080 || echo "✅ 8080 포트 비어 있음"
             echo "🔴 기존 프로세스 종료 시도..."
-            pkill -f 'java -jar' || true
+            pkill -f "java -jar" || true
 
             sleep 2
 
@@ -55,9 +58,10 @@ jobs:
             echo "🔍 8080 포트 점유 여부 확인:"
             lsof -i:8080 || echo "✅ 8080 포트 비어 있음"
 
+
             # 7. 새 프로세스 실행
             echo "🟢 새 프로세스 실행 시작..."
-            nohup java -jar wecam-backend/build/libs/wecam-backend-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+            nohup java -jar wecam-backend/build/libs/wecam-backend-0.0.1-SNAPSHOT.jar > app.log 2>&1 & disown
 
             sleep 5
 
