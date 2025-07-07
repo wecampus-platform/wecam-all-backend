@@ -8,12 +8,14 @@ import org.example.model.todo.Todo;
 import org.example.model.todo.TodoFile;
 import org.example.model.todo.TodoManager;
 import org.example.model.user.User;
+import org.example.wecambackend.dto.Enum.TodoTypeDTO;
 import org.example.wecambackend.dto.projection.ManagerInfo;
 import org.example.wecambackend.dto.projection.TodoFileInfo;
 import org.example.wecambackend.dto.requestDTO.TodoCreateRequest;
 import org.example.wecambackend.dto.requestDTO.TodoUpdateRequest;
 import org.example.wecambackend.dto.responseDTO.AdminFileResponse;
 import org.example.wecambackend.dto.responseDTO.TodoDetailResponse;
+import org.example.wecambackend.dto.responseDTO.TodoSimpleResponse;
 import org.example.wecambackend.exception.UnauthorizedException;
 import org.example.wecambackend.repos.*;
 import org.example.wecambackend.service.admin.Enum.UploadFolder;
@@ -21,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -240,5 +239,77 @@ public class TodoService {
 
 
     private final UserInformationRepository userInformationRepository;
+
+    //담당자 작성자 모두 나인 거.
+    public List<TodoSimpleResponse> getMyTodoList(Long userId) {
+        List<Todo> todos = todoRepository.findAllByCreateUser_UserPkIdAndManagers_User_UserPkId(userId, userId);
+        return todos.stream()
+                .map(todo -> convertToTodoSimpleResponse(todo,TodoTypeDTO.MY_TODO))
+                .collect(Collectors.toList());
+    }
+
+    public List<TodoSimpleResponse> getReceivedTodoList(Long userId) {
+        List<Todo> todos = todoRepository.findAllByManagers_User_UserPkId(userId);
+        return todos.stream()
+                .filter(todo -> !todo.getCreateUser().getUserPkId().equals(userId)) // 작성자가 내가 아닌 것만
+                .map(todo -> convertToTodoSimpleResponse(todo, TodoTypeDTO.RECEIVED_TODO))
+                .collect(Collectors.toList());
+    }
+
+    //보낸건데 담당자는 내가 아님.
+    public List<TodoSimpleResponse> getSentTodoList(Long userId) {
+        List<Todo> todos = todoRepository.findAllByCreateUser_UserPkId(userId);
+        return todos.stream()
+                .filter(todo -> !todo.getManagers().stream().allMatch(m -> m.getUser().getUserPkId().equals(userId))) // 담당자 전원이 나만이 아님
+                .map(todo -> convertToTodoSimpleResponse(todo, TodoTypeDTO.SENT_TODO
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<TodoSimpleResponse> getAllTodoList(Long userId) {
+         Set<TodoSimpleResponse> allTodos = new HashSet<>();
+            allTodos.addAll(getMyTodoList(userId));
+            allTodos.addAll(getSentTodoList(userId));
+            allTodos.addAll(getReceivedTodoList(userId));
+
+            return new ArrayList<>(allTodos);
+    }
+
+
+    private TodoSimpleResponse convertToTodoSimpleResponse(Todo todo,TodoTypeDTO type) {
+
+
+//        TodoTypeDTO type;
+        Long createUserId =todo.getCreateUser().getUserPkId();
+        Long todoId = todo.getTodoId();
+        String createUserName = userInformationRepository.findNameByUserId(createUserId);
+        List<ManagerInfo> managers = todoManagerRepository.findManagersByTodoId(todoId);
+//        boolean isCreator = createUserId.equals(currentUserId);
+//        boolean isManager = todoManagerRepository.existsByTodo_TodoIdAndUser_UserPkId(todoId,currentUserId);
+
+//        if (isCreator && isManager) {
+//            type = TodoTypeDTO.MY_TODO;
+//        } else if (isCreator) {
+//            type = TodoTypeDTO.SENT_TODO;
+//        } else if (isManager) {
+//            type = TodoTypeDTO.RECEIVED_TODO;
+//        } else {
+//            type = null; // 예외적으로 들어올 경우
+//        }
+
+
+        return new TodoSimpleResponse(
+                todoId,
+                todo.getTitle(),
+                todo.getContent(),
+                todo.getDueAt(),
+                todo.getProgressStatus(),
+                managers,
+                createUserId,
+                createUserName,
+                type
+        );
+    }
 
 }
