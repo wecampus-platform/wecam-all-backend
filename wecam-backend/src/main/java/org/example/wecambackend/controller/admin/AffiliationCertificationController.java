@@ -1,6 +1,8 @@
 package org.example.wecambackend.controller.admin;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.wecambackend.config.security.UserDetailsImpl;
@@ -24,13 +26,33 @@ import java.util.List;
 public class AffiliationCertificationController {
     private final AffiliationCertificationAdminService affiliationCertificationAdminService;
 
+    @IsCouncil
+    @Operation(
+            summary = "학생회 관리자 페이지 소속 인증 정보 리스트 조회 요청",
+            description = "해당 학생회가 관리하는 조직으로 들어온 소속 인증 요청 전부 조회",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
+    )
+    @GetMapping("/requests")
+    public ResponseEntity<List<AffiliationVerificationResponse>> getAffiliationRequests(
+            @PathVariable String councilName, // ← 화면용
+            @RequestParam("councilId") Long councilId
+    ) {
+        List<AffiliationVerificationResponse> list =
+                affiliationCertificationAdminService.getRequestsByCouncilId(councilId);
 
+
+        return ResponseEntity.ok(list);
+    }
 
     @IsCouncil
     @HasAffiliationApprovalAuthority
     @Operation(
             summary = "학생회 관리자 페이지 소속 인증 요청 승인",
-            description = "해당 학생회가 관리하는 조직으로 들어온 소속 인증 요청 승인을 진행함. ")
+            description = "해당 학생회가 관리하는 조직으로 들어온 소속 인증 요청 승인을 진행함. ",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
+    )
     @PostMapping("/approve")
     public ResponseEntity<?> approveAffiliationRequest(
             @RequestParam("userId") Long userId,

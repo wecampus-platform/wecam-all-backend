@@ -73,25 +73,37 @@ public class AffiliationService {
                 .orElseThrow(() -> new RuntimeException("소속 정보 없음"));
 
         // 5. OCR 수행 → 결과 DTO로 매핑
-        Map<String, String> result = ocrService.requestOcr(file);
-        String raw = result.get("schoolGrade");
+        Map<String, Object> result = ocrService.requestOcr(file);
+
+        // 내부 text 맵 안전하게 꺼내기
+        Object textObj = result.get("text");
+        if (!(textObj instanceof Map)) {
+            throw new IllegalArgumentException("OCR 결과에서 'text' 필드가 Map 형식이 아닙니다: " + textObj);
+        }
+
+        Map<?, ?> textMap = (Map<?, ?>) textObj;
+
+        Object rawGrade = textMap.get("schoolGrade");
+        if (rawGrade == null) {
+            throw new IllegalArgumentException("OCR 결과에 schoolGrade가 없습니다: " + textMap);
+        }
+
         int schoolGrade;
-        //OCR 결과값이 제대로 반출 안됐을 것을 고려해서, 자동으로 신입생일 경우 1 고정 , 아닐 경우 ocr결과를 기반으로 하되, 에러처리
-        //TODO : OCR 만들 때, 제대로 1,2,3,4 로 나오게끔 하고 만약 값처리가 분명하지 않다면 0 으로 처리하게끔 해줘야될듯.
         if (status == AuthenticationType.NEW_STUDENT) {
             schoolGrade = 1;
         } else {
             try {
-                schoolGrade = Integer.parseInt(raw);
+                schoolGrade = Integer.parseInt(rawGrade.toString());
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("OCR 결과 schoolGrade가 숫자가 아닙니다: " + raw);
+                throw new IllegalArgumentException("OCR 결과 schoolGrade가 숫자가 아닙니다: " + rawGrade);
             }
         }
+
         OcrResultResponse ocrResultDto = OcrResultResponse.builder()
-                .userName(result.get("userName"))
-                .schoolName(result.get("schoolName"))
-                .orgName(result.get("orgName"))
-                .enrollYear(result.get("enrollYear"))
+                .userName((String) textMap.get("userName"))
+                .schoolName((String) textMap.get("schoolName"))
+                .orgName((String) textMap.get("orgName"))
+                .enrollYear((String) textMap.get("enrollYear"))
                 .schoolGrade(schoolGrade)
                 .build();
 

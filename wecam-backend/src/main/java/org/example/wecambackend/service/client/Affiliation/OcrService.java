@@ -2,6 +2,7 @@ package org.example.wecambackend.service.client.Affiliation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class OcrService {
 
 
 
-    public Map<String, String> requestOcr(MultipartFile imageFile) {
+    public Map<String,Object> requestOcr(MultipartFile imageFile) {
         File tempFile = null;
         try {
             // 메모리 기반 임시 파일 생성
@@ -40,8 +41,11 @@ public class OcrService {
 
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
             //userName , schoolName , orgName , enrollYear , schoolGrade 넘어오게 해놨음.
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    ocrApiUrl, HttpMethod.POST, requestEntity, Map.class
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    ocrApiUrl,
+                    HttpMethod.POST,
+                    requestEntity,
+                    new ParameterizedTypeReference<Map<String, Object>>() {}
             );
 
             return response.getBody();
