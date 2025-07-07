@@ -50,14 +50,17 @@ jobs:
         run: |
           ssh -tt ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
           set -ex
-          echo "!!!!!기존 서버 죽이기 시작!!!!!!!"
+          echo "----- 기존 서버 죽이기 시작 -----"
           pkill -f "java -jar" || true
-          echo "!!!!! 죽이기 완료!!!!!!!"
+          echo "----- 기존 서버 죽이기 완료 -----"
           sleep 2
-          nohup java -jar wecam-backend/build/libs/wecam-backend-0.0.1-SNAPSHOT.jar > app.log 2>&1 & disown
-          sleep 3
-          lsof -i:8080 || echo "❌ 포트 열려 있지 않음"
+          nohup java -jar wecam-backend/build/libs/wecam-backend-0.0.1-SNAPSHOT.jar > wecam-backend/server.log 2>&1 &
+          sleep 5
+          echo "✅ 서버 실행 명령 전송 완료"
           EOF
-
+      - name: 서버 로그 확인
+        run: |
+          sleep 10
+          ssh -i ${{ secrets.SSH_KEY }} ubuntu@1.2.3.4 "tail -n 50 ~/wecam-all-backend/wecam-backend/server.log || echo '❌ 로그 없음'"
       - name: 배포용 remote 설정
         run: git remote set-url origin https://x-access-token:${{ secrets.WORKFLOW_TOKEN }}@github.com/wecampus-platform/wecam-all-backend.git
