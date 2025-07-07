@@ -87,14 +87,16 @@ public class TodoController {
 
 
     @PatchMapping("/{todoId}/status")
-    @CheckOwner(entity = Todo.class, idParam = "todoId", authorGetter = "getCreateUser.getUserPkId")
     public ResponseEntity<?> updateTodoStatus(
             @PathVariable Long todoId,
             @RequestBody TodoStatusUpdateRequest request,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable String councilName
 
     ) {
-        todoService.updateTodoStatus(todoId, request.getProgressStatus());
+
+        todoService.updateTodoStatus(todoId,userDetails.getId(), request.getProgressStatus());
+
         return ResponseEntity.ok("진행 상태가 변경되었습니다.");
     }
 
@@ -107,6 +109,5 @@ public class TodoController {
         todoService.deleteTodo(todoId, userDetails.getId());
         return ResponseEntity.ok("할일 삭제 완료");
     }
-
 
 }

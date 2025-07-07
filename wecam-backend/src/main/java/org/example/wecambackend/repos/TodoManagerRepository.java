@@ -23,4 +23,7 @@ public interface TodoManagerRepository extends JpaRepository<TodoManager, TodoMa
     """)
     List<ManagerInfo> findManagersByTodoId(@Param("todoId") Long todoId);
 
+
+    boolean existsByTodo_TodoIdAndUser_UserPkId(Long todoId, Long userId);
+
 }

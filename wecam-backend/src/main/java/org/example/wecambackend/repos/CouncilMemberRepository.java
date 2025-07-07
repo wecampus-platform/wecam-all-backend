@@ -3,7 +3,6 @@ package org.example.wecambackend.repos;
 import org.example.model.CouncilMember;
 import org.example.model.user.User;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,6 +31,5 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
             "JOIN u.userInformation ui " +
             "WHERE cm.council.id = :councilId AND cm.isActive = true")
     List<CouncilMemberResponse> findAllActiveMembersByCouncilId(@Param("councilId") Long councilId);
-
 
 }
