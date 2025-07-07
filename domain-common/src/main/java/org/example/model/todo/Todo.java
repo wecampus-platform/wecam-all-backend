@@ -2,6 +2,7 @@ package org.example.model.todo;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.Council;
 import org.example.model.common.BaseTimeEntity;
 import org.example.model.enums.ProgressStatus;
 import org.example.model.user.User;
@@ -44,6 +45,11 @@ public class Todo extends BaseTimeEntity {
     @JoinColumn(name = "create_user_id", nullable = false)
     private User createUser;
 
+    // 할일 학생회 (할당자)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "council_id", nullable = true)
+    private Council council;
+
     // 할일에 첨부된 파일 목록
     @OneToMany(mappedBy = "todo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TodoFile> files;
@@ -54,12 +60,13 @@ public class Todo extends BaseTimeEntity {
 
     /** 업데이트 시 자동으로 수정 시각 갱신 */
     @Builder
-    public Todo(String title, String content, LocalDateTime dueAt, ProgressStatus progressStatus, User createUser) {
+    public Todo(String title, String content, LocalDateTime dueAt, ProgressStatus progressStatus, User createUser, Council council) {
         this.title = title;
         this.content = content;
         this.dueAt = dueAt;
         this.progressStatus = progressStatus != null ? progressStatus : ProgressStatus.NOT_STARTED;
         this.createUser = createUser;
+        this.council = council;
     }
 
     public void update(String title, String s, LocalDateTime dueAt) {

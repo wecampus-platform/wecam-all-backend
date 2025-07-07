@@ -7,8 +7,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jdk.jfr.Description;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.example.model.todo.Todo;
 import org.example.wecambackend.common.context.CouncilContextHolder;
@@ -19,10 +17,8 @@ import org.example.wecambackend.dto.requestDTO.TodoCreateRequest;
 import org.example.wecambackend.dto.requestDTO.TodoStatusUpdateRequest;
 import org.example.wecambackend.dto.requestDTO.TodoUpdateRequest;
 import org.example.wecambackend.dto.responseDTO.TodoDetailResponse;
-import org.example.wecambackend.dto.responseDTO.TodoResponse;
 import org.example.wecambackend.dto.responseDTO.TodoSimpleResponse;
 import org.example.wecambackend.service.admin.TodoService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -60,8 +56,10 @@ public class TodoController {
         return ResponseEntity.ok("할일 등록이 완료되었습니다.");
     }
 
+    @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
     @CheckOwner(entity = Todo.class, idParam = "todoId", authorGetter = "getCreateUser.getUserPkId")
     @PutMapping("/{todoId}/edit")
+    @Operation(summary = "할 일 수정 _ 기존 값에서 수정 , 작성자만 가능")
     public ResponseEntity<?> updateTodo(
             @PathVariable Long todoId,
             @RequestPart("request") @Valid TodoUpdateRequest request,
@@ -69,35 +67,40 @@ public class TodoController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable String councilName
 
-            ) {
+    ) {
         Long councilId = CouncilContextHolder.getCouncilId();
         todoService.updateTodo(todoId, councilId, request, newFiles);
         return ResponseEntity.ok("할일 수정 완료");
     }
 
+    @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
     @CheckOwner(entity = Todo.class, idParam = "todoId", authorGetter = "getCreateUser.getUserPkId")
     @GetMapping("/{todoId}")
     @Operation(summary = "할 일 상세 조회")
     public ResponseEntity<TodoDetailResponse> getTodoDetail(@PathVariable Long todoId,
                                                             @PathVariable String councilName
-                                                            ) {
+    ) {
         TodoDetailResponse response = todoService.getTodoDetail(todoId);
         System.out.println("디버깅 응답: " + response);
         return ResponseEntity.ok(response);
     }
 
+    @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
     @GetMapping("/list")
     @Operation(summary = "할 일 태그별 전체 조회")
     public ResponseEntity<List<TodoSimpleResponse>> getTodoList(
-                                                            @PathVariable String councilName,
-                                                          @AuthenticationPrincipal UserDetailsImpl userDetails
-                                                          ) {
-        List<TodoSimpleResponse> response = todoService.getAllTodoList(userDetails.getId());
+            @PathVariable String councilName,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        Long councilId = CouncilContextHolder.getCouncilId();
+        List<TodoSimpleResponse> response = todoService.getAllTodoList(userDetails.getId(),councilId);
         return ResponseEntity.ok(response);
     }
 
 
+    @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
     @PatchMapping("/{todoId}/status")
+    @Operation(summary = "할 일 상세 조회 시 상태 변경 API")
     public ResponseEntity<?> updateTodoStatus(
             @PathVariable Long todoId,
             @RequestBody TodoStatusUpdateRequest request,
@@ -111,7 +114,9 @@ public class TodoController {
         return ResponseEntity.ok("진행 상태가 변경되었습니다.");
     }
 
+    @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
     @DeleteMapping("/{todoId}/delete")
+    @Operation(summary = "할 일 delete _ 작성자만 가능!")
     @CheckOwner(entity = Todo.class, idParam = "todoId", authorGetter = "getCreateUser.getUserPkId")
     public ResponseEntity<?> deleteTodo(@PathVariable Long todoId,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails,

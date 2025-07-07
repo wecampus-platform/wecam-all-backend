@@ -3,6 +3,7 @@ package org.example.wecambackend.service.admin;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.model.Council;
 import org.example.model.enums.ProgressStatus;
 import org.example.model.todo.Todo;
 import org.example.model.todo.TodoFile;
@@ -47,11 +48,14 @@ public class TodoService {
     public void createTodo(Long councilId,TodoCreateRequest request, List<MultipartFile> files, Long userId ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(()->new IllegalArgumentException("유저가 존재하지 않습니다."));
+        Council council = councilRepository.findById(councilId)
+                .orElseThrow(()-> new IllegalArgumentException("학생회가 존재하지 않습니다"));
         Todo todo = Todo.builder()
                 .title(request.getTitle())
                 .content(String.valueOf(request.getContent()))
                 .dueAt(request.getDueAt())
                 .createUser(user)
+                .council(council)
                 .progressStatus(ProgressStatus.NOT_STARTED) // 기본 상태
                 .build();
 
@@ -241,15 +245,15 @@ public class TodoService {
     private final UserInformationRepository userInformationRepository;
 
     //담당자 작성자 모두 나인 거.
-    public List<TodoSimpleResponse> getMyTodoList(Long userId) {
-        List<Todo> todos = todoRepository.findAllByCreateUser_UserPkIdAndManagers_User_UserPkId(userId, userId);
+    public List<TodoSimpleResponse> getMyTodoList(Long userId,Long councilId) {
+        List<Todo> todos = todoRepository.findAllByCreateUser_UserPkIdAndManagers_User_UserPkIdAndCouncil_Id(userId, userId,councilId);
         return todos.stream()
                 .map(todo -> convertToTodoSimpleResponse(todo,TodoTypeDTO.MY_TODO))
                 .collect(Collectors.toList());
     }
 
-    public List<TodoSimpleResponse> getReceivedTodoList(Long userId) {
-        List<Todo> todos = todoRepository.findAllByManagers_User_UserPkId(userId);
+    public List<TodoSimpleResponse> getReceivedTodoList(Long userId,Long councilId) {
+        List<Todo> todos = todoRepository.findAllByManagers_User_UserPkIdAndCouncil_Id(userId,councilId);
         return todos.stream()
                 .filter(todo -> !todo.getCreateUser().getUserPkId().equals(userId)) // 작성자가 내가 아닌 것만
                 .map(todo -> convertToTodoSimpleResponse(todo, TodoTypeDTO.RECEIVED_TODO))
@@ -257,8 +261,8 @@ public class TodoService {
     }
 
     //보낸건데 담당자는 내가 아님.
-    public List<TodoSimpleResponse> getSentTodoList(Long userId) {
-        List<Todo> todos = todoRepository.findAllByCreateUser_UserPkId(userId);
+    public List<TodoSimpleResponse> getSentTodoList(Long userId,Long councilId) {
+        List<Todo> todos = todoRepository.findAllByCreateUser_UserPkIdAndCouncil_Id(userId,councilId);
         return todos.stream()
                 .filter(todo -> !todo.getManagers().stream().allMatch(m -> m.getUser().getUserPkId().equals(userId))) // 담당자 전원이 나만이 아님
                 .map(todo -> convertToTodoSimpleResponse(todo, TodoTypeDTO.SENT_TODO
@@ -267,11 +271,11 @@ public class TodoService {
     }
 
     @Transactional
-    public List<TodoSimpleResponse> getAllTodoList(Long userId) {
+    public List<TodoSimpleResponse> getAllTodoList(Long userId,Long councilId) {
          Set<TodoSimpleResponse> allTodos = new HashSet<>();
-            allTodos.addAll(getMyTodoList(userId));
-            allTodos.addAll(getSentTodoList(userId));
-            allTodos.addAll(getReceivedTodoList(userId));
+            allTodos.addAll(getMyTodoList(userId,councilId));
+            allTodos.addAll(getSentTodoList(userId,councilId));
+            allTodos.addAll(getReceivedTodoList(userId,councilId));
 
             return new ArrayList<>(allTodos);
     }
@@ -312,4 +316,5 @@ public class TodoService {
         );
     }
 
+    private final CouncilRepository councilRepository;
 }

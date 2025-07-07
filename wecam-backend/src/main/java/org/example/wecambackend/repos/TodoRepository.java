@@ -18,9 +18,9 @@ public interface TodoRepository extends JpaRepository<Todo,Long> {
             "WHERE t.todoId = :todoId")
     Optional<Todo> findTodoWithCreator(@Param("todoId") Long todoId);
 
-    List<Todo> findAllByCreateUser_UserPkIdAndManagers_User_UserPkId(Long creatorId, Long managerId);
+    List<Todo> findAllByCreateUser_UserPkIdAndManagers_User_UserPkIdAndCouncil_Id(Long creatorId, Long managerId,Long councilId);
 
-    List<Todo> findAllByManagers_User_UserPkId(Long userId);
+    List<Todo> findAllByManagers_User_UserPkIdAndCouncil_Id(Long userId,Long councilId);
 
-    List<Todo> findAllByCreateUser_UserPkId(Long userId);
+    List<Todo> findAllByCreateUser_UserPkIdAndCouncil_Id(Long userId,Long councilId);
 }
