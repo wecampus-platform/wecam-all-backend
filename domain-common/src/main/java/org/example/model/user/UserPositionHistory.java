@@ -2,7 +2,7 @@ package org.example.model.user;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.model.Council;
+import org.example.model.council.Council;
 import org.example.model.organization.Organization;
 import org.example.model.enums.MemberRole;
 

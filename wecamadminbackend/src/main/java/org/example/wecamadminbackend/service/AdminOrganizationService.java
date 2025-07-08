@@ -3,6 +3,8 @@ package org.example.wecamadminbackend.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.*;
+import org.example.model.council.Council;
+import org.example.model.council.CouncilMember;
 import org.example.model.enums.MemberRole;
 
 import org.example.model.enums.OrganizationType;

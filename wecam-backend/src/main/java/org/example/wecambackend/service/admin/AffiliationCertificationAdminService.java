@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.dto.projection.AffiliationFileProjection;
 import org.example.wecambackend.dto.responseDTO.AffiliationVerificationResponse;
-import org.example.model.Council;
+import org.example.model.council.Council;
 import org.example.model.organization.Organization;
 import org.example.model.University;
 import org.example.model.user.User;

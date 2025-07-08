@@ -3,7 +3,7 @@ package org.example.wecambackend.service.admin;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.model.Council;
+import org.example.model.council.Council;
 import org.example.model.enums.ProgressStatus;
 import org.example.model.todo.Todo;
 import org.example.model.todo.TodoFile;

@@ -1,8 +1,7 @@
 package org.example.wecambackend.service.auth;
 
 import lombok.RequiredArgsConstructor;
-import org.example.model.CouncilMember;
-import org.example.model.enums.UserRole;
+import org.example.model.council.CouncilMember;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.auth.JwtTokenProvider;
@@ -32,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
