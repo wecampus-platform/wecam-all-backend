@@ -2,14 +2,13 @@ package org.example.model.todo;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.model.Council;
+import org.example.model.council.Council;
 import org.example.model.common.BaseTimeEntity;
 import org.example.model.enums.ProgressStatus;
 import org.example.model.user.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Getter

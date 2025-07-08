@@ -1,7 +1,6 @@
 package org.example.wecambackend.dto.responseDTO;
 
 import lombok.*;
-import org.example.model.Council;
 import org.example.model.enums.MemberRole;
 
 @Getter
@@ -13,6 +12,6 @@ public class CouncilMemberResponse {
     private String userName;
     private MemberRole userCouncilRole;
     private Long userId;
-    private String userMemberType;
+    private String departmentRole;
 
 }

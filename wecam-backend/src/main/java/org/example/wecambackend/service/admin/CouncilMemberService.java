@@ -1,7 +1,6 @@
 package org.example.wecambackend.service.admin;
 
 import lombok.RequiredArgsConstructor;
-import org.example.model.Council;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
 import org.example.wecambackend.repos.CouncilMemberRepository;
 import org.springframework.stereotype.Service;

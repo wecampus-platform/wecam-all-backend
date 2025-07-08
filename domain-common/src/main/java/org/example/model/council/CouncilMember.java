@@ -1,4 +1,4 @@
-package org.example.model;
+package org.example.model.council;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,14 +27,11 @@ public class CouncilMember {
     @JoinColumn(name = "user_pk_id")
     private User user;
 
-    @Column(name = "member_type", length = 20)
-    private String memberType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private CouncilDepartment department;
 
-    @Column(name = "member_level")
-    private Integer memberLevel;
-
-    @Column(name = "member_parent_id")
-    private Long memberParentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private CouncilDepartmentRole departmentRole;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "member_role", nullable = false)

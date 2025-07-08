@@ -3,8 +3,8 @@ package org.example.wecambackend.service.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.model.Council;
-import org.example.model.CouncilMember;
+import org.example.model.council.Council;
+import org.example.model.council.CouncilMember;
 import org.example.model.University;
 import org.example.model.enums.AcademicStatus;
 import org.example.model.enums.CodeType;
@@ -123,11 +123,9 @@ public class InvitationCodeService {
             createUserInformationByCode(userEnrollYear,userRole,user,userSignupInformation.getName(),organization);
             CouncilMember councilMember = CouncilMember.builder()
                     .memberRole(MemberRole.STAFF) //일반부원으로 기본설정
-                    .memberLevel(3)
                     .isActive(true)
                     .council(invitationCode.getCouncil())
                     .user(user)
-                    .memberType("")
                     .build();
             councilMemberRepository.save(councilMember);
 

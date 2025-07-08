@@ -1,13 +1,12 @@
 package org.example.wecambackend.repos;
 
-import org.example.model.CouncilMember;
+import org.example.model.council.CouncilMember;
 import org.example.model.user.User;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +24,7 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
 
 
     @Query("SELECT new org.example.wecambackend.dto.responseDTO.CouncilMemberResponse(" +
-            "ui.name, cm.memberRole, u.userPkId, cm.memberType) " +
+            "ui.name, cm.memberRole, u.userPkId, cm.departmentRole.name) " +
             "FROM CouncilMember cm " +
             "JOIN cm.user u " +
             "JOIN u.userInformation ui " +
