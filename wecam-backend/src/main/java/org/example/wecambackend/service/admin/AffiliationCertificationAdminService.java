@@ -18,6 +18,7 @@ import org.example.wecambackend.repos.SchoolRepository;
 import org.example.wecambackend.repos.UserRepository;
 import org.example.wecambackend.repos.affiliation.AffiliationCertificationRepository;
 import org.example.wecambackend.repos.affiliation.AffiliationFileRepository;
+import org.example.wecambackend.service.client.MyPageService;
 import org.example.wecambackend.service.client.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,11 +46,13 @@ public class AffiliationCertificationAdminService {
         return certifications.stream().map(ac -> {
             // 복합키 구성 정보
             Long userId = ac.getId().getUserId();
+            User user = ac.getUser();
             AuthenticationType authenticationType = ac.getId().getAuthenticationType();
 
             Optional<AffiliationFileProjection> optionalFile = affiliationFileRepository.findFilePathAndNameByUserIdAndAuthOrdinal(userId, authenticationType.ordinal());
             System.out.println("조회된 파일: " + optionalFile);
             String filePath = optionalFile.map(file -> file.getFilePath()).orElse(null);
+//            List<String> hierarchyList = myPageService.getOrganizationNameHierarchy(user.getOrganization());
 
             return new AffiliationVerificationResponse(
                     userId,
@@ -58,10 +61,15 @@ public class AffiliationCertificationAdminService {
                     ac.getOcrSchoolName(),
                     ac.getOcrOrganizationName(),
                     ac.getOcrEnrollYear(),
+                    ac.getUniversity().getSchoolName(),
+                    ac.getSelOrganizationName(),
+                    ac.getSelEnrollYear(),
+                    ac.getUsername(),
                     ac.getOcrResult().name(),
                     ac.getStatus().name(),
                     ac.getRequestedAt(),
-                    filePath
+                    filePath,
+                    ac.getIssuanceDate()
             );
         }).toList();
     }

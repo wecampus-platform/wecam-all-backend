@@ -1,7 +1,4 @@
-ALTER TABLE affiliation_certification ADD COLUMN user_name VARCHAR(255);
-ALTER TABLE user MODIFY expires_at DATETIME NULL;
-
-ALTER TABLE user ADD COLUMN enroll_year VARCHAR(4);
-
-ALTER TABLE affiliation_certification ADD COLUMN ocr_school_grade INT;
-ALTER TABLE user_information MODIFY COLUMN student_grade INT;
+ALTER TABLE affiliation_certification DROP COLUMN sel_organization_name;
+ALTER TABLE affiliation_certification DROP COLUMN sel_school_name;
+ALTER TABLE affiliation_certification DROP COLUMN sel_enroll_year;
+ALTER TABLE affiliation_certification DROP COLUMN issuance_date;
