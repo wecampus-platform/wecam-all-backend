@@ -15,6 +15,7 @@ import java.util.UUID;
 @Builder
 public class OrganizationRequestFile extends BaseTimeEntity {
 
+    // 조직 생성 요청 첨부파일 ID
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long fileId;

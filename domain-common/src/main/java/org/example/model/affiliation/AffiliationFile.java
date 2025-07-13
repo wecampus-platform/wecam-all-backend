@@ -16,6 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+// 소속 인증 신청 시 첨부된 파일
 public class AffiliationFile {
 
     @Id
@@ -52,7 +53,7 @@ public class AffiliationFile {
         this.createdAt = LocalDateTime.now();
 
         this.expiresAt = LocalDateTime.now().plusDays(10);
-        //추후 커스텀마이징 설정값으로 바꿀 예정.
+        //추후 커스텀마이징 설정값으로 바꿀 예정. (기본 만료일은 10일)
     }
 
     public String getFilePath() {

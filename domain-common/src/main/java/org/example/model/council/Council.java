@@ -21,22 +21,28 @@ public class Council {
     @Column(name = "council_id")
     private Long id;
 
+    // 소속 조직 (워크스페이스)
     @ManyToOne
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
 
+    // 학생회 이름
     @Column(name = "council_name", length = 50, nullable = false)
     private String councilName;
 
+    // 시작 일자
     @Column(name = "start_date")
     private LocalDateTime startDate;
 
+    // 종료 일자
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
+    // 활성화 여부
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
+    // 학생회 생성자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_user_id",nullable = false)
     private User user;
@@ -45,6 +51,6 @@ public class Council {
     public void prePersist() {
         LocalDateTime now = LocalDateTime.now();
         this.startDate = now;
-        this.endDate = now.plusDays(365); // 가입일 기준 30일 유효 //TODO: 추후 설정 가능하게 해야 함.
+        this.endDate = now.plusDays(365); // 가입일 기준 365일 유효 //TODO: 추후 설정 가능하게 해야 함.
     }
 }

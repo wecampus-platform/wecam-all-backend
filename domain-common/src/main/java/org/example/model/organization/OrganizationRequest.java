@@ -14,6 +14,7 @@ import org.example.model.enums.RequestStatus;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+// 조직(워크스페이스) 생성 요청
 public class OrganizationRequest extends BaseTimeEntity {
 
     @Id
@@ -21,8 +22,8 @@ public class OrganizationRequest extends BaseTimeEntity {
     @Column(name = "request_pk_id")
     private Long requestId;
 
-    /*organization이 없을 때 null 로 들어가게끔.*/
-    //TODO : 외래키 없이 그냥 번호로 해도 될거같은데
+    /* organization이 없을 때 null 로 들어가게끔. */
+    // TODO : 외래키 없이 그냥 번호로 해도 될거같은데
     // 번호로 저장하면 무결성 어쩌고의 문제가 발생한다고..
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", nullable = true)

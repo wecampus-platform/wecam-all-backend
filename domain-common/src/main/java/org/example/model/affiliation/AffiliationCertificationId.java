@@ -19,6 +19,7 @@ import java.util.Objects;
 @EqualsAndHashCode
 public class AffiliationCertificationId implements Serializable {
 
+    // 소속 인증 신청자
     @Column(name = "pk_upload_userid")
     private Long userId;
 
