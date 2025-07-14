@@ -67,7 +67,7 @@ public class MyPageService {
     }
 
     // 조직 계층 이름 추출
-    private List<String> getOrganizationNameHierarchy(Organization org) {
+    public List<String> getOrganizationNameHierarchy(Organization org) {
         List<String> names = new ArrayList<>();
         while (org != null) {
             names.add(org.getOrganizationName());

@@ -10,6 +10,7 @@ import org.example.model.enums.AuthenticationType;
 import org.example.model.enums.OcrResult;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Table(name = "affiliation_certification")
@@ -51,6 +52,18 @@ public class AffiliationCertification {
 
     @Column(name = "ocr_organization_name", length = 20)
     private String ocrOrganizationName;
+
+    @Column(name = "sel_organization_name", length = 20)
+    private String selOrganizationName;
+
+    @Column(name = "sel_school_name", length = 20)
+    private String selSchoolName;
+
+    @Column(name = "sel_enroll_year", length = 20)
+    private String selEnrollYear;
+
+    @Column(name = "issuance_date", length = 20)
+    private LocalDateTime issuanceDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

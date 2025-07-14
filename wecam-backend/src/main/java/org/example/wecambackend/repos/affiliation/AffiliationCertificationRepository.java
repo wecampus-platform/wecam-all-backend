@@ -8,6 +8,7 @@ import org.example.model.enums.AuthenticationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface AffiliationCertificationRepository extends
         JpaRepository<AffiliationCertification, AffiliationCertificationId>{
@@ -19,4 +20,5 @@ public interface AffiliationCertificationRepository extends
     // 유저 당 신입생 인증 한번, 재학생 인증 한번
     boolean existsByUserAndAuthenticationType(User user, AuthenticationType authenticationType);
 
+    Optional<AffiliationCertification> findByUser_UserPkIdAndAuthenticationType(Long userId, AuthenticationType authenticationType);
 }

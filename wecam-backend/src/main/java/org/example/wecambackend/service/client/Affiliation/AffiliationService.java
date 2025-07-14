@@ -105,6 +105,7 @@ public class AffiliationService {
                 .orgName((String) textMap.get("orgName"))
                 .enrollYear((String) textMap.get("enrollYear"))
                 .schoolGrade(schoolGrade)
+                .issuanceDate(LocalDateTime.parse((String) textMap.get("issuanceDate")))
                 .build();
 
         // 6. OCR 결과 판단
@@ -128,12 +129,16 @@ public class AffiliationService {
                 .ocrOrganizationName(ocrResultDto.getOrgName())
                  .ocrschoolGrade(ocrResultDto.getSchoolGrade())
                 .ocrResult(ocrResult.getResult())
+                 .issuanceDate(ocrResultDto.getIssuanceDate())
                  .reason(ocrResult.getReason())
                 .status(AuthenticationStatus.PENDING)
                 .requestedAt(LocalDateTime.now())
                 .organization(organization)
                 .university(school)
                  .username(signupInfo.getName())
+                 .selOrganizationName(organization.getOrganizationName())
+                 .selEnrollYear(signupInfo.getEnrollYear())
+                 .selSchoolName(school.getSchoolName())
                 .build();
 
         affiliationCertificationRepository.save(cert);

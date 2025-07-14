@@ -5,5 +5,5 @@ public enum MemberRole {
     VICE_PRESIDENT, // 부회장
     DIRECTOR,     // 국장
     DEPUTY,       // 부원 등
-    STAFF         // 실무자
+    STAFF         // 실무자,부서배치전
 }
