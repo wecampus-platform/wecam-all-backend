@@ -14,6 +14,11 @@ public enum BaseResponseStatus {
     SUCCESS(true, HttpStatus.OK.value(), "요청에 성공하였습니다."),
 
     /**
+     * 400 : Request, Response 오류
+     */
+    INVALID_FIELD_VALUE(false, HttpStatus.BAD_REQUEST.value(), "필드 값이 올바르지 않습니다."),
+
+    /**
      * 409 : 중복됨
      */
     EMAIL_DUPLICATED(false, HttpStatus.CONFLICT.value(), "이미 사용 중인 이메일입니다."),
