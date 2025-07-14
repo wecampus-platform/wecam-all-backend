@@ -129,6 +129,7 @@ public class AffiliationService {
                 .ocrOrganizationName(ocrResultDto.getOrgName())
                  .ocrschoolGrade(ocrResultDto.getSchoolGrade())
                 .ocrResult(ocrResult.getResult())
+                 .issuanceDate(ocrResultDto.getIssuanceDate())
                  .reason(ocrResult.getReason())
                 .status(AuthenticationStatus.PENDING)
                 .requestedAt(LocalDateTime.now())
