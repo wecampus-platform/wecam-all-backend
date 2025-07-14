@@ -42,7 +42,8 @@ public class SecurityConfig {
                 "/organizationRequest_test3.html",
                 "/css/**",
                 "/js/**",
-                "/images/**"
+                "/images/**",
+                "/example/**"
         );
     }
 

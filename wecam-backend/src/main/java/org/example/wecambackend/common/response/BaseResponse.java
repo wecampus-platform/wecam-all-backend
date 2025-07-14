@@ -16,11 +16,13 @@ import static org.example.wecambackend.common.response.BaseResponseStatus.SUCCES
 @Getter
 @AllArgsConstructor
 @JsonPropertyOrder({"isSuccess", "code", "message", "result"})
+// 표준 응답 포맷
 public class BaseResponse<T> {
     @JsonProperty("isSuccess")
     private final Boolean isSuccess;
 
     private final String message;
+
     private final int code;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -53,7 +55,7 @@ public class BaseResponse<T> {
         this.result = data;
     }
 
-    // 요청 필드 에러
+    // 요청 필드 에러 (@Valid 에러)
     public BaseResponse(BaseResponseStatus status, BindingResult bindingResult) {
         this.isSuccess = false;
         this.code = status.getCode();

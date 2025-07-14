@@ -9,11 +9,15 @@ import org.example.wecambackend.exception.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.BindException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.lang.reflect.UndeclaredThrowableException;
+
+import static org.example.wecambackend.common.response.BaseResponseStatus.INVALID_FIELD_VALUE;
 
 //TODO : 왠지모르겠지만 이거 주석 처리 하니까 잘 뜸...Swagger 추후 다시 주석 풀어야됨.
 //위에 문제 해결, HIDDEN 다니까 괜찮아짐.
@@ -65,6 +69,19 @@ public class GlobalExceptionHandler {
                 "로그인 필요"
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    // 5. 유효성 검사 (@Valid) 에러
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public BaseResponse<?> handleValidationException(MethodArgumentNotValidException e) {
+        log.warn("MethodArgumentNotValidException. error message: request field error");
+        return new BaseResponse<>(INVALID_FIELD_VALUE, e.getBindingResult());
+    }
+
+    @ExceptionHandler(BindException.class)
+    protected BaseResponse<?> handleBindException(BindException e) {
+        log.warn("Bind Exception. error message: request field error");
+        return new BaseResponse<>(INVALID_FIELD_VALUE, e.getBindingResult());
     }
 
     /**

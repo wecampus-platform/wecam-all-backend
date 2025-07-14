@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Table(name = "invitation_history")
+// 초대 코드 사용 이력
 public class InvitationHistory {
 
     @Id
@@ -27,7 +28,6 @@ public class InvitationHistory {
     // FK 연결하지 않고 그냥 ID만 저장 _ 사용된 초대코드 ID
     @Column(name = "invitation_pk_id", nullable = false)
     private Long invitationPkId;
-
 
     //사용한 유저
     @ManyToOne(fetch = FetchType.LAZY)

@@ -21,7 +21,7 @@ import java.util.Date;
 @Builder
 public class AffiliationCertification {
 
-
+    // 소속 인증 ID
     @EmbeddedId
     private AffiliationCertificationId id;
 
@@ -81,6 +81,7 @@ public class AffiliationCertification {
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
 
+    // 소속 인증 검토자
     @ManyToOne
     @JoinColumn(name = "pk_reviewer_userid")
     private User reviewUser;
