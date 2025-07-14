@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.type.descriptor.jdbc.TinyIntJdbcType;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 @NoArgsConstructor
@@ -16,4 +18,5 @@ public class OcrResultResponse {
     private String orgName;
     private String enrollYear;
     private int schoolGrade;
+    private LocalDateTime issuanceDate;
 }
