@@ -131,9 +131,7 @@ public class AdminOrganizationService {
         // 6. 학생회 멤버 추가
         CouncilMember councilMember = CouncilMember.builder()
                 .council(council)
-                .memberLevel(0)
                 .memberRole(MemberRole.PRESIDENT)
-                .memberType("")
                 .isActive(true)
                 .user(user)
                 .build();
