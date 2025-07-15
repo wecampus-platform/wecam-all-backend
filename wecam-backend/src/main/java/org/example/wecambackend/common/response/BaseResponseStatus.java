@@ -17,6 +17,14 @@ public enum BaseResponseStatus {
      * 400 : Request, Response 오류
      */
     INVALID_FIELD_VALUE(false, HttpStatus.BAD_REQUEST.value(), "필드 값이 올바르지 않습니다."),
+    INVALID_FILE_INPUT(false, HttpStatus.BAD_REQUEST.value(), "빈 파일은 저장할 수 없습니다."),
+    // 404: Not Found
+    REQUEST_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 요청을 찾을 수 없습니다."),
+    FILE_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "삭제하려는 파일이 존재하지 않습니다."),
+
+    // 403: Forbidden
+    NO_PERMISSION_TO_MANAGE(false, HttpStatus.FORBIDDEN.value(), "해당 요청을 관리할 권한이 없습니다."),
+
 
     /**
      * 409 : 중복됨
@@ -26,10 +34,15 @@ public enum BaseResponseStatus {
     EMAIL_PHONE_DUPLICATED(false, HttpStatus.CONFLICT.value(), "이메일과 전화번호가 모두 사용 중입니다."),
 
     /**
-     * 500 : Database, Server 오류
+     * 500 : Database, Server,file save 오류
      */
-    UNEXPECTED_ERROR(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "예상치 못한 에러가 발생했습니다.")
+    UNEXPECTED_ERROR(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "예상치 못한 에러가 발생했습니다."),
+    FILE_SAVE_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 저장에 실패했습니다."),
+    FILE_DELETE_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 저장에 실패했습니다."),
     ;
+
+
+
 
 
     private final boolean isSuccess;

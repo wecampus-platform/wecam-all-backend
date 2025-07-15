@@ -11,6 +11,7 @@ import org.example.model.enums.OcrResult;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "affiliation_certification")
@@ -93,6 +94,11 @@ public class AffiliationCertification {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_pk_id")
     private Organization organization;
+
+
+    //파일 삭제 동시
+    @OneToMany(mappedBy = "affiliationCertification", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<AffiliationFile> files;
 
 
     //소속 인증 승인 처리

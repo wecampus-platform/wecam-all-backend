@@ -18,7 +18,7 @@ public class AffiliationFileService {
     private final AffiliationFileRepository affiliationFileRepository;
 
 
-    public void saveToDB(AffiliationCertification cert,MultipartFile file, String path, UUID uuid) {
+    public void saveToDB(AffiliationCertification cert,MultipartFile file, String path,String fileUrl, UUID uuid) {
 
         String originalFileName = file.getOriginalFilename();
         AffiliationFile affiliationFile = AffiliationFile.builder()
@@ -27,6 +27,7 @@ public class AffiliationFileService {
                 .filePath(path)
                 .fileName(originalFileName)
                 .uuid(uuid)
+                .fileUrl(fileUrl)
                 .fileType(FileType.IMAGE) // TODO: 우선은 IMAGE 로 고정
                 .createdAt(LocalDateTime.now())
                 .build();
