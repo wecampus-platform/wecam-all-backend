@@ -7,9 +7,10 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.example.wecambackend.common.exceptions.BaseException;
+import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.CheckOwner;
-import org.example.wecambackend.exception.UnauthorizedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.prefs.BackingStoreException;
 
 @Aspect
 @Component
@@ -35,7 +37,7 @@ public class OwnerCheckAspect {
         // 엔티티 조회
         Object entity = entityManager.find(checkOwner.entity(), targetId);
         if (entity == null) {
-            throw new EntityNotFoundException("대상을 찾을 수 없습니다.");
+            throw new BaseException(BaseResponseStatus.ENTITY_NOT_FOUND);
         }
 
         // 작성자 ID 추출
@@ -43,7 +45,7 @@ public class OwnerCheckAspect {
 
         // 비교
         if (!authorId.equals(currentUserId)) {
-            throw new UnauthorizedException("작성자만 수정할 수 있습니다.");
+            throw new BaseException(BaseResponseStatus.ONLY_AUTHOR_CAN_MODIFY);
         }
 
         return joinPoint.proceed();
@@ -52,7 +54,7 @@ public class OwnerCheckAspect {
     private Long getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof UserDetailsImpl userDetails)) {
-            throw new UnauthorizedException("로그인 정보가 없습니다.");
+            throw new BaseException(BaseResponseStatus.ACCESS_DENIED);
         }
         return userDetails.getId();
     }
@@ -68,7 +70,7 @@ public class OwnerCheckAspect {
                 return Long.valueOf(args[i].toString());
             }
         }
-        throw new IllegalArgumentException("PathVariable '" + paramName + "'을 찾을 수 없습니다.");
+        throw new BaseException(BaseResponseStatus.PATH_VARIABLE_NOT_FOUND);
     }
 
     private Long extractAuthorId(Object entity, String getterChain) throws Exception {

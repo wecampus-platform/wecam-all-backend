@@ -3,9 +3,10 @@ package org.example.wecambackend.service.client.Affiliation;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.example.wecambackend.common.exceptions.BaseException;
+import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.dto.projection.OcrEvaluationResult;
 import org.example.wecambackend.dto.responseDTO.OcrResultResponse;
-import org.example.wecambackend.exception.DuplicateSubmissionException;
 import org.example.model.organization.Organization;
 import org.example.model.University;
 import org.example.model.user.User;
@@ -53,24 +54,24 @@ public class AffiliationService {
 
         //1. 유저조회
         User uploadUser = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("유저 없음"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.ENTITY_NOT_FOUND));
 
         // 2. 이미 인증 요청이 존재하는지 확인
         boolean exists = affiliationCertificationRepository.existsByUserAndAuthenticationType(uploadUser, status);
         if (exists) {
-            throw new DuplicateSubmissionException("이미 해당 유형의 인증 요청을 제출하셨습니다.");
+            throw new BaseException(BaseResponseStatus.AFFILIATION_ALREADY_EXISTS);
         }
 
         // 3. 회원가입 정보 조회
         UserSignupInformation signupInfo = userSignupInformationRepository.findByUser_UserPkId(userId)
-                .orElseThrow(() -> new RuntimeException("회원가입 정보 없음"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
 
         // 4. 학교/소속 정보 조회
         University school = schoolRepository.findById(signupInfo.getSelectSchoolId())
-                .orElseThrow(() -> new RuntimeException("학교 정보 없음"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.SCHOOL_NOT_FOUND));
 
         Organization organization = organizationRepository.findById(signupInfo.getSelectOrganizationId())
-                .orElseThrow(() -> new RuntimeException("소속 정보 없음"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.ORGANIZATION_NOT_FOUND));
 
         // 5. OCR 수행 → 결과 DTO로 매핑
         Map<String, Object> result = ocrService.requestOcr(file);
@@ -78,14 +79,14 @@ public class AffiliationService {
         // 내부 text 맵 안전하게 꺼내기
         Object textObj = result.get("text");
         if (!(textObj instanceof Map)) {
-            throw new IllegalArgumentException("OCR 결과에서 'text' 필드가 Map 형식이 아닙니다: " + textObj);
+            throw new BaseException(BaseResponseStatus.INVALID_FIELD_VALUE);
         }
 
         Map<?, ?> textMap = (Map<?, ?>) textObj;
 
         Object rawGrade = textMap.get("schoolGrade");
         if (rawGrade == null) {
-            throw new IllegalArgumentException("OCR 결과에 schoolGrade가 없습니다: " + textMap);
+            throw new BaseException(BaseResponseStatus.INVALID_FIELD_VALUE, "schoolGrade가 null입니다");
         }
 
         int schoolGrade;
@@ -95,7 +96,7 @@ public class AffiliationService {
             try {
                 schoolGrade = Integer.parseInt(rawGrade.toString());
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("OCR 결과 schoolGrade가 숫자가 아닙니다: " + rawGrade);
+                throw new BaseException(BaseResponseStatus.INVALID_FIELD_VALUE);
             }
         }
 

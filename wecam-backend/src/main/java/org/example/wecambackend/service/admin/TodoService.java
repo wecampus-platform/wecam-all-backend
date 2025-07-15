@@ -9,6 +9,8 @@ import org.example.model.todo.Todo;
 import org.example.model.todo.TodoFile;
 import org.example.model.todo.TodoManager;
 import org.example.model.user.User;
+import org.example.wecambackend.common.exceptions.BaseException;
+import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.dto.Enum.TodoTypeDTO;
 import org.example.wecambackend.dto.projection.ManagerInfo;
 import org.example.wecambackend.dto.projection.TodoFileInfo;
@@ -18,7 +20,6 @@ import org.example.wecambackend.dto.responseDTO.AdminFileResponse;
 import org.example.wecambackend.dto.responseDTO.TodoDetailResponse;
 import org.example.wecambackend.dto.responseDTO.TodoSimpleResponse;
 import org.example.wecambackend.dto.responseDTO.TodoSummaryResponse;
-import org.example.wecambackend.exception.UnauthorizedException;
 import org.example.wecambackend.repos.*;
 import org.example.wecambackend.service.admin.Enum.UploadFolder;
 import org.springframework.stereotype.Service;
@@ -53,9 +54,9 @@ public class TodoService {
     @Transactional
     public void createTodo(Long councilId,TodoCreateRequest request, List<MultipartFile> files, Long userId ) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()->new IllegalArgumentException("유저가 존재하지 않습니다."));
+                .orElseThrow(()->new BaseException(BaseResponseStatus.ENTITY_NOT_FOUND));
         Council council = councilRepository.findById(councilId)
-                .orElseThrow(()-> new IllegalArgumentException("학생회가 존재하지 않습니다"));
+                .orElseThrow(()-> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
         Todo todo = Todo.builder()
                 .title(request.getTitle())
                 .content(String.valueOf(request.getContent()))
@@ -76,7 +77,7 @@ public class TodoService {
         // 2. 담당자들 저장 (todo_manager)
         for (Long managerId : request.getManagers()) {
             User manager = councilMemberRepository.findUserByUserUserPkIdAndCouncil_IdAndIsActiveTrue(managerId,councilId)
-                    .orElseThrow(() -> new IllegalArgumentException("해당 유저는"+councilId+"에 포함되지 않은 유저입니다. id: " + managerId));
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
 
             TodoManager managerEntity = TodoManager.of(todo, manager);
 
@@ -107,7 +108,7 @@ public class TodoService {
     @Transactional
     public void updateTodo(Long todoId, Long councilId, TodoUpdateRequest request, List<MultipartFile> newFiles) {
         Todo todo = todoRepository.findById(todoId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 할일이 존재하지 않습니다."));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
 
         // 1. 제목, 내용, 마감일 업데이트
         todo.update(request.getTitle(), String.valueOf(request.getContent()), request.getDueAt());
@@ -123,7 +124,7 @@ public class TodoService {
         } else {
             for (Long managerId : managers) {
                 User manager = councilMemberRepository.findUserByUserUserPkIdAndCouncil_IdAndIsActiveTrue(managerId, councilId)
-                        .orElseThrow(() -> new IllegalArgumentException("해당 유저는 " + councilId + "에 포함되지 않은 유저입니다. id: " + managerId));
+                        .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
 
                 TodoManager managerEntity = TodoManager.of(todo, manager);
                 todoManagerRepository.save(managerEntity);
@@ -134,7 +135,7 @@ public class TodoService {
         if (request.getDeleteFileIds() != null && !request.getDeleteFileIds().isEmpty()) {
             for (UUID fileId : request.getDeleteFileIds()) {
                 TodoFile todoFile = todoFileRepository.findByTodoFileId(fileId)
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 파일입니다."));
+                        .orElseThrow(() -> new BaseException(BaseResponseStatus.FILE_NOT_FOUND));
                 adminFileStorageService.deleteFile(todoFile.getFilePath()); // 물리적 삭제
                 todoFileRepository.delete(todoFile); // DB 삭제
             }
@@ -184,7 +185,7 @@ public class TodoService {
         for (Long addId : toAdd) {
             User manager = councilMemberRepository
                     .findUserByUserUserPkIdAndCouncil_IdAndIsActiveTrue(addId, councilId)
-                    .orElseThrow(() -> new IllegalArgumentException("해당 유저는 이 학생회에 속하지 않습니다: " + addId));
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MISMATCH));
             TodoManager newManager = TodoManager.of(todo, manager);
             todoManagerRepository.save(newManager);
         }
@@ -194,7 +195,7 @@ public class TodoService {
     @Transactional
     public TodoDetailResponse getTodoDetail(Long todoId) {
         Todo todo = todoRepository.findTodoWithCreator(todoId)
-                .orElseThrow(() -> new EntityNotFoundException("할일 없음"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.ENTITY_NOT_FOUND));
 
         List<ManagerInfo> managers = todoManagerRepository.findManagersByTodoId(todoId);
 
@@ -225,22 +226,22 @@ public class TodoService {
     public void updateTodoStatus(Long todoId,Long userId, ProgressStatus newStatus) {
         boolean isManager = todoManagerRepository.existsByTodo_TodoIdAndUser_UserPkId(todoId, userId);
         if (!isManager) {
-            throw new UnauthorizedException("해당 할일의 매니저만 상태를 변경할 수 있습니다.");
+            throw new BaseException(BaseResponseStatus.ONLY_AUTHOR_CAN_MODIFY);
         }
 
         Todo todo = todoRepository.findById(todoId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 할 일이 존재하지 않습니다."));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
         todo.setProgressStatus(newStatus);
     }
 
     @Transactional
     public void deleteTodo(Long todoId , Long userId) {
         Todo todo = todoRepository.findById(todoId)
-                .orElseThrow(() -> new EntityNotFoundException("할일을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
 
         // 작성자 본인 확인 (보안)
         if (!todo.getCreateUser().getUserPkId().equals(userId)) {
-            throw new UnauthorizedException("할일 작성자만 삭제할 수 있습니다.");
+            throw new BaseException(BaseResponseStatus.ONLY_AUTHOR_CAN_MODIFY);
         }
         // 실제 삭제 (cascade + orphanRemoval 덕분에 하위 테이블 자동 삭제됨)
         todoRepository.delete(todo);

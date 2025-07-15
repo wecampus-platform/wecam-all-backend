@@ -18,12 +18,39 @@ public enum BaseResponseStatus {
      */
     INVALID_FIELD_VALUE(false, HttpStatus.BAD_REQUEST.value(), "필드 값이 올바르지 않습니다."),
     INVALID_FILE_INPUT(false, HttpStatus.BAD_REQUEST.value(), "빈 파일은 저장할 수 없습니다."),
+    MISSING_COUNCIL_ID_HEADER(false, HttpStatus.BAD_REQUEST.value(), "X-Council-Id 헤더가 없습니다."),
+    PATH_VARIABLE_NOT_FOUND(false, HttpStatus.BAD_REQUEST.value(), "요청 경로 변수 정보를 찾을 수 없습니다."),
+    EMPTY_FILENAME(false, 400, "파일명이 비어 있습니다."),
+    INVALID_INPUT(false, 400, "입력값이 유효하지 않습니다."),
+    INVALID_INVITE_CODE(false, 400, "유효하지 않은 초대코드입니다."),
+    MISSING_SCHOOL_INFO(false, 400, "학교 정보가 누락되었습니다."),
+    INVALID_ORG_TYPE(false, 400, "알맞지 않은 조직 유형입니다."),
+    INVALID_COLLEGE_ORG(false, 400, "유효하지 않은 단과대학 조직입니다."),
+    INVALID_DEPARTMENT_ORG(false, 400, "유효하지 않은 학과 조직입니다."),
+    INVALID_USER(false, 400, "유효하지 않은 사용자입니다."),
+
+    /**
+     * 401 : 인증 필요
+     */
+    UNAUTHORIZED(false, HttpStatus.UNAUTHORIZED.value(), "로그인이 필요한 요청입니다."),
+    NOT_AUTHENTICATED_USER(false, HttpStatus.UNAUTHORIZED.value(), "인증되지 않은 사용자입니다."),
+
     // 404: Not Found
     REQUEST_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 요청을 찾을 수 없습니다."),
     FILE_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "삭제하려는 파일이 존재하지 않습니다."),
+    ENTITY_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 대상을 찾을 수 없습니다."),
+    COUNCIL_NOT_FOUND(false,  HttpStatus.NOT_FOUND.value(), "학생회 정보가 없습니다."),
+    ORGANIZATION_NOT_FOUND(false,  HttpStatus.NOT_FOUND.value(), "해당 조직을 찾을 수 없습니다."),
+    SCHOOL_NOT_FOUND(false,  HttpStatus.NOT_FOUND.value(), "해당 학교를 찾을 수 없습니다."),
+    USER_NOT_FOUND(false, 404, "해당 유저를 찾을 수 없습니다."),
+    INVITE_CODE_NOT_FOUND(false, 404, "해당 초대코드가 존재하지 않습니다."),
 
-    // 403: Forbidden
+    // 403: Forbidden : 권한 없을 때 쓰는 거
     NO_PERMISSION_TO_MANAGE(false, HttpStatus.FORBIDDEN.value(), "해당 요청을 관리할 권한이 없습니다."),
+    COUNCIL_MISMATCH(false, HttpStatus.FORBIDDEN.value(), "학생회가 불일치 합니다."),
+    ACCESS_DENIED(false, HttpStatus.FORBIDDEN.value(), "접근이 불가합니다."),
+    ROLE_REQUIRED(false, HttpStatus.FORBIDDEN.value(), "접근을 위해 필요한 권한이 부족합니다."),
+    ONLY_AUTHOR_CAN_MODIFY(false, HttpStatus.FORBIDDEN.value(), "작성자만 수정할 수 있습니다."),
 
 
     /**
@@ -32,6 +59,9 @@ public enum BaseResponseStatus {
     EMAIL_DUPLICATED(false, HttpStatus.CONFLICT.value(), "이미 사용 중인 이메일입니다."),
     PHONE_DUPLICATED(false, HttpStatus.CONFLICT.value(), "이미 사용 중인 전화번호입니다."),
     EMAIL_PHONE_DUPLICATED(false, HttpStatus.CONFLICT.value(), "이메일과 전화번호가 모두 사용 중입니다."),
+    ALREADY_PROCESSED(false, HttpStatus.CONFLICT.value(), "이미 처리된 인증 요청입니다."),
+    AFFILIATION_ALREADY_EXISTS(false, HttpStatus.CONFLICT.value(), "이미 해당 유형의 인증 요청을 제출하셨습니다."),
+    COUNCIL_ALREADY_EXISTS(false, 409, "이미 학생회가 존재하는 조직입니다."),
 
     /**
      * 500 : Database, Server,file save 오류
@@ -40,6 +70,7 @@ public enum BaseResponseStatus {
     FILE_SAVE_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 저장에 실패했습니다."),
     FILE_DELETE_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 저장에 실패했습니다."),
     ;
+
 
 
 

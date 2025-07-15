@@ -16,23 +16,19 @@ import org.example.model.user.User;
 import org.example.model.affiliation.AffiliationCertification;
 import org.example.model.affiliation.AffiliationCertificationId;
 import org.example.model.enums.AuthenticationType;
-import org.example.wecambackend.exception.UnauthorizedException;
 import org.example.wecambackend.repos.CouncilRepository;
 import org.example.wecambackend.repos.organization.OrganizationRepository;
 import org.example.wecambackend.repos.SchoolRepository;
 import org.example.wecambackend.repos.UserRepository;
 import org.example.wecambackend.repos.affiliation.AffiliationCertificationRepository;
 import org.example.wecambackend.repos.affiliation.AffiliationFileRepository;
-import org.example.wecambackend.service.client.MyPageService;
 import org.example.wecambackend.service.client.UserService;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -90,17 +86,17 @@ public class AffiliationCertificationAdminService {
 
         AffiliationCertification ac =
                 affiliationCertificationRepository.findByUser_UserPkIdAndAuthenticationType(userId,authenticationType)
-                .orElseThrow(() -> new IllegalArgumentException("소속 인증 요청이 없습니다."));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
 
         // councilId가 관리하는 organizationId 가져오기
         Council council = councilRepository.findById(councilId)
-                .orElseThrow(() -> new UnauthorizedException("학생회 정보가 없습니다."));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
 
         Long targetOrgId = ac.getOrganization().getOrganizationId();
         Long councilOrgId = council.getOrganization().getOrganizationId();
 
         if (!Objects.equals(targetOrgId, councilOrgId)) {
-            throw new IllegalArgumentException("해당 조직에 대한 권한이 없습니다.");
+            throw new BaseException(BaseResponseStatus.NO_PERMISSION_TO_MANAGE);
         }
         Optional<AffiliationFileProjection> optionalFile = affiliationFileRepository.findFilePathAndNameByUserIdAndAuthOrdinal(userId, authenticationType.ordinal());
         System.out.println("조회된 파일: " + optionalFile);
@@ -133,20 +129,20 @@ public class AffiliationCertificationAdminService {
     public void approveAffiliationRequest(AffiliationCertificationId id, Long councilId,UserDetailsImpl currentUser) {
         // 인증 요청 조회
         AffiliationCertification cert = affiliationCertificationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 인증 요청을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
 
 
         // 요청이 해당 councilId가 관리하는 범위에 있는지 검증 (선택) --- TODO: 할지 말지 모르겠음. 우선 제외
         User uploadUser = cert.getUser();
         AuthenticationType type = cert.getAuthenticationType();
         User reviewUser = userRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new RuntimeException("리뷰어 유저 없음"));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
         String enrollYear = cert.getOcrEnrollYear();
 
         Organization organization = organizationRepository.findByOrganizationId(cert.getOrganization().getOrganizationId())
-                        .orElseThrow(()-> new IllegalArgumentException("해당 조직을 찾을 수 없습니다."));
+                        .orElseThrow(()-> new BaseException(BaseResponseStatus.ORGANIZATION_NOT_FOUND));
         University university = schoolRepository.findBySchoolId(cert.getUniversity().getSchoolId())
-                .orElseThrow(()-> new IllegalArgumentException("해당 학교를 찾을 수 없습니다."));
+                .orElseThrow(()-> new BaseException(BaseResponseStatus.SCHOOL_NOT_FOUND));
 
         System.out.println(organization.getOrganizationName());
         markApproved(cert,reviewUser);
@@ -160,7 +156,7 @@ public class AffiliationCertificationAdminService {
 
     public void markApproved(AffiliationCertification cert, User reviwerUser) {
         if (!cert.isApprovable()) {
-            throw new IllegalStateException("이미 처리된 요청입니다.");
+            throw new BaseException(BaseResponseStatus.ALREADY_PROCESSED);
         }
         cert.approve(reviwerUser);
         affiliationCertificationRepository.save(cert); // dirty checking 보장 안되면 save
