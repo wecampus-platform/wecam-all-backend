@@ -19,6 +19,8 @@ import org.example.model.enums.OcrResult;
 import org.example.wecambackend.repos.*;
 import org.example.wecambackend.repos.affiliation.AffiliationCertificationRepository;
 import org.example.wecambackend.repos.organization.OrganizationRepository;
+import org.example.wecambackend.service.client.common.filesave.FilePath;
+import org.example.wecambackend.service.client.common.filesave.FileStorageService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
@@ -145,7 +147,7 @@ public class AffiliationService {
         affiliationCertificationRepository.save(cert);
         // 8. 파일 정보 저장
         UUID uuid = UUID.randomUUID();
-        Map<String, String> fileInfo = fileStorageService.save(file, uuid);
+        Map<String, String> fileInfo = fileStorageService.save(file, uuid, FilePath.AFFILIATION);
         String filePath = fileInfo.get("filePath");
         String fileUrl = fileInfo.get("fileUrl");
 
