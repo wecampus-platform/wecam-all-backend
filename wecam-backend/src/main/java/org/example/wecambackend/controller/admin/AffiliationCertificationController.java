@@ -36,7 +36,7 @@ public class AffiliationCertificationController {
             parameters = {
                     @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
     )
-    @GetMapping("/requests")
+    @GetMapping("/requests/all")
     public ResponseEntity<List<AffiliationCertificationSummaryResponse>> getAffiliationRequestsAll(
             @RequestParam("councilId") Long councilId
     ) {
@@ -49,11 +49,11 @@ public class AffiliationCertificationController {
     @IsCouncil
     @Operation(
             summary = "학생회 관리자 페이지 소속 인증 정보 상세 조회 요청",
-            description = "해당 학생회가 관리하는 조직으로 들어온 소속 인증 요청을 권한 확인 후 상세 조회 값 전달",
+            description = "해당 학생회가 관리하는 조직으로 들어온 소속 인증 요청을 권한 확인 후 상세 조회 값 전달 \n  전달 받는 값의 설명 userId -> 재학생 또는 신입생 인증서를 작성한 사람의 UserId , authType ->Enum 타입으로,",
             parameters = {
                     @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
     )
-    @GetMapping("/requests/{affiliationId}")
+    @GetMapping("/requests/show")
     public ResponseEntity<AffiliationVerificationResponse> getAffiliationRequestsDetail(
             @PathVariable String councilName, // ← 화면용
             @RequestParam("userId") Long userId,
@@ -90,6 +90,27 @@ public class AffiliationCertificationController {
 
         affiliationCertificationAdminService.approveAffiliationRequest(id, councilId, currentUser);
         return ResponseEntity.ok("소속 인증 요청이 승인되었습니다.");
+    }
+
+    @IsCouncil
+    @HasAffiliationApprovalAuthority
+    @Operation(
+            summary = "학생회 관리자 페이지 소속 인증 요청 삭제",
+            description = "해당 학생회가 관리하는 조직으로 들어온 소속 인증 요청을 삭제함.",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
+    )
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteAffiliationRequest(
+            @RequestParam("userId") Long userId,
+            @RequestParam("authType") AuthenticationType authType,
+            @RequestParam("councilId") Long councilId,
+            @CurrentUser UserDetailsImpl currentUser
+    ) {
+        AffiliationCertificationId id = new AffiliationCertificationId(userId, authType);
+
+        affiliationCertificationAdminService.deleteAffiliationRequest(id, councilId, currentUser);
+        return ResponseEntity.ok("소속 인증 요청이 삭제되었습니다.");
     }
 
 }

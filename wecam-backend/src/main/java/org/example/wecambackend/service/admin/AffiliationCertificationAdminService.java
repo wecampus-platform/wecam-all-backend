@@ -2,6 +2,9 @@ package org.example.wecambackend.service.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.model.affiliation.AffiliationFile;
+import org.example.wecambackend.common.exceptions.BaseException;
+import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.dto.projection.AffiliationFileProjection;
 import org.example.wecambackend.dto.responseDTO.AffiliationCertificationSummaryResponse;
@@ -166,25 +169,32 @@ public class AffiliationCertificationAdminService {
     private final OrganizationRepository organizationRepository;
     private final SchoolRepository schoolRepository;
 
-//    public List<AffiliationCertificationSummaryResponse> getSummariesByOrganization(Long organizationId) {
-//
-//        // 해당 조직들에 속한 인증 요청 가져오기
-//        List<AffiliationCertification> certifications =
-//                affiliationCertificationRepository.findByOrganizationOrganizationIdOrderByRequestedAtDesc(organizationId);
-//
-//        // 3. DTO로 매핑
-//        return certifications.stream()
-//                .map(cert -> AffiliationCertificationSummaryResponse.builder()
-//                        .certificationId(cert.getId())
-//                        .inputUserName(cert.getInputUserName())
-//                        .inputOrganizationName(cert.getInputOrganizationName())
-//                        .inputEnrollYear(cert.getInputEnrollYear())
-//                        .authenticationType(cert.getAuthenticationType().name())
-//                        .ocrResult(cert.getOcrResult().name())
-//                        .status(cert.getStatus().name())
-//                        .requestedAt(cert.getCreatedAt())
-//                        .build()
-//                )
-//                .collect(Collectors.toList());
-//    }
+
+    //삭제
+    @Transactional
+    public void deleteAffiliationRequest(AffiliationCertificationId id, Long councilId, UserDetailsImpl currentUser) {
+        AffiliationCertification cert = affiliationCertificationRepository.findById(id)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
+
+        // 권한 확인: 해당 학생회가 이 조직을 관리하는지
+        Long targetOrgId = cert.getOrganization().getOrganizationId();
+        Long councilOrgId = councilRepository.findById(councilId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.NO_PERMISSION_TO_MANAGE))
+                .getOrganization().getOrganizationId();
+
+        if (!Objects.equals(targetOrgId, councilOrgId)) {
+            throw new BaseException(BaseResponseStatus.NO_PERMISSION_TO_MANAGE);
+        }
+
+        // 1. 파일 경로 수집
+        // 파일 경로 조회
+        Optional<AffiliationFileProjection> file = Optional.ofNullable(affiliationFileRepository.findFilePathAndNameByUserIdAndAuthOrdinal(id.getUserId(), id.getAuthenticationType().ordinal())
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND)));
+        String filePath = file.get().getFilePath();
+        // 2. 실제 저장소에서 파일 삭제 (예: S3 또는 로컬)
+        adminFileStorageService.deleteFile(filePath);
+            affiliationCertificationRepository.delete(cert);
+    }
+
+    private final AdminFileStorageService adminFileStorageService;
 }

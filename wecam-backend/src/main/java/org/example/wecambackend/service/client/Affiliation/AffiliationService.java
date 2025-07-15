@@ -144,8 +144,12 @@ public class AffiliationService {
         affiliationCertificationRepository.save(cert);
         // 8. 파일 정보 저장
         UUID uuid = UUID.randomUUID();
-        String path = fileStorageService.save(file,uuid);
-        affiliationFileService.saveToDB(cert, file, path,uuid);
+        Map<String, String> fileInfo = fileStorageService.save(file, uuid);
+        String filePath = fileInfo.get("filePath");
+        String fileUrl = fileInfo.get("fileUrl");
+
+        affiliationFileService.saveToDB(cert, file, filePath, fileUrl, uuid);
+
 
     }
 
