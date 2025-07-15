@@ -29,6 +29,7 @@ public enum BaseResponseStatus {
     INVALID_DEPARTMENT_ORG(false, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 학과 조직입니다."),
     INVALID_USER(false, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 사용자입니다."),
 
+
     /**
      * 401 : 인증 필요
      */
@@ -45,6 +46,7 @@ public enum BaseResponseStatus {
     USER_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 유저를 찾을 수 없습니다."),
     INVITE_CODE_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 초대코드가 존재하지 않습니다."),
     PHONE_INFO_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "전화번호 정보가 없습니다."),
+
 
 
     // 403: Forbidden : 권한 없을 때 쓰는 거
