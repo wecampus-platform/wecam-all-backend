@@ -20,14 +20,15 @@ public enum BaseResponseStatus {
     INVALID_FILE_INPUT(false, HttpStatus.BAD_REQUEST.value(), "빈 파일은 저장할 수 없습니다."),
     MISSING_COUNCIL_ID_HEADER(false, HttpStatus.BAD_REQUEST.value(), "X-Council-Id 헤더가 없습니다."),
     PATH_VARIABLE_NOT_FOUND(false, HttpStatus.BAD_REQUEST.value(), "요청 경로 변수 정보를 찾을 수 없습니다."),
-    EMPTY_FILENAME(false, 400, "파일명이 비어 있습니다."),
-    INVALID_INPUT(false, 400, "입력값이 유효하지 않습니다."),
-    INVALID_INVITE_CODE(false, 400, "유효하지 않은 초대코드입니다."),
-    MISSING_SCHOOL_INFO(false, 400, "학교 정보가 누락되었습니다."),
-    INVALID_ORG_TYPE(false, 400, "알맞지 않은 조직 유형입니다."),
-    INVALID_COLLEGE_ORG(false, 400, "유효하지 않은 단과대학 조직입니다."),
-    INVALID_DEPARTMENT_ORG(false, 400, "유효하지 않은 학과 조직입니다."),
-    INVALID_USER(false, 400, "유효하지 않은 사용자입니다."),
+    EMPTY_FILENAME(false, HttpStatus.BAD_REQUEST.value(), "파일명이 비어 있습니다."),
+    INVALID_INPUT(false, HttpStatus.BAD_REQUEST.value(), "입력값이 유효하지 않습니다."),
+    INVALID_INVITE_CODE(false, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 초대코드입니다."),
+    MISSING_SCHOOL_INFO(false, HttpStatus.BAD_REQUEST.value(), "학교 정보가 누락되었습니다."),
+    INVALID_ORG_TYPE(false, HttpStatus.BAD_REQUEST.value(), "알맞지 않은 조직 유형입니다."),
+    INVALID_COLLEGE_ORG(false, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 단과대학 조직입니다."),
+    INVALID_DEPARTMENT_ORG(false, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 학과 조직입니다."),
+    INVALID_USER(false, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 사용자입니다."),
+
 
     /**
      * 401 : 인증 필요
@@ -42,8 +43,11 @@ public enum BaseResponseStatus {
     COUNCIL_NOT_FOUND(false,  HttpStatus.NOT_FOUND.value(), "학생회 정보가 없습니다."),
     ORGANIZATION_NOT_FOUND(false,  HttpStatus.NOT_FOUND.value(), "해당 조직을 찾을 수 없습니다."),
     SCHOOL_NOT_FOUND(false,  HttpStatus.NOT_FOUND.value(), "해당 학교를 찾을 수 없습니다."),
-    USER_NOT_FOUND(false, 404, "해당 유저를 찾을 수 없습니다."),
-    INVITE_CODE_NOT_FOUND(false, 404, "해당 초대코드가 존재하지 않습니다."),
+    USER_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 유저를 찾을 수 없습니다."),
+    INVITE_CODE_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 초대코드가 존재하지 않습니다."),
+    PHONE_INFO_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "전화번호 정보가 없습니다."),
+
+
 
     // 403: Forbidden : 권한 없을 때 쓰는 거
     NO_PERMISSION_TO_MANAGE(false, HttpStatus.FORBIDDEN.value(), "해당 요청을 관리할 권한이 없습니다."),

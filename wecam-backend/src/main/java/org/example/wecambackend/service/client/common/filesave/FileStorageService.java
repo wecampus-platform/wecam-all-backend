@@ -1,4 +1,4 @@
-package org.example.wecambackend.service.client.Affiliation;
+package org.example.wecambackend.service.client.common.filesave;
 
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
@@ -25,14 +25,15 @@ public class FileStorageService {
     private String uploadUrlPrefix; // 사용자에게 제공할 파일 접근 경로 prefix (ex: /uploads 또는 S3 도입 시 https://...)
 
     // MultipartFile을 받아 저장하고, 사용자 접근용 fileUrl을 반환합니다.
-    public Map<String, String> save(MultipartFile file, UUID uuid) {
+    public Map<String, String> save(MultipartFile file, UUID uuid,FilePath fileDir) {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("빈 파일은 저장할 수 없습니다.");
         }
 
         try {
+            String allPath = uploadDir + "/" + fileDir + "/";
             // 1. 저장 디렉토리 생성
-            Path basePath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            Path basePath = Paths.get(allPath).toAbsolutePath().normalize();
             Files.createDirectories(basePath);
 
             // 2. 저장 파일명
@@ -44,8 +45,8 @@ public class FileStorageService {
             file.transferTo(savePath.toFile());
 
             // 4. filePath (상대경로)와 fileUrl (접근 URL)
-            String filePath = uploadDir + "/" +storedFileName; // DB에 저장할 상대 경로
-            String fileUrl = uploadUrlPrefix + "/" + storedFileName;
+            String filePath = basePath + storedFileName; // DB에 저장할 상대 경로
+            String fileUrl = uploadUrlPrefix + "/" +  fileDir + "/" + storedFileName;
 
             return Map.of(
                     "filePath", filePath,

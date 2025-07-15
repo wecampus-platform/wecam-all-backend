@@ -44,7 +44,7 @@ public class MyPageService {
         // 3. 전화번호 복호화
         String phoneNumber = maskPhoneNumber(phoneEncryptor.decrypt(
                 userPrivateRepository.findEncryptedPhoneNumberByUserId(currentUser.getId())
-                        .orElseThrow(() -> new IllegalStateException("전화번호 정보 없음.")))
+                        .orElseThrow(() -> new BaseException(BaseResponseStatus.PHONE_INFO_NOT_FOUND)))
         );
 
         if (user.getRole().equals(UserRole.UNAUTH)) {
