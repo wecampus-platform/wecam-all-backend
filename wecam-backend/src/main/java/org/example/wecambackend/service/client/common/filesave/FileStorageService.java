@@ -45,7 +45,7 @@ public class FileStorageService {
             file.transferTo(savePath.toFile());
 
             // 4. filePath (상대경로)와 fileUrl (접근 URL)
-            String filePath = basePath + storedFileName; // DB에 저장할 상대 경로
+            String filePath = allPath + storedFileName; // DB에 저장할 상대 경로
             String fileUrl = uploadUrlPrefix + "/" +  fileDir + "/" + storedFileName;
 
             return Map.of(

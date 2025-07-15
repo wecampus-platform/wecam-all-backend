@@ -5,11 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.model.organization.OrganizationRequest;
 import org.example.model.organization.OrganizationRequestFile;
 import org.example.wecambackend.repos.organization.OrganizationRequestFileRepository;
+import org.example.wecambackend.service.client.common.filesave.FilePath;
+import org.example.wecambackend.service.client.common.filesave.FileStorageService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.nio.file.*;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -18,7 +21,7 @@ import java.util.UUID;
 public class OrganizationRequestFileService {
 
     private final OrganizationRequestFileRepository fileRepository;
-
+    private final FileStorageService fileStorageService;
     // 프로젝트 루트 기준 절대경로
     private static final String BASE_DIR = System.getProperty("user.dir") + "/upload/organization_request/";
 
@@ -36,19 +39,16 @@ public class OrganizationRequestFileService {
                 throw new IllegalArgumentException("파일명이 비어 있습니다.");
             }
 
-            String savedFileName = uuid + "_" + originalFileName;
-            String absoluteFilePath = BASE_DIR + savedFileName;
-            String relativeFilePath = RELATIVE_PATH + savedFileName;
-
-            log.info("파일 절대 저장 경로: {}", absoluteFilePath);
-
-            file.transferTo(new File(absoluteFilePath));
+            Map<String, String> fileInfo = fileStorageService.save(file, uuid, FilePath.AFFILIATION);
+            String filePath = fileInfo.get("filePath");
+            String fileUrl = fileInfo.get("fileUrl");
 
             OrganizationRequestFile saved = OrganizationRequestFile.builder()
                     .uuid(uuid)
                     .originalFileName(originalFileName)
-                    .savedFileName(savedFileName)
-                    .filePath(relativeFilePath)
+                    .savedFileName(uuid+"_"+originalFileName)
+                    .filePath(filePath)
+                    .fileUrl(fileUrl)
                     .organizationRequest(request)
                     .build();
 
