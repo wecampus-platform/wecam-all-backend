@@ -1,5 +1,10 @@
 package org.example.wecambackend.service.client;
 
+import org.example.model.enums.UserRole;
+import org.example.model.user.UserSignupInformation;
+import org.example.wecambackend.common.exceptions.BaseException;
+import org.example.wecambackend.common.response.BaseResponseStatus;
+import org.example.wecambackend.repos.UserSignupInformationRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,11 +39,7 @@ public class MyPageService {
 
         // 1. 유저 + organization 즉시 로딩
         User user = userRepository.findByIdWithOrganization(currentUser.getId())
-                .orElseThrow(() -> new RuntimeException("유저 없음"));
-
-        // 2. 유저 정보
-        UserInformation info = userInformationRepository.findByUser_UserPkId(currentUser.getId())
-                .orElseThrow(() -> new RuntimeException("유저 정보 없음."));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.USER_NOT_FOUND));
 
         // 3. 전화번호 복호화
         String phoneNumber = maskPhoneNumber(phoneEncryptor.decrypt(
@@ -46,25 +47,48 @@ public class MyPageService {
                         .orElseThrow(() -> new IllegalStateException("전화번호 정보 없음.")))
         );
 
-        // 4. 조직 계층 이름 리스트
-        List<String> hierarchyList = getOrganizationNameHierarchy(user.getOrganization());
+        if (user.getRole().equals(UserRole.UNAUTH)) {
 
-        return MyPageResponse.builder()
-                .organizationId(user.getOrganizationId())
-                .role(user.getRole())
-                .academicStatus(info.getAcademicStatus())
-                .isAuthentication(user.isAuthentication())
-                .isCouncilFee(info.getIsCouncilFee())
-                .nickName(info.getNickname())
-                .student_grade(info.getStudentGrade())
-                .userEmail(user.getEmail())
-                .phoneNumber(phoneNumber)
-                .studentId(info.getStudentId())
-                .universityId(info.getUniversity().getSchoolId())
-                .organizationHierarchyList(hierarchyList)
-                .username(info.getName())
-                .build();
+            UserSignupInformation signInfo = userSignupInformationRepository.findByUser_UserPkId(currentUser.getId())
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.USER_NOT_FOUND));
+            return MyPageResponse.builder()
+                    .role(user.getRole())
+                    .isAuthentication(user.isAuthentication())
+                    .userEmail(user.getEmail())
+                    .username(signInfo.getName()) // 이름은 User.username 필드로부터
+                    .phoneNumber(phoneNumber)
+                    .build();
+
+        }
+
+
+        else {
+
+            // 2. 유저 정보
+            UserInformation info = userInformationRepository.findByUser_UserPkId(currentUser.getId())
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.USER_NOT_FOUND));
+            // 4. 조직 계층 이름 리스트
+            List<String> hierarchyList = getOrganizationNameHierarchy(user.getOrganization());
+
+            return MyPageResponse.builder()
+                    .organizationId(user.getOrganizationId())
+                    .role(user.getRole())
+                    .academicStatus(info.getAcademicStatus())
+                    .isAuthentication(user.isAuthentication())
+                    .isCouncilFee(info.getIsCouncilFee())
+                    .nickName(info.getNickname())
+                    .student_grade(info.getStudentGrade())
+                    .userEmail(user.getEmail())
+                    .phoneNumber(phoneNumber)
+                    .studentId(info.getStudentId())
+                    .universityId(info.getUniversity().getSchoolId())
+                    .organizationHierarchyList(hierarchyList)
+                    .username(info.getName())
+                    .build();
+
     }
+}
+
 
     // 조직 계층 이름 추출
     public List<String> getOrganizationNameHierarchy(Organization org) {
@@ -83,4 +107,5 @@ public class MyPageService {
         return phoneNumber.substring(0, 3) + "-****-" + phoneNumber.substring(phoneNumber.length() - 4);
     }
 
+    private final UserSignupInformationRepository userSignupInformationRepository;
 }

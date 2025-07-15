@@ -106,7 +106,7 @@ public class AuthService {
 
         //이메일 중복 체크
         if (userRepository.existsByEmail(req.getEmail())) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+            throw new BaseException (BaseResponseStatus.EMAIL_DUPLICATED);
         }
 
         //user 생성
@@ -143,7 +143,7 @@ public class AuthService {
     public void registerLeader(RepresentativeRegisterRequest req) {
         //이메일 중복 체크
         if (userRepository.existsByEmail(req.getEmail())) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+            throw new BaseException (BaseResponseStatus.EMAIL_DUPLICATED);
         }
         //user 생성
         User user = User.builder()
