@@ -12,7 +12,7 @@ import org.example.model.enums.MemberRole;
 import org.example.model.enums.UserRole;
 import org.example.model.invitation.InvitationCode;
 import org.example.model.invitation.InvitationHistory;
-import org.example.model.organization.Organization; // <- 실제 entity
+import org.example.model.organization.Organization;
 import org.example.model.user.User;
 import org.example.model.user.UserInformation;
 import org.example.model.user.UserSignupInformation;
@@ -21,6 +21,7 @@ import org.example.wecambackend.dto.requestDTO.InvitationCreateRequest;
 import org.example.wecambackend.dto.responseDTO.InvitationCodeResponse;
 import org.example.wecambackend.repos.*;
 import org.example.wecambackend.repos.organization.OrganizationRepository;
+import org.example.wecambackend.service.admin.common.EntityFinderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,12 +34,11 @@ import java.util.List;
 public class InvitationCodeService {
     private final InvitationCodeRepository invitationCodeRepository;
     private final InvitationHistoryRepository invitationHistoryRepository;
-    private final UserRepository userRepository;
-    private final CouncilRepository councilRepository;
     private final UserSignupInformationRepository userSignupInformationRepository;
     private final OrganizationRepository organizationRepository;
     private final UserInformationRepository userInformationRepository;
     private final CouncilMemberRepository councilMemberRepository;
+    private final EntityFinderService entityFinderService;
 
     public List<InvitationCodeResponse> findByCouncilId(Long councilId) {
         return invitationCodeRepository.findAllByCouncilId(councilId);
@@ -47,12 +47,10 @@ public class InvitationCodeService {
     @Transactional
     public void createInvitationCode(CodeType codeType,InvitationCreateRequest requestDto, Long userId,Long councilId){
     // 1. 유저 조회
-    User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("USER_NOT_FOUND"));
+    User user = entityFinderService.getUserByIdOrThrow(userId);
 
     // 2. 유저가 소속된 조직 또는 학생회 가져오기 (예: 학과 학생회 기준)
-    Council council = councilRepository.findById(councilId)
-            .orElseThrow(() -> new IllegalArgumentException("COUNCIL_NOT_FOUND"));
+    Council council = entityFinderService.getCouncilByIdOrThrow(councilId);
 
     // 3. 소속 조직
     Organization organization = council.getOrganization();
@@ -109,8 +107,7 @@ public class InvitationCodeService {
     public void usedCode(String code, UserDetailsImpl userDetails, CodeType codeType){
         InvitationCode invitationCode = findByCode(code,codeType);
 
-        User user = userRepository.findById(userDetails.getId())
-                .orElseThrow(()->new IllegalArgumentException("유저가 존재하지 않습니다."));
+        User user = entityFinderService.getUserByIdOrThrow(userDetails.getId());
         UserSignupInformation userSignupInformation = userSignupInformationRepository.findByUser_UserPkId(userDetails.getId())
                 .orElseThrow(()->new IllegalArgumentException("존재하지 않는 회원입니다."));
         Organization organization = organizationRepository.findByOrganizationId(userSignupInformation.getSelectOrganizationId())

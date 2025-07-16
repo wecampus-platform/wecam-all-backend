@@ -1,6 +1,5 @@
 package org.example.wecambackend.service.admin;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.council.Council;
@@ -22,6 +21,8 @@ import org.example.wecambackend.dto.responseDTO.TodoSimpleResponse;
 import org.example.wecambackend.dto.responseDTO.TodoSummaryResponse;
 import org.example.wecambackend.repos.*;
 import org.example.wecambackend.service.admin.Enum.UploadFolder;
+import org.example.wecambackend.service.admin.common.AdminFileStorageService;
+import org.example.wecambackend.service.admin.common.EntityFinderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,15 +49,26 @@ public class TodoService {
     private final CouncilMemberRepository councilMemberRepository;
     private final CouncilRepository councilRepository;
 
+
+    /**
+     * [설명]
+     * - 새로운 할 일(Todo)을 생성합니다.
+     * - 작성자 정보, 담당자 목록(todoManager), 첨부파일(todoFile)을 함께 저장합니다.
+     * [필요한 변수]
+     * - councilId: 할 일이 소속될 학생회 ID
+     * - request: 제목, 내용, 마감일, 담당자 ID 리스트가 포함된 요청 DTO
+     * - files: 업로드할 파일 리스트 (nullable)
+     * - userId: 로그인한 사용자 (작성자)의 ID
+     * [반환값]
+     * - void
+     */
     // 1.  엔티티 저장 (userId, title, content, dueAt 등)
     // 2.  todo_manager 테이블에 request.getManagerIds() 리스트 insert
     // 3.  업로드 후 todo_file 테이블에 파일 정보 저장
     @Transactional
     public void createTodo(Long councilId,TodoCreateRequest request, List<MultipartFile> files, Long userId ) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(()->new BaseException(BaseResponseStatus.ENTITY_NOT_FOUND));
-        Council council = councilRepository.findById(councilId)
-                .orElseThrow(()-> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
+        User user = entityFinderService.getUserByIdOrThrow(userId);
+        Council council = entityFinderService.getCouncilByIdOrThrow(councilId);
         Todo todo = Todo.builder()
                 .title(request.getTitle())
                 .content(String.valueOf(request.getContent()))
@@ -104,6 +116,19 @@ public class TodoService {
         }
     }
 
+
+    /**
+     * [설명]
+     * - 기존 할 일을 수정합니다.
+     * - 제목/내용/마감일 변경, 담당자 변경, 파일 삭제 및 추가를 처리합니다.
+     * [필요한 변수]
+     * - todoId: 수정할 할 일의 ID
+     * - councilId: 해당 할 일이 속한 학생회 ID
+     * - request: 수정 요청 정보 (제목, 내용, 마감일, 담당자 목록, 삭제할 파일 ID)
+     * - newFiles: 새로 추가할 파일 리스트
+     * [반환값]
+     * - void
+     */
 
     @Transactional
     public void updateTodo(Long todoId, Long councilId, TodoUpdateRequest request, List<MultipartFile> newFiles) {
@@ -158,7 +183,20 @@ public class TodoService {
         }
     }
 
+    /*
+     [설명]
+     특정 할 일의 담당자 목록을 업데이트합니다.
+     새 목록과 비교하여 기존 담당자를 추가하거나 삭제합니다.
 
+     [필요한 변수]
+     todo: 대상 할 일 엔티티
+     newManagerIds: 새로운 담당자 ID 리스트
+     councilId: 해당 할 일이 소속된 학생회 ID (담당자 유효성 검증용)
+     [반환값]
+     void
+     [호출 위치 / 사용 예시]
+     updateTodo 내부에서 담당자 목록 변경 시 사용
+     */
     public void updateTodoManagers(Todo todo, List<Long> newManagerIds, Long councilId) {
         // 기존 매니저 ID들 조회
         List<TodoManager> existingManagers = todoManagerRepository.findByTodo_TodoId(todo.getTodoId());
@@ -191,7 +229,15 @@ public class TodoService {
         }
     }
 
-
+    /**
+     * [설명]
+     * - 특정 할 일의 상세 정보를 조회합니다.
+     * - 기본 정보, 작성자, 담당자, 첨부파일 목록을 포함합니다.
+     * [필요한 변수]
+     * - todoId: 조회할 할 일의 ID
+     * [반환값]
+     * - TodoDetailResponse: 할 일 상세 정보 DTO
+     */
     @Transactional
     public TodoDetailResponse getTodoDetail(Long todoId) {
         Todo todo = todoRepository.findTodoWithCreator(todoId)
@@ -222,6 +268,18 @@ public class TodoService {
     //TODO: 다운로드 API 는 추후 구현
 
 
+    /**
+     [설명]
+     사용자가 담당자인 할 일의 상태(진행도)를 변경합니다.
+     [필요한 변수]
+     todoId: 대상 할 일 ID
+     userId: 요청을 보낸 사용자 ID
+     newStatus: 변경할 진행 상태값 (enum)
+     [반환값]
+     void
+     [호출 위치 / 사용 예시]
+     할 일 목록에서 상태 버튼 클릭 시
+     */
     @Transactional
     public void updateTodoStatus(Long todoId,Long userId, ProgressStatus newStatus) {
         boolean isManager = todoManagerRepository.existsByTodo_TodoIdAndUser_UserPkId(todoId, userId);
@@ -234,6 +292,18 @@ public class TodoService {
         todo.setProgressStatus(newStatus);
     }
 
+    /**
+     [설명]
+     할 일을 삭제합니다. 단, 작성자 본인만 삭제할 수 있습니다.
+     연관된 담당자 및 첨부파일은 cascade 및 orphanRemoval로 자동 삭제됩니다.
+     [필요한 변수]
+     todoId: 삭제할 할 일 ID
+     userId: 요청을 보낸 사용자 ID
+     [반환값]
+     void
+     [호출 위치 / 사용 예시]
+     할 일 상세화면 > 삭제 버튼 클릭 시
+     */
     @Transactional
     public void deleteTodo(Long todoId , Long userId) {
         Todo todo = todoRepository.findById(todoId)
@@ -251,6 +321,17 @@ public class TodoService {
 
     private final UserInformationRepository userInformationRepository;
 
+    /**
+     [설명]
+     로그인한 사용자가 직접 작성하고, 담당자 중 하나이기도 한 할 일 목록을 조회합니다.
+     [필요한 변수]
+     userId: 로그인한 사용자 ID
+     councilId: 학생회 ID
+     [반환값]
+     List<TodoSimpleResponse>: 간단한 할 일 요약 리스트
+     [호출 위치 / 사용 예시]
+     대시보드 > "내 할 일" 목록 요청 시
+     */
     //담당자 작성자 모두 나인 거.
     public List<TodoSimpleResponse> getMyTodoList(Long userId,Long councilId) {
         List<Todo> todos = todoRepository.findAllByCreateUser_UserPkIdAndManagers_User_UserPkIdAndCouncil_Id(userId, userId,councilId);
@@ -259,6 +340,17 @@ public class TodoService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     [설명]
+     로그인한 사용자가 담당자인 할 일 중, 작성자가 본인이 아닌 경우(받은 일)만 필터링하여 조회합니다.
+     [필요한 변수]
+     userId: 로그인한 사용자 ID
+     councilId: 학생회 ID
+     [반환값]
+     List<TodoSimpleResponse>: 받은 할 일 리스트
+     [호출 위치 / 사용 예시]
+     대시보드 > "받은 할 일" 탭 조회 시
+     */
     public List<TodoSimpleResponse> getReceivedTodoList(Long userId,Long councilId) {
         List<Todo> todos = todoRepository.findAllByManagers_User_UserPkIdAndCouncil_Id(userId,councilId);
         return todos.stream()
@@ -267,6 +359,17 @@ public class TodoService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     [설명]
+     로그인한 사용자가 작성한 할 일 중, 담당자가 본인만이 아닌 경우(보낸 일)을 조회합니다.
+     [필요한 변수]
+     userId: 로그인한 사용자 ID
+     councilId: 학생회 ID
+     [반환값]
+     List<TodoSimpleResponse>: 보낸 할 일 리스트
+     [호출 위치 / 사용 예시]
+     대시보드 > "보낸 할 일" 탭 조회 시
+     */
     //보낸건데 담당자는 내가 아님.
     public List<TodoSimpleResponse> getSentTodoList(Long userId,Long councilId) {
         List<Todo> todos = todoRepository.findAllByCreateUser_UserPkIdAndCouncil_Id(userId,councilId);
@@ -277,6 +380,19 @@ public class TodoService {
                 .collect(Collectors.toList());
     }
 
+
+    /**
+     [설명]
+     로그인한 사용자의 할 일 전체를 한 번에 불러옵니다.
+     내 할 일, 받은 일, 보낸 일을 모두 합쳐 중복 제거 후 반환합니다.
+     [필요한 변수]
+     userId: 로그인한 사용자 ID
+     councilId: 학생회 ID
+     [반환값]
+     List<TodoSimpleResponse>: 전체 할 일 목록
+     [호출 위치 / 사용 예시]
+     대시보드 > 할 일 전체 보기 요청 시
+     */
     @Transactional
     public List<TodoSimpleResponse> getAllTodoList(Long userId,Long councilId) {
          Set<TodoSimpleResponse> allTodos = new HashSet<>();
@@ -288,27 +404,13 @@ public class TodoService {
     }
 
 
+
     private TodoSimpleResponse convertToTodoSimpleResponse(Todo todo,TodoTypeDTO type) {
 
-
-//        TodoTypeDTO type;
         Long createUserId =todo.getCreateUser().getUserPkId();
         Long todoId = todo.getTodoId();
         String createUserName = userInformationRepository.findNameByUserId(createUserId);
         List<ManagerInfo> managers = todoManagerRepository.findManagersByTodoId(todoId);
-//        boolean isCreator = createUserId.equals(currentUserId);
-//        boolean isManager = todoManagerRepository.existsByTodo_TodoIdAndUser_UserPkId(todoId,currentUserId);
-
-//        if (isCreator && isManager) {
-//            type = TodoTypeDTO.MY_TODO;
-//        } else if (isCreator) {
-//            type = TodoTypeDTO.SENT_TODO;
-//        } else if (isManager) {
-//            type = TodoTypeDTO.RECEIVED_TODO;
-//        } else {
-//            type = null; // 예외적으로 들어올 경우
-//        }
-
 
         return new TodoSimpleResponse(
                 todoId,
@@ -324,6 +426,16 @@ public class TodoService {
     }
 
 
+    /**
+     * [설명]
+      - 오늘, 이번 주, 받은 일, 보낸 일에 대한 할 일 통계 요약을 제공합니다.
+      - 각 카테고리에 대해 전체 개수와 완료된 개수를 반환합니다.
+      [필요한 변수]
+      - councilId: 학생회 ID
+      - userId: 로그인한 사용자 ID
+     * [반환값]
+      - TodoSummaryResponse: 오늘/이번 주/받은 일/보낸 일 요약 DTO
+     */
     @Transactional
     public TodoSummaryResponse getTodoSummary(Long councilId, Long userId) {
         LocalDate today = LocalDate.now();
@@ -373,4 +485,6 @@ public class TodoService {
                 .sentTodo(new TodoSummaryResponse.CountPair(sentDone, sentTotal))
                 .build();
     }
+
+    private final EntityFinderService entityFinderService;
 }

@@ -2,7 +2,6 @@ package org.example.wecambackend.service.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.model.affiliation.AffiliationFile;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
@@ -19,9 +18,10 @@ import org.example.model.enums.AuthenticationType;
 import org.example.wecambackend.repos.CouncilRepository;
 import org.example.wecambackend.repos.organization.OrganizationRepository;
 import org.example.wecambackend.repos.SchoolRepository;
-import org.example.wecambackend.repos.UserRepository;
 import org.example.wecambackend.repos.affiliation.AffiliationCertificationRepository;
 import org.example.wecambackend.repos.affiliation.AffiliationFileRepository;
+import org.example.wecambackend.service.admin.common.AdminFileStorageService;
+import org.example.wecambackend.service.admin.common.EntityFinderService;
 import org.example.wecambackend.service.client.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,8 +39,7 @@ public class AffiliationCertificationAdminService {
     private final CouncilRepository councilRepository;
     private final UserService userService;
     private final UserInformationService userInformationService;
-    private final UserRepository userRepository;
-
+    private final EntityFinderService entityFinderService;
 
     // 전체 조회만
     public List<AffiliationCertificationSummaryResponse> getRequestsForOrganizationList(Long organizationId) {
@@ -51,11 +50,6 @@ public class AffiliationCertificationAdminService {
             // 복합키 구성 정보
             Long userId = ac.getId().getUserId();
             AuthenticationType authenticationType = ac.getId().getAuthenticationType();
-
-//            Optional<AffiliationFileProjection> optionalFile = affiliationFileRepository.findFilePathAndNameByUserIdAndAuthOrdinal(userId, authenticationType.ordinal());
-//            System.out.println("조회된 파일: " + optionalFile);
-//            String filePath = optionalFile.map(file -> file.getFilePath()).orElse(null);
-//            List<String> hierarchyList = myPageService.getOrganizationNameHierarchy(user.getOrganization());
 
             return new AffiliationCertificationSummaryResponse(
                     userId,
@@ -72,9 +66,7 @@ public class AffiliationCertificationAdminService {
 
     @Transactional
     public List<AffiliationCertificationSummaryResponse> getRequestsByCouncilIdList(Long councilId) {
-        Council council = councilRepository.findById(councilId)
-                .orElseThrow(() -> new RuntimeException("해당 학생회를 찾을 수 없습니다."));
-
+        Council council = entityFinderService.getCouncilByIdOrThrow(councilId);
         Long organizationId = council.getOrganization().getOrganizationId();
 
         return getRequestsForOrganizationList(organizationId);
@@ -89,8 +81,7 @@ public class AffiliationCertificationAdminService {
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
 
         // councilId가 관리하는 organizationId 가져오기
-        Council council = councilRepository.findById(councilId)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
+        Council council = entityFinderService.getCouncilByIdOrThrow(councilId);
 
         Long targetOrgId = ac.getOrganization().getOrganizationId();
         Long councilOrgId = council.getOrganization().getOrganizationId();
@@ -135,8 +126,8 @@ public class AffiliationCertificationAdminService {
         // 요청이 해당 councilId가 관리하는 범위에 있는지 검증 (선택) --- TODO: 할지 말지 모르겠음. 우선 제외
         User uploadUser = cert.getUser();
         AuthenticationType type = cert.getAuthenticationType();
-        User reviewUser = userRepository.findById(currentUser.getId())
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
+
+        User reviewUser = entityFinderService.getUserByIdOrThrow(currentUser.getId());
         String enrollYear = cert.getOcrEnrollYear();
 
         Organization organization = organizationRepository.findByOrganizationId(cert.getOrganization().getOrganizationId())
