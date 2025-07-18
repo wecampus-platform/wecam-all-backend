@@ -52,14 +52,14 @@ public class AuthService {
 
         // 이메일 유저 조회
         User user = userRepository.findByEmailWithPrivate(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BaseException (BaseResponseStatus.EMAIL_INFO_NOT_FOUND));
 
         // 비밀번호 검증
         String raw = request.getPassword();
         String encoded = user.getUserPrivate().getPassword();
 
         if (!passwordEncoder.matches(raw, encoded)) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+            throw new BaseException(BaseResponseStatus.PASSWORD_NOT_MATCHED);
         }
 
         String role = user.getRole().name();

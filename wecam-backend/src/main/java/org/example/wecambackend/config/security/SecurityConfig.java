@@ -82,6 +82,7 @@ public class SecurityConfig {
                                 "/client/auth/token/refresh",
                                 "/client/auth/logout"
                         ).permitAll()
+                        .requestMatchers("/public/auth/login").permitAll()
                         .requestMatchers("/admin/**").hasRole("COUNCIL")  // 특정 권한 필요
                         .anyRequest().authenticated()
                 )

@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.example.wecambackend.common.exceptions.BaseException;
+import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.common.validation.CouncilAccessValidator;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -48,7 +50,7 @@ public class CheckCouncilAccessAspect {
         // 2. 요청 헤더에서 X-Council-Id 값을 추출
         String councilIdHeader = request.getHeader("X-Council-Id");
         if (councilIdHeader == null) {
-            throw new RuntimeException("X-Council-Id 헤더가 없습니다.");
+            throw new BaseException(BaseResponseStatus.MISSING_COUNCIL_ID_HEADER);
         }
 
         // 3. Long으로 파싱 (형식 검증)
@@ -56,7 +58,7 @@ public class CheckCouncilAccessAspect {
         try {
             councilId = Long.parseLong(councilIdHeader);
         } catch (NumberFormatException e) {
-            throw new RuntimeException("X-Council-Id 형식이 잘못되었습니다."); // 예: 숫자가 아닌 문자열
+            throw new BaseException(BaseResponseStatus.MISSING_COUNCIL_ID_HEADER);
         }
 
         // 4. 실제 유저가 해당 학생회에 속해 있는지 검증

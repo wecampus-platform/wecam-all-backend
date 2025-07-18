@@ -29,12 +29,14 @@ public enum BaseResponseStatus {
     INVALID_DEPARTMENT_ORG(false, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 학과 조직입니다."),
     INVALID_USER(false, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 사용자입니다."),
 
-
     /**
      * 401 : 인증 필요
      */
     UNAUTHORIZED(false, HttpStatus.UNAUTHORIZED.value(), "로그인이 필요한 요청입니다."),
     NOT_AUTHENTICATED_USER(false, HttpStatus.UNAUTHORIZED.value(), "인증되지 않은 사용자입니다."),
+
+    //비밀번호 일치하지 않을 때
+    PASSWORD_NOT_MATCHED(false, HttpStatus.UNAUTHORIZED.value(), "패스워드가 일치하지 않습니다."),
 
     // 404: Not Found
     REQUEST_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 요청을 찾을 수 없습니다."),
@@ -46,6 +48,8 @@ public enum BaseResponseStatus {
     USER_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 유저를 찾을 수 없습니다."),
     INVITE_CODE_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 초대코드가 존재하지 않습니다."),
     PHONE_INFO_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "전화번호 정보가 없습니다."),
+    //로그인 시 이메일 정보 일치하지 않을 떄
+    EMAIL_INFO_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "이메일 정보가 없습니다."),
 
 
 
