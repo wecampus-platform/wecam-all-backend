@@ -41,10 +41,6 @@ public class InvitationCode extends BaseTimeEntity {
     @Column(name="code",nullable = false, length = 20, unique = true)
     private String code;
 
-    // 사용횟수
-    @Column(name="usage_count", nullable = false)
-    private int usageCount = 0;
-
     // 초대코드를 발급한 조직
     @ManyToOne
     @JoinColumn(name = "organization_id", nullable = false)
