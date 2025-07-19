@@ -12,6 +12,6 @@ public class CouncilMemberResponse {
     private String userName;
     private MemberRole userCouncilRole;
     private Long userId;
-    private String departmentRole;
+//    private String departmentRole;
 
 }

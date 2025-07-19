@@ -16,8 +16,9 @@ import org.example.model.organization.Organization;
 import org.example.model.user.User;
 import org.example.model.user.UserInformation;
 import org.example.model.user.UserSignupInformation;
+import org.example.wecambackend.common.exceptions.BaseException;
+import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
-import org.example.wecambackend.dto.requestDTO.InvitationCreateRequest;
 import org.example.wecambackend.dto.responseDTO.InvitationCodeResponse;
 import org.example.wecambackend.repos.*;
 import org.example.wecambackend.repos.organization.OrganizationRepository;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -45,7 +47,7 @@ public class InvitationCodeService {
     }
 
     @Transactional
-    public void createInvitationCode(CodeType codeType,InvitationCreateRequest requestDto, Long userId,Long councilId){
+    public void createInvitationCode(CodeType codeType, Long userId,Long councilId){
     // 1. 유저 조회
     User user = entityFinderService.getUserByIdOrThrow(userId);
 
@@ -57,24 +59,30 @@ public class InvitationCodeService {
 
     String generatedCode = generateUniqueCode();  // 여기서 자동 생성
 
+    // 타입별 만료일 계산
+    LocalDateTime expirationDate = null;
+    if (codeType == CodeType.student_member) {
+        expirationDate = LocalDateTime.now().plusMinutes(10);
+    } else if (codeType == CodeType.council_member) {
+        expirationDate = LocalDateTime.now().plusDays(7);
+    }
 
         // 4. 초대코드 엔티티 생성
     InvitationCode invitationCode = InvitationCode.builder()
             .code(generatedCode)
             .codeType(codeType)
-            .isUsageLimit(requestDto.getIsUsageLimit())
-            .usageLimit(requestDto.getIsUsageLimit() ? requestDto.getUsageLimit() : null)
             .isActive(true)
             .user(user)
             .council(council)
             .organization(organization)
+            .expirationDate(expirationDate)
             .build();
 
     // 5. 저장
     invitationCodeRepository.save(invitationCode);
     }
 
-    private static final int CODE_LENGTH = 10;
+    private static final int CODE_LENGTH = 6;
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     private String generateUniqueCode() {
@@ -133,17 +141,11 @@ public class InvitationCodeService {
         else {
             throw new IllegalArgumentException("다시 입력하세요.");
         }
-        int usageCount = invitationCode.getUsageCount();
-        int codeLimit = invitationCode.getUsageLimit();
-        if (invitationCode.getIsUsageLimit() && usageCount<codeLimit
-        ) {
-            invitationCode.setUsageCount(usageCount + 1);
-            if (codeLimit==usageCount+1) {
-                invitationCode.setIsActive(Boolean.FALSE);
-            }
-        }
-        else {
-            throw new IllegalArgumentException("유효하지 않은 초대코드입니다.");
+        if (invitationCode.isExpired()) {
+            invitationCode.setIsActive(false);
+            invitationCodeRepository.save(invitationCode); // 상태 반영
+
+            throw new BaseException(BaseResponseStatus.INVITATION_CODE_EXPIRED);
         }
 
         InvitationHistory invitationHistory = InvitationHistory.builder()
@@ -184,12 +186,41 @@ public class InvitationCodeService {
                 organization.getOrganizationName());
     }
 
-        // 코드가 존재하는지
-        // 코드의 타입과 선택한 타입이 일치하는지
-        public InvitationCode findByCode (String code, CodeType codeType){
-            InvitationCode invitationCode = invitationCodeRepository.findByCodeAndCodeTypeAndIsActive(code, codeType,true)
-                    .orElseThrow(() -> new IllegalArgumentException("해당 코드가 존재하지 않습니다."));
-            return invitationCode;
+    // 코드가 존재하는지
+    // 코드의 타입과 선택한 타입이 일치하는지
+    public InvitationCode findByCode (String code, CodeType codeType){
+        InvitationCode invitationCode = invitationCodeRepository.findByCodeAndCodeTypeAndIsActive(code, codeType,true)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.INVITATION_CODE_EXPIRED));
+        return invitationCode;
 
+    }
+
+
+    // 코드의 ExpiredAt - 만료기간 업데이트 서비스 로직 , 전달받은 invitationPkId 에 해당되는 초대코드의 만료기간을 업데이트함.
+    @Transactional
+    public void editExpiredAtInvitation(LocalDateTime expiredAt, Long invitationId) {
+        //전달받은 Id 가 실제 존재하는 Id 인지 확인 한 후 만료기간 업데이트
+        //만료기간은 localdateTime.now() 보다 무조건 5분 뒤어야 함. 5분 이전으로 설정될 시 Exception
+        //만료기간을 업데이트 하며 , 해당 초대코드가 비활성화인 상태라면 다시 활성화 상태로 변환시켜야 함.
+        //초대코드 업데이트의 권한 여부는 controller 에서 어노테이션으로 실행
+
+        // 5분 이후인지 확인
+        if (expiredAt.isBefore(LocalDateTime.now().plusMinutes(5))) {
+            throw new BaseException(BaseResponseStatus.INVALID_EXPIRATION_TIME);
         }
+
+        // 해당 초대코드가 존재하지 않으면 예외
+        InvitationCode code = invitationCodeRepository.findById(invitationId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.INVITATION_CODE_NOT_FOUND));
+
+        code.setExpirationDate(expiredAt);
+
+        // 비활성화 상태였으면 활성화로 바꿔줌
+        if (!code.getIsActive()) {
+            code.setIsActive(true);
+        }
+
+    }
+
+
 }

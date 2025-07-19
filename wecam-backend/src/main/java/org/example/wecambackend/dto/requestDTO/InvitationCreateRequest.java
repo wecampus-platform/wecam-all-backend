@@ -8,11 +8,5 @@ import java.time.LocalDateTime;
 @Getter @Setter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
 public class InvitationCreateRequest {
-
-
-    private Boolean isUsageLimit;
-    private Integer usageLimit;
-
 }

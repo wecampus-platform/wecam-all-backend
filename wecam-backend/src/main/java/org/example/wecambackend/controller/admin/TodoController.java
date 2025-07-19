@@ -3,6 +3,8 @@ package org.example.wecambackend.controller.admin;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,17 +37,16 @@ import java.util.List;
 public class TodoController {
 
     private final TodoService todoService;
-
-    @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
-    @PostMapping(value = "/{councilId}/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "할일 등록",
+    @IsCouncil
+    @Operation(
+            summary = "할일 등록",
             parameters = {
-                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)
-            })
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청")
-    })
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER),
+                    @Parameter(name = "councilId", description = "학생회 PK", in = ParameterIn.PATH),
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH)
+            }
+    )
+    @PostMapping(value = "/{councilId}/create",consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
     public ResponseEntity<?> createTodo(
             @PathVariable("councilId") Long councilId,
             @PathVariable("councilName") String councilName,
@@ -56,6 +57,7 @@ public class TodoController {
         todoService.createTodo(councilId,request, files, userDetails.getId());
         return ResponseEntity.ok("할일 등록이 완료되었습니다.");
     }
+
 
     @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
     @CheckOwner(entity = Todo.class, idParam = "todoId", authorGetter = "getCreateUser.getUserPkId")

@@ -36,6 +36,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
         String uri = request.getRequestURI();
 
+        if (uri.startsWith("/swagger") || uri.startsWith("/v3/api-docs")) {
+            filterChain.doFilter(request, response); // 토큰 검사 없이 통과
+            return;
+        }
+
         // 여기서 특정 경로는 토큰 검사 제외
         if (uri.equals("/affiliation-test.html")
                 || uri.startsWith("/public/")

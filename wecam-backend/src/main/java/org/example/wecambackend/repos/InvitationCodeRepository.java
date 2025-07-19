@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public interface InvitationCodeRepository extends JpaRepository<InvitationCode,Long> {
 
-    @Query("SELECT new org.example.wecambackend.dto.responseDTO.InvitationCodeResponse(ic.code, ui.name, ic.usageCount, ic.codeType, ic.createdAt, ic.isActive, ic.isUsageLimit, ic.usageLimit) " +
+    @Query("SELECT new org.example.wecambackend.dto.responseDTO.InvitationCodeResponse(ic.code, ui.name, ic.codeType, ic.createdAt, ic.isActive, ic.expirationDate) " +
             "FROM InvitationCode ic " +
             "JOIN ic.user u " +
             "JOIN u.userInformation ui "+
