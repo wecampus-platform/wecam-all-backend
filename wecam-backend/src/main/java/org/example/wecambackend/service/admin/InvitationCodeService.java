@@ -16,6 +16,8 @@ import org.example.model.organization.Organization;
 import org.example.model.user.User;
 import org.example.model.user.UserInformation;
 import org.example.model.user.UserSignupInformation;
+import org.example.wecambackend.common.exceptions.BaseException;
+import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.dto.requestDTO.InvitationCreateRequest;
 import org.example.wecambackend.dto.responseDTO.InvitationCodeResponse;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -45,7 +48,7 @@ public class InvitationCodeService {
     }
 
     @Transactional
-    public void createInvitationCode(CodeType codeType,InvitationCreateRequest requestDto, Long userId,Long councilId){
+    public void createInvitationCode(CodeType codeType, Long userId,Long councilId){
     // 1. 유저 조회
     User user = entityFinderService.getUserByIdOrThrow(userId);
 
@@ -57,17 +60,23 @@ public class InvitationCodeService {
 
     String generatedCode = generateUniqueCode();  // 여기서 자동 생성
 
+    // 타입별 만료일 계산
+    LocalDateTime expirationDate = null;
+    if (codeType == CodeType.student_member) {
+        expirationDate = LocalDateTime.now().plusMinutes(10);
+    } else if (codeType == CodeType.council_member) {
+        expirationDate = LocalDateTime.now().plusDays(7);
+    }
 
         // 4. 초대코드 엔티티 생성
     InvitationCode invitationCode = InvitationCode.builder()
             .code(generatedCode)
             .codeType(codeType)
-            .isUsageLimit(requestDto.getIsUsageLimit())
-            .usageLimit(requestDto.getIsUsageLimit() ? requestDto.getUsageLimit() : null)
             .isActive(true)
             .user(user)
             .council(council)
             .organization(organization)
+            .expirationDate(expirationDate)
             .build();
 
     // 5. 저장
@@ -133,17 +142,11 @@ public class InvitationCodeService {
         else {
             throw new IllegalArgumentException("다시 입력하세요.");
         }
-        int usageCount = invitationCode.getUsageCount();
-        int codeLimit = invitationCode.getUsageLimit();
-        if (invitationCode.getIsUsageLimit() && usageCount<codeLimit
-        ) {
-            invitationCode.setUsageCount(usageCount + 1);
-            if (codeLimit==usageCount+1) {
-                invitationCode.setIsActive(Boolean.FALSE);
-            }
-        }
-        else {
-            throw new IllegalArgumentException("유효하지 않은 초대코드입니다.");
+        if (invitationCode.isExpired()) {
+            invitationCode.setIsActive(false);
+            invitationCodeRepository.save(invitationCode); // 상태 반영
+
+            throw new BaseException(BaseResponseStatus.INVITATION_CODE_EXPIRED);
         }
 
         InvitationHistory invitationHistory = InvitationHistory.builder()
@@ -188,7 +191,7 @@ public class InvitationCodeService {
         // 코드의 타입과 선택한 타입이 일치하는지
         public InvitationCode findByCode (String code, CodeType codeType){
             InvitationCode invitationCode = invitationCodeRepository.findByCodeAndCodeTypeAndIsActive(code, codeType,true)
-                    .orElseThrow(() -> new IllegalArgumentException("해당 코드가 존재하지 않습니다."));
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.INVITATION_CODE_EXPIRED));
             return invitationCode;
 
         }

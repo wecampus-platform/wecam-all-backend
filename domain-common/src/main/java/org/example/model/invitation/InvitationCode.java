@@ -10,6 +10,8 @@ import org.example.model.enums.CodeType;
 
 import org.example.model.user.User;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -53,17 +55,19 @@ public class InvitationCode extends BaseTimeEntity {
     @Column(name = "code_type", nullable = false)
     private CodeType codeType;
 
-    // 횟수 제한 - True 면 횟수 제한이 있다는 말임
-    @Column(name = "is_usage_limit")
-    private Boolean isUsageLimit;
-
-    // isUsageLimit 이 True 면 값이 들어와야 함
-    @Column(name = "usage_limit", nullable = true)
-    private int usageLimit;
-
     // active 한 초대코드인지
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
+
+    // 초대코드 만료일
+    @Column(name = "expiration_date")
+    private LocalDateTime expirationDate;
+
+    // 사용 시 유효성 검사 예시
+    public boolean isExpired() {
+        return expirationDate != null && expirationDate.isBefore(LocalDateTime.now());
+    }
+
 
 }
 

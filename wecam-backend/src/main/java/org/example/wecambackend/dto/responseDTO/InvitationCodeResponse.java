@@ -13,15 +13,11 @@ public class InvitationCodeResponse {
 
     private String code;
     private String makeUser;
-    private Integer usageCount;
 
     private CodeType codeType;
     private LocalDateTime createdAt;
     private Boolean isActive;
-    private Boolean isUsageLimit;
-
-    private Integer usageLimit;
-
+    private LocalDateTime expiredAt;
 
 
 }

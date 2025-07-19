@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.model.enums.CodeType;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
-import org.example.wecambackend.dto.requestDTO.InvitationCreateRequest;
 import org.example.wecambackend.dto.responseDTO.InvitationCodeResponse;
 import org.example.wecambackend.service.admin.InvitationCodeService;
 import org.springframework.http.ResponseEntity;
@@ -56,11 +55,10 @@ public class InvitationCodeController {
     public ResponseEntity<?> makeInvitationCodeStudent(
             @PathVariable String councilName, // ← 화면용
             @RequestParam("councilId") Long councilId,
-            @RequestBody InvitationCreateRequest requestDto,
             @PathVariable CodeType codeType,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        invitationCodeService.createInvitationCode(codeType,requestDto,userDetails.getId(),councilId);
+        invitationCodeService.createInvitationCode(codeType,userDetails.getId(),councilId);
         return ResponseEntity.ok("초대 코드 생성이 완료되었습니다.");
     }
 

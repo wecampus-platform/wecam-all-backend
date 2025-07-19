@@ -24,7 +24,7 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
 
 
     @Query("SELECT new org.example.wecambackend.dto.responseDTO.CouncilMemberResponse(" +
-            "ui.name, cm.memberRole, u.userPkId, cm.departmentRole.name) " +
+            "ui.name, cm.memberRole, u.userPkId) " +
             "FROM CouncilMember cm " +
             "JOIN cm.user u " +
             "JOIN u.userInformation ui " +
