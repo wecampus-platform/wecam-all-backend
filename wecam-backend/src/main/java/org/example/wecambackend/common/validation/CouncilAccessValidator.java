@@ -20,7 +20,7 @@ public class CouncilAccessValidator {
     public void validateMembership(UserDetailsImpl userDetails, Long councilIdFromHeader) {
 
         if (!userDetails.getCouncilId().contains(councilIdFromHeader)) {
-            throw new BaseException(BaseResponseStatus.ROLE_REQUIRED);
+            throw new BaseException(BaseResponseStatus.COUNCIL_ID_EXTRACTION_FAILED);
         }
     }
 }
