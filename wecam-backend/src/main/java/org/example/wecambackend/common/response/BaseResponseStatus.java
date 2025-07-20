@@ -38,6 +38,8 @@ public enum BaseResponseStatus {
     //초대코드 존재하지 않음
     INVITATION_CODE_NOT_FOUND(false, HttpStatus.BAD_REQUEST.value(), "존재하지 않는 초대코드입니다."),
 
+    MISSING_COUNCIL_ID_PARAM(false, HttpStatus.BAD_REQUEST.value(), "councilId 파라미터를 찾을 수 없습니다."),
+    MISSING_ENTITY_ID_PARAM(false,  HttpStatus.BAD_REQUEST.value(), "리소스 ID 파라미터가 누락되었습니다."),
 
     /**
      * 401 : 인증 필요
@@ -47,6 +49,11 @@ public enum BaseResponseStatus {
 
     //비밀번호 일치하지 않을 때
     PASSWORD_NOT_MATCHED(false, HttpStatus.UNAUTHORIZED.value(), "패스워드가 일치하지 않습니다."),
+
+
+    /**
+     *403 : 권한 없음
+     */
 
     // 404: Not Found
     REQUEST_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 요청을 찾을 수 없습니다."),
@@ -69,6 +76,7 @@ public enum BaseResponseStatus {
     ACCESS_DENIED(false, HttpStatus.FORBIDDEN.value(), "접근이 불가합니다."),
     ROLE_REQUIRED(false, HttpStatus.FORBIDDEN.value(), "접근을 위해 필요한 권한이 부족합니다."),
     ONLY_AUTHOR_CAN_MODIFY(false, HttpStatus.FORBIDDEN.value(), "작성자만 수정할 수 있습니다."),
+    INVALID_COUNCIL_ACCESS(false, HttpStatus.FORBIDDEN.value(), "요청한 조직에 대한 접근 권한이 없습니다."),
 
 
     /**
@@ -87,7 +95,7 @@ public enum BaseResponseStatus {
     UNEXPECTED_ERROR(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "예상치 못한 에러가 발생했습니다."),
     FILE_SAVE_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 저장에 실패했습니다."),
     FILE_DELETE_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 저장에 실패했습니다."),
-    ;
+    COUNCIL_ID_EXTRACTION_FAILED(false, 500, "councilId 추출에 실패했습니다.");
 
 
 
