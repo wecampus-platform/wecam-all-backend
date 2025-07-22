@@ -138,7 +138,8 @@ public class AffiliationCertificationAdminService {
         System.out.println(organization.getOrganizationName());
         markApproved(cert,reviewUser);
         userInformationService.createUserInformation(uploadUser, cert, type);
-        userService.updateUserRoleAndStatus(uploadUser, organization,university, type, enrollYear);
+        String userName = cert.getUsername();
+        userService.updateUserRoleAndStatus(uploadUser, organization,university, type, enrollYear,userName);
         log.info("[소속 인증 승인] {}가 {}의 인증 요청을 승인함",
                 reviewUser.getEmail(),
                 uploadUser.getEmail());

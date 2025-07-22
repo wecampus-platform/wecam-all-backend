@@ -24,10 +24,9 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
 
 
     @Query("SELECT new org.example.wecambackend.dto.responseDTO.CouncilMemberResponse(" +
-            "ui.name, cm.memberRole, u.userPkId) " +
+            "u.name, cm.memberRole, u.userPkId) " +
             "FROM CouncilMember cm " +
             "JOIN cm.user u " +
-            "JOIN u.userInformation ui " +
             "WHERE cm.council.id = :councilId AND cm.isActive = true")
     List<CouncilMemberResponse> findAllActiveMembersByCouncilId(@Param("councilId") Long councilId);
 

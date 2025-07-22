@@ -13,6 +13,4 @@ public interface UserInformationRepository extends JpaRepository<UserInformation
     Optional<UserInformation> findByUser(User user);
     Optional<UserInformation> findByUser_UserPkId(Long userid);
 
-    @Query("SELECT ui.name FROM UserInformation ui WHERE ui.user.userPkId = :userId")
-    String findNameByUserId(@Param("userId") Long userId);
 }

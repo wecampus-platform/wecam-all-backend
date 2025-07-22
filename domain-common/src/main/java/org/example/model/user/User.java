@@ -75,6 +75,15 @@ public class User {
     private UserRole role;
 
 
+    @Column(name = "name", length = 20, nullable = false)
+    private String name;
+
+    @Column(name = "user_tag", length = 5, nullable = false)
+    private String userTag;
+
+
+
+
     /**사용자 활동여부 **/
     @Builder.Default
     @Enumerated(EnumType.STRING)

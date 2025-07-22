@@ -22,7 +22,6 @@ public class UserInformationService {
         if (info == null) {
             info = UserInformation.builder()
                     .user(user)
-                    .name(cert.getUsername())
                     .university(cert.getUniversity())
                     .isAuthentication(Boolean.TRUE)
                     .isCouncilFee(Boolean.FALSE)

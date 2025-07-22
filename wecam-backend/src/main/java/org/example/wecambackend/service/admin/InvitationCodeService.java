@@ -25,6 +25,7 @@ import org.example.wecambackend.repos.*;
 import org.example.wecambackend.repos.organization.OrganizationRepository;
 import org.example.wecambackend.service.admin.common.EntityFinderService;
 import org.example.wecambackend.service.admin.common.UserInfoAssembler;
+import org.example.wecambackend.service.util.UserTagGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -168,13 +169,15 @@ public class InvitationCodeService {
                             UserInformation userInfo = UserInformation.builder()
                                     .isAuthentication(true)
                                     .user(user)
-                                    .name(name)
                                     .university(university)
                                     .academicStatus(AcademicStatus.ENROLLED)
                                     .build();
                             userInformationRepository.save(userInfo);
                         }
                 );
+        String userTag = userTagGenerator.generateUserTag(university.getSchoolId(),name);
+        user.setName(name);
+        user.setUserTag(userTag);
         user.setRole(userRole);
         user.setUniversity(university);
         user.setOrganization(organization);
@@ -228,6 +231,7 @@ public class InvitationCodeService {
 
 
     @Transactional
+    //TODO:  list 는 제약성이 없을 때 페이징 처리가 필요함. 한꺼번에 많은 거 들고 오면 안됨.
     //히스토리 조회 _ 코드 번호 , 코드 타입, 생성자 , 생성시각 , 민료시각 은 invitationCode 테이블에서
     //사용 이력 정보는 _ 이름과 아이디(는 우선 이메일로..???) -> 이건 DTO 따른거로 매핑 , 사용 시각
     public List<InvitationUsedHistoryResponse> showHistoryInvitationCode(Long invitationId) {
@@ -238,11 +242,17 @@ public class InvitationCodeService {
 
         // 각 이력 정보를 DTO로 매핑하여 리스트 반환
         return usageList.stream()
-                .map(usage -> InvitationUsedHistoryResponse.builder()
-                        .invitationPkId(code.getId())
-                        .usedAtTime(usage.getUsedAt())
-                        .userInfoDTO(userInfoAssembler.buildUserInfo(usage.getUser()))
-                        .build())
+                .map(usage -> {
+                    var user = usage.getUser();
+                    return InvitationUsedHistoryResponse.builder()
+                            .invitationPkId(code.getId())
+                            .usedAtTime(usage.getUsedAt())
+                            .userName(userInfoAssembler.findUserNameByUserId(user.getUserPkId()))
+                            .userEmail(user.getEmail())
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
+
+    private final UserTagGenerator userTagGenerator;
 }

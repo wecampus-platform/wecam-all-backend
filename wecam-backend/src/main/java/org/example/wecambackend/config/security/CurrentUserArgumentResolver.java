@@ -1,6 +1,5 @@
 package org.example.wecambackend.config.security;
 
-
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.annotation.CurrentUser;
