@@ -19,6 +19,7 @@ import org.example.model.user.UserStatus;
 import org.example.wecamadminbackend.dto.PresidentSignupInfoDTO;
 import org.example.wecamadminbackend.dto.request.OrganizationRequestDTO;
 import org.example.wecamadminbackend.repos.*;
+import org.example.wecamadminbackend.service.util.UserTagGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -235,7 +236,11 @@ public class AdminOrganizationService {
 
     private void createUserInformation(User user,PresidentSignupInfoDTO presidentSignupInfoDTO, Organization department) {
         University uni = department.getUniversity();
+        String name = presidentSignupInfoDTO.getUserName();
+        String userTag = userTagGenerator.generateUserTag(uni.getSchoolId(),name);
         user.setRole(UserRole.COUNCIL);
+        user.setUserTag(userTag);
+        user.setName(name);
         user.setOrganization(department);
         user.setUniversity(uni);
         user.setEnrollYear(presidentSignupInfoDTO.getEnrollYear());
@@ -250,14 +255,12 @@ public class AdminOrganizationService {
             // 이미 존재하면 업데이트
             info = optionalInfo.get();
             info.setUniversity(uni);
-            info.setName(presidentSignupInfoDTO.getUserName());
             info.setIsAuthentication(true);
         } else {
             //없으면 새로 생성
             info = UserInformation.builder()
                     .user(user)
                     .university(uni)
-                    .name(presidentSignupInfoDTO.getUserName())
                     .isAuthentication(true)
                     .build();
         }
@@ -265,4 +268,6 @@ public class AdminOrganizationService {
         userInformationRepository.save(info);
 
     }
+
+    private final UserTagGenerator userTagGenerator;
 }
