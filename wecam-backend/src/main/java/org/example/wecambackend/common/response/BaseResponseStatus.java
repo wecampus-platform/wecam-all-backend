@@ -95,7 +95,8 @@ public enum BaseResponseStatus {
     UNEXPECTED_ERROR(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "예상치 못한 에러가 발생했습니다."),
     FILE_SAVE_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 저장에 실패했습니다."),
     FILE_DELETE_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "파일 저장에 실패했습니다."),
-    COUNCIL_ID_EXTRACTION_FAILED(false, 500, "councilId 추출에 실패했습니다.");
+    COUNCIL_ID_EXTRACTION_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "councilId 추출에 실패했습니다."),
+    USER_TAG_GENERATION_FAILED(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "사용 가능한 userTag를 찾을 수 없습니다.");
 
 
 

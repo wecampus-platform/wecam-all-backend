@@ -6,6 +6,7 @@ import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.dto.responseDTO.CouncilVisibleUserDTO;
 import org.example.wecambackend.repos.UserInformationRepository;
 import org.example.wecambackend.repos.UserPrivateRepository;
+import org.example.wecambackend.repos.UserRepository;
 import org.springframework.stereotype.Component;
 import java.util.Optional;
 
@@ -21,7 +22,7 @@ public class UserInfoAssembler {
     private final UserPrivateRepository userPrivateRepository;
 
     // 유저의 일반 정보(이름 등)를 조회하기 위한 리포지토리
-    private final UserInformationRepository userInformationRepository;
+    private final UserRepository userRepository;
 
     /**
      * CouncilVisibleUserDTO 객체를 생성해 반환하는 메서드.
@@ -31,7 +32,7 @@ public class UserInfoAssembler {
      */
     public CouncilVisibleUserDTO buildUserInfo(User user) {
         String phoneNumber = findUserPrivateByUserId(user.getUserPkId()); // 암호화된 전화번호 조회
-        String name = findUserInformationByUserId(user.getUserPkId());   // 이름 조회
+        String name = findUserNameByUserId(user.getUserPkId());   // 이름 조회
 
         // Builder 패턴으로 DTO 생성
         return CouncilVisibleUserDTO.builder()
@@ -59,9 +60,10 @@ public class UserInfoAssembler {
      * @param userId 유저의 PK
      * @return 이름 또는 빈 문자열
      */
-    public String findUserInformationByUserId(Long userId) {
+    public String findUserNameByUserId(Long userId) {
         return Optional.ofNullable(
-                userInformationRepository.findNameByUserId(userId)
+                userRepository.findNameByUserPkId(userId)
         ).orElse("");
     }
+
 }

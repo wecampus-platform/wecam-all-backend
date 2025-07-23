@@ -247,7 +247,7 @@ public class TodoService {
 
         Long createUserId =todo.getCreateUser().getUserPkId();
 
-        String createUserName = userInformationRepository.findNameByUserId(createUserId);
+        String createUserName = userRepository.findNameByUserPkId(createUserId);
 
         List<TodoFileInfo> files = todoFileRepository.findByTodo(todo).stream()
                 .map(f -> new TodoFileInfo(f.getTodoFileId(), f.getOriginalFileName(), f.getFileUrl()))
@@ -409,7 +409,7 @@ public class TodoService {
 
         Long createUserId =todo.getCreateUser().getUserPkId();
         Long todoId = todo.getTodoId();
-        String createUserName = userInformationRepository.findNameByUserId(createUserId);
+        String createUserName = userRepository.findNameByUserPkId(createUserId);
         List<ManagerInfo> managers = todoManagerRepository.findManagersByTodoId(todoId);
 
         return new TodoSimpleResponse(

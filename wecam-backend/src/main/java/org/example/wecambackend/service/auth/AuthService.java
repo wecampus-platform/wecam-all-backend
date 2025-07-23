@@ -1,6 +1,7 @@
 package org.example.wecambackend.service.auth;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.model.council.CouncilMember;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -64,8 +66,6 @@ public class AuthService {
 
         String role = user.getRole().name();
 
-
-
         // JWT 발급
         String accessToken = jwtTokenProvider.generateAccessToken(user.getEmail(), role);
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
@@ -73,8 +73,6 @@ public class AuthService {
         // RefreshToken Redis 저장
         redisTemplate.opsForValue().set("RT:" + user.getUserPkId(), refreshToken, 7, TimeUnit.DAYS);
 
-        System.out.println("User 로그인 완료 :"+accessToken);
-        System.out.println("user pk id : "+user.getUserPkId() +" user email : " +user.getEmail());
         List<CouncilSummary> councils = new ArrayList<>();
         if (role.equals("COUNCIL")) {
             for (CouncilMember member : councilMemberRepository.findByUserUserPkIdAndIsActiveTrue(user.getUserPkId())) {
@@ -86,8 +84,14 @@ public class AuthService {
                 councils.add(councilSummary);
             }
         }
-        System.out.println(councils);
 
+        log.info("[로그인완료] {}: {} , {}",
+                user.getUserPkId(),
+                accessToken,
+                user.getRole().name());
+
+
+        //TODO : organization 정보 추가
         // 응답 반환
         return LoginResponse.builder()
                 .accessToken(accessToken)
