@@ -19,4 +19,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 마이페이지 때 사용 - organization 재사용성 을 위함.
     @Query( "SELECT u FROM User u LEFT JOIN FETCH u.organization WHERE u.userPkId = :id")
     Optional<User> findByIdWithOrganization(@Param("id") Long id);
+
+    boolean existsByNameAndUserTag(String name, String userTag);
+
+    @Query("SELECT u.name FROM User u WHERE u.userPkId = :userId")
+    String findNameByUserPkId(@Param("userId") Long userId);
 }

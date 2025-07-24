@@ -82,7 +82,7 @@ public class MyPageService {
                     .studentId(info.getStudentId())
                     .universityId(info.getUniversity().getSchoolId())
                     .organizationHierarchyList(hierarchyList)
-                    .username(info.getName())
+                    .username(user.getName())
                     .build();
         }
     }

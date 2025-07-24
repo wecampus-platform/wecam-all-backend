@@ -8,7 +8,4 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class AdminAuthService {
 
-    public void setCurrentCouncilId(Long councilId, UserDetailsImpl userDetails){
-        userDetails.setCurrentCouncilId(councilId);
-    }
 }

@@ -18,8 +18,8 @@ public interface TodoManagerRepository extends JpaRepository<TodoManager, TodoMa
 
     @Query("""
     SELECT new org.example.wecambackend.dto.projection.ManagerInfo(
-        u.userPkId, ui.name
-    ) FROM TodoManager tm JOIN tm.user u JOIN u.userInformation ui WHERE tm.todo.todoId = :todoId
+        u.userPkId, u.name
+    ) FROM TodoManager tm JOIN tm.user u WHERE tm.todo.todoId = :todoId
     """)
     List<ManagerInfo> findManagersByTodoId(@Param("todoId") Long todoId);
 

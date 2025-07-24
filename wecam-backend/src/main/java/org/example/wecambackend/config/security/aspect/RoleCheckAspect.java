@@ -4,8 +4,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
@@ -13,6 +16,7 @@ import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.model.enums.UserRole;
 import org.example.wecambackend.repos.CouncilMemberRepository;
 import org.example.wecambackend.util.CurrentUserUtil;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +32,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Aspect
 @Component
 @RequiredArgsConstructor
+@Order(1)
 public class RoleCheckAspect {
 
     private final CouncilMemberRepository councilMemberRepository;
@@ -81,6 +86,7 @@ public class RoleCheckAspect {
         // 검증된 councilId를 컨텍스트 홀더에 설정 (각 요청이 끝난 후 반드시 clear 해야 함)
         CouncilContextHolder.setCouncilId(currentCouncilId);
     }
+
 
     /**
      * 요청 사용자의 역할이 'UNAUTH'인지 확인합니다.
