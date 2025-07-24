@@ -50,9 +50,6 @@ public class UserInformation extends BaseTimeEntity {
     @Column(name = "nickname", length = 20, unique = true)
     private String nickname;
 
-    // 이름
-    @Column(name = "name", length = 20, nullable = false)
-    private String name;
 
     // 소속 인증 여부
     @Column(name = "is_authentication", nullable = false)
