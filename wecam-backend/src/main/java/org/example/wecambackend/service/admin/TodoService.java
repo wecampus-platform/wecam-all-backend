@@ -47,7 +47,6 @@ public class TodoService {
     private final AdminFileStorageService adminFileStorageService;
     private final TodoFileRepository todoFileRepository;
     private final CouncilMemberRepository councilMemberRepository;
-    private final CouncilRepository councilRepository;
 
 
     /**
@@ -292,6 +291,7 @@ public class TodoService {
         todo.setProgressStatus(newStatus);
     }
 
+    //TODO: file 삭제 까먹음.
     /**
      [설명]
      할 일을 삭제합니다. 단, 작성자 본인만 삭제할 수 있습니다.
@@ -308,7 +308,6 @@ public class TodoService {
     public void deleteTodo(Long todoId , Long userId) {
         Todo todo = todoRepository.findById(todoId)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
-
         // 작성자 본인 확인 (보안)
         if (!todo.getCreateUser().getUserPkId().equals(userId)) {
             throw new BaseException(BaseResponseStatus.ONLY_AUTHOR_CAN_MODIFY);
