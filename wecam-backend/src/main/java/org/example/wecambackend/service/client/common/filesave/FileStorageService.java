@@ -1,5 +1,6 @@
 package org.example.wecambackend.service.client.common.filesave;
 
+import lombok.Getter;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +17,7 @@ import java.util.UUID;
 // 파일 저장을 담당하는 서비스 클래스입니다.
 // 현재는 로컬 디스크에 저장하지만, 추후 S3로 전환하기 쉽도록 fileUrl과 filePath를 분리해 관리합니다.
 @Service
+@Getter
 public class FileStorageService {
 
     @Value("${app.file.upload-dir}")
