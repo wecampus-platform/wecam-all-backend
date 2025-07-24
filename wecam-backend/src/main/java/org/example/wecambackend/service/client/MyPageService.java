@@ -61,7 +61,6 @@ public class MyPageService {
 
         }
 
-
         else {
 
             // 2. 유저 정보
@@ -85,10 +84,8 @@ public class MyPageService {
                     .organizationHierarchyList(hierarchyList)
                     .username(info.getName())
                     .build();
-
+        }
     }
-}
-
 
     // 조직 계층 이름 추출
     public List<String> getOrganizationNameHierarchy(Organization org) {
