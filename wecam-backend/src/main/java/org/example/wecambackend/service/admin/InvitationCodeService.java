@@ -247,7 +247,7 @@ public class InvitationCodeService {
                     return InvitationUsedHistoryResponse.builder()
                             .invitationPkId(code.getId())
                             .usedAtTime(usage.getUsedAt())
-                            .userName(userInfoAssembler.findUserNameByUserId(user.getUserPkId()))
+                            .userName(user.getName())
                             .userEmail(user.getEmail())
                             .build();
                 })
