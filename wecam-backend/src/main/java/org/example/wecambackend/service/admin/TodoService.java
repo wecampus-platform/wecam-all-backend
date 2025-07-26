@@ -392,17 +392,26 @@ public class TodoService {
      [호출 위치 / 사용 예시]
      대시보드 > 할 일 전체 보기 요청 시
      */
-    @Transactional
-    public List<TodoSimpleResponse> getAllTodoList(Long userId,Long councilId) {
-         Set<TodoSimpleResponse> allTodos = new HashSet<>();
-            allTodos.addAll(getMyTodoList(userId,councilId));
-            allTodos.addAll(getSentTodoList(userId,councilId));
-            allTodos.addAll(getReceivedTodoList(userId,councilId));
+    @Transactional(readOnly = true)
+    public List<TodoSimpleResponse> getAllTodoList(Long userId, Long councilId, TodoTypeDTO todoType, ProgressStatus progressStatus) {
+        Set<TodoSimpleResponse> allTodos = new HashSet<>(); // 중복 제거
 
-            return new ArrayList<>(allTodos);
+        // todo type에 따라 조회
+        if (todoType == null || todoType == TodoTypeDTO.ALL_TODO || todoType == TodoTypeDTO.MY_TODO) {
+            allTodos.addAll(getMyTodoList(userId, councilId));
+        }
+        if (todoType == null || todoType == TodoTypeDTO.ALL_TODO || todoType == TodoTypeDTO.SENT_TODO) {
+            allTodos.addAll(getSentTodoList(userId, councilId));
+        }
+        if (todoType == null || todoType == TodoTypeDTO.ALL_TODO || todoType == TodoTypeDTO.RECEIVED_TODO) {
+            allTodos.addAll(getReceivedTodoList(userId, councilId));
+        }
+
+        return allTodos.stream()
+                .filter(todo -> progressStatus == null || todo.getProgressStatus() == progressStatus)
+                .sorted(Comparator.comparing(TodoSimpleResponse::getDueAt, Comparator.nullsLast(Comparator.naturalOrder()))) // dueAt이 null이면 가장 마지막으로
+                .toList();
     }
-
-
 
     private TodoSimpleResponse convertToTodoSimpleResponse(Todo todo,TodoTypeDTO type) {
 
@@ -416,11 +425,11 @@ public class TodoService {
                 todo.getTitle(),
                 todo.getContent(),
                 todo.getDueAt(),
-                todo.getProgressStatus(),
                 managers,
                 createUserId,
                 createUserName,
-                type
+                type,
+                todo.getProgressStatus()
         );
     }
 

@@ -10,11 +10,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.model.enums.ProgressStatus;
 import org.example.model.todo.Todo;
 import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.CheckOwner;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
+import org.example.wecambackend.dto.Enum.TodoTypeDTO;
 import org.example.wecambackend.dto.requestDTO.TodoCreateRequest;
 import org.example.wecambackend.dto.requestDTO.TodoStatusUpdateRequest;
 import org.example.wecambackend.dto.requestDTO.TodoUpdateRequest;
@@ -22,6 +24,7 @@ import org.example.wecambackend.dto.responseDTO.TodoDetailResponse;
 import org.example.wecambackend.dto.responseDTO.TodoSimpleResponse;
 import org.example.wecambackend.dto.responseDTO.TodoSummaryResponse;
 import org.example.wecambackend.service.admin.TodoService;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -98,16 +101,23 @@ public class TodoController {
 
     @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
     @GetMapping("/list")
-    @Operation(summary = "할 일 태그별 전체 조회",
+    @Operation(summary = "할 일 태그별 조회",
+            description = "태그 선택이 없는 경우, 전체 할 일을 조회합니다.",
             parameters = {
-                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER),
+                    @Parameter(name = "todoType", description = "할 일 유형", required = false),
+                    @Parameter(name = "progressStatus", description = "진행 상태", required = false)
+            }
     )
     public ResponseEntity<List<TodoSimpleResponse>> getTodoList(
             @PathVariable String councilName,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(required = false) TodoTypeDTO todoType,
+            @RequestParam(required = false) ProgressStatus progressStatus
+            ) {
         Long councilId = CouncilContextHolder.getCouncilId();
-        List<TodoSimpleResponse> response = todoService.getAllTodoList(userDetails.getId(),councilId);
+        List<TodoSimpleResponse> response = todoService.getAllTodoList(
+                userDetails.getId(), councilId, todoType, progressStatus);
         return ResponseEntity.ok(response);
     }
 
