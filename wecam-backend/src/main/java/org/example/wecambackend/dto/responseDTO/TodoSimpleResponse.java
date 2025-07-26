@@ -10,7 +10,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-@Getter @Setter
+@Getter
+@Setter
 public class TodoSimpleResponse {
     private Long todoId;
     private String title;
@@ -19,21 +20,22 @@ public class TodoSimpleResponse {
     private String createUserName;
     private List<ManagerInfo> managers;
     private Long createUserId;
-    private ProgressStatus progressStatus;
     private TodoTypeDTO todoTypeDTO;
+    private ProgressStatus progressStatus;
+
     public TodoSimpleResponse(Long todoId, String title, String content,
-                              LocalDateTime dueAt, ProgressStatus progressStatus,
-                              List<ManagerInfo> managers,Long createUserId, String createUserName,
-                              TodoTypeDTO todoTypeDTO) {
+                              LocalDateTime dueAt, List<ManagerInfo> managers,Long createUserId, String createUserName,
+                              TodoTypeDTO todoTypeDTO, ProgressStatus progressStatus
+                              ) {
         this.todoId = todoId;
         this.title = title;
         this.content = content;
         this.dueAt = dueAt;
-        this.progressStatus = progressStatus;
         this.managers = managers;
         this.createUserName = createUserName;
         this.createUserId = createUserId;
         this.todoTypeDTO = todoTypeDTO;
+        this.progressStatus = progressStatus;
     }
 
     // equals & hashCode를 todoId 기준으로 오버라이딩 필요
