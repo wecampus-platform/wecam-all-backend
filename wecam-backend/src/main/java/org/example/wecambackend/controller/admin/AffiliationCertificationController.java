@@ -10,6 +10,7 @@ import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.CurrentUser;
 import org.example.wecambackend.config.security.annotation.HasAffiliationApprovalAuthority;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
+import org.example.wecambackend.dto.requestDTO.AffiliationApprovalRequest;
 import org.example.wecambackend.dto.responseDTO.AffiliationCertificationSummaryResponse;
 import org.example.model.affiliation.AffiliationCertificationId;
 import org.example.model.enums.AuthenticationType;
@@ -90,6 +91,31 @@ public class AffiliationCertificationController {
 
         affiliationCertificationAdminService.approveAffiliationRequest(id, councilId, currentUser);
         return ResponseEntity.ok("소속 인증 요청이 승인되었습니다.");
+    }
+
+
+    @IsCouncil
+    @HasAffiliationApprovalAuthority
+    @Operation(
+            summary = "학생회 관리자 페이지 소속 인증 전체 선택 요청 승인",
+            description = "해당 학생회가 관리하는 조직으로 들어온 소속 인증 요청 전체 승인을 진행함. ",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
+    )
+    @PostMapping("/select/approve")
+    public ResponseEntity<?> approveSelectAffiliationRequest(
+            @RequestBody List<AffiliationApprovalRequest> requests,
+            @CurrentUser UserDetailsImpl currentUser
+    ) {
+        Long councilId = CouncilContextHolder.getCouncilId();
+        List<AffiliationApprovalRequest> failedList =
+                affiliationCertificationAdminService.approveAffiliationRequests(requests, councilId, currentUser);
+
+        if (failedList.isEmpty()) {
+            return ResponseEntity.ok("전체 요청이 성공적으로 승인되었습니다.");
+        } else {
+            return ResponseEntity.status(207).body(failedList);
+        }
     }
 
     @IsCouncil

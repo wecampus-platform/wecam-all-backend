@@ -6,6 +6,7 @@ import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.dto.projection.AffiliationFileProjection;
+import org.example.wecambackend.dto.requestDTO.AffiliationApprovalRequest;
 import org.example.wecambackend.dto.responseDTO.AffiliationCertificationSummaryResponse;
 import org.example.wecambackend.dto.responseDTO.AffiliationVerificationResponse;
 import org.example.model.council.Council;
@@ -26,6 +27,7 @@ import org.example.wecambackend.service.client.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -185,4 +187,18 @@ public class AffiliationCertificationAdminService {
     }
 
     private final AdminFileStorageService adminFileStorageService;
+
+    public List<AffiliationApprovalRequest> approveAffiliationRequests(List<AffiliationApprovalRequest> requests, Long councilId, UserDetailsImpl currentUser) {
+        List<AffiliationApprovalRequest> failedList = new ArrayList<>();
+        for (AffiliationApprovalRequest req : requests) {
+            try {
+                AffiliationCertificationId id = new AffiliationCertificationId(req.getUserId(), req.getAuthType());
+                approveAffiliationRequest(id, councilId, currentUser);
+            } catch (BaseException e) {
+                log.warn("[소속 인증 승인 실패] userId={}, authType={}, 이유={}", req.getUserId(), req.getAuthType(), e.getMessage());
+                failedList.add(req); // 실패한 요청 저장
+            }
+        }
+        return failedList;
+    }
 }

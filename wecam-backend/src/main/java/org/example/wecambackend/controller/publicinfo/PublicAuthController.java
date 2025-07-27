@@ -2,6 +2,7 @@ package org.example.wecambackend.controller.publicinfo;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.wecambackend.dto.auto.LoginRequest;
 import org.example.wecambackend.dto.auto.LoginResponse;
@@ -28,7 +29,7 @@ public class PublicAuthController {
             description = "학생 정보를 입력받아 회원가입을 처리합니다."
     )
     @PostMapping("/sign/student")
-    public ResponseEntity<?> registerStudent(@RequestBody StudentRegisterRequest request) {
+    public ResponseEntity<?> registerStudent(@Valid @RequestBody StudentRegisterRequest request) {
         authService.registerStudent(request);
         return ResponseEntity.ok("회원가입이 완료되었습니다.");
     }

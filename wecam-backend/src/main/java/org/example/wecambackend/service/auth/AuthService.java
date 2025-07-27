@@ -113,6 +113,17 @@ public class AuthService {
             throw new BaseException (BaseResponseStatus.EMAIL_DUPLICATED);
         }
 
+        if (req.getEmail() == null ||
+                req.getPassword() == null ||
+                req.getPhoneNumber() == null ||
+                req.getName() == null ||
+                req.getEnrollYear() == null ||
+                req.getSelectSchoolId() == null ||
+                req.getSelectOrganizationId() == null) {
+
+            throw new BaseException(BaseResponseStatus.INVALID_SIGNUP_REQUEST);
+        }
+
         //user 생성
         User user = User.builder()
                 .email(req.getEmail())

@@ -28,7 +28,7 @@ public enum BaseResponseStatus {
     INVALID_COLLEGE_ORG(false, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 단과대학 조직입니다."),
     INVALID_DEPARTMENT_ORG(false, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 학과 조직입니다."),
     INVALID_USER(false, HttpStatus.BAD_REQUEST.value(), "유효하지 않은 사용자입니다."),
-
+    INVALID_SIGNUP_REQUEST(false, HttpStatus.BAD_REQUEST.value(),"회원가입 필수값이 누락되었습니다."),
     //초대코드 만료
     INVITATION_CODE_EXPIRED(false, HttpStatus.BAD_REQUEST.value(), "만료된 초대코드입니다."),
 
