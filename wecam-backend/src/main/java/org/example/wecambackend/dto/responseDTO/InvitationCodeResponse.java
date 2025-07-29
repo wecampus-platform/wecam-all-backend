@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class InvitationCodeResponse {
 
+    private Long invitationId;
+
     private String code;
     private String makeUser;
 
