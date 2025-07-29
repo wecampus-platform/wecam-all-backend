@@ -59,7 +59,20 @@ public class TodoController {
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        todoService.createTodo(councilId,request, files, userDetails.getId());
+        // ✅ 로그 출력
+        System.out.println("📝 [POST /create] 할 일 등록 요청 도착");
+        System.out.println("    🔸 유저 ID: " + userDetails.getId());
+        System.out.println("    🔸 학생회 이름: " + councilName);
+        System.out.println("    🔸 학생회 ID: " + councilId);
+        System.out.println("    🔸 제목: " + request.getTitle());
+        System.out.println("    🔸 마감일: " + request.getDueAt());
+        System.out.println("    🔸 담당자 수: " + (request.getManagers() != null ? request.getManagers().size() : 0));
+        System.out.println("    🔸 첨부파일 수: " + (files != null ? files.size() : 0));
+
+        // 실제 로직 실행
+        todoService.createTodo(councilId, request, files, userDetails.getId());
+
+        System.out.println("✅ 할 일 등록 완료");
         return ResponseEntity.ok("할일 등록이 완료되었습니다.");
     }
 
@@ -116,8 +129,17 @@ public class TodoController {
             @RequestParam(required = false) ProgressStatus progressStatus
             ) {
         Long councilId = CouncilContextHolder.getCouncilId();
+        System.out.println("💬 [GET /list] 요청 도착");
+        System.out.println("    🔸 유저 ID: " + userDetails.getId());
+        System.out.println("    🔸 학생회 이름: " + councilName);
+        System.out.println("    🔸 councilId (from Redis): " + councilId);
+        System.out.println("    🔸 todoType: " + todoType);
+        System.out.println("    🔸 progressStatus: " + progressStatus);
+
         List<TodoSimpleResponse> response = todoService.getAllTodoList(
                 userDetails.getId(), councilId, todoType, progressStatus);
+
+        System.out.println("    🔹 반환 항목 수: " + response.size());
         return ResponseEntity.ok(response);
     }
 
