@@ -73,6 +73,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     councilIds = councilMemberRepository.findCouncilIdByUserUserPkIdAndIsActiveTrue(userId);
                 }
 
+                System.out.println("👤 [JwtFilter] 사용자 ID: " + userId);
+                System.out.println("🎓 [JwtFilter] 사용자 역할: " + userRole);
+                System.out.println("🏛️ [JwtFilter] 학생회 ID 목록: " + councilIds);
+
                 UserDetailsImpl userDetails = new UserDetailsImpl(
                         userId,
                         user.getEmail(),
@@ -95,6 +99,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 CurrentUserContext.set(userDetails);
+
+
+                System.out.println("✅ [JwtFilter] 인증 객체 등록 완료: " + userDetails.getUsername());
+                System.out.println("🔓 [JwtFilter] 권한 목록: " + userDetails.getAuthorities());
             }
         }
 
