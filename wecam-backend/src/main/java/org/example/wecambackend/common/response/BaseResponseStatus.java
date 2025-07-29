@@ -41,6 +41,8 @@ public enum BaseResponseStatus {
     MISSING_COUNCIL_ID_PARAM(false, HttpStatus.BAD_REQUEST.value(), "councilId 파라미터를 찾을 수 없습니다."),
     MISSING_ENTITY_ID_PARAM(false,  HttpStatus.BAD_REQUEST.value(), "리소스 ID 파라미터가 누락되었습니다."),
 
+    FILE_EMPTY(false, HttpStatus.BAD_REQUEST.value(), "빈 파일은 저장할 수 없습니다."),
+
     /**
      * 401 : 인증 필요
      */

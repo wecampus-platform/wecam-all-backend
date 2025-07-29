@@ -5,6 +5,7 @@ import org.example.model.user.UserSignupInformation;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.repos.UserSignupInformationRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.example.wecambackend.common.response.BaseResponseStatus.USER_NOT_FOUND;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,12 +37,15 @@ public class MyPageService {
     private final PhoneEncryptor phoneEncryptor;
     private final UserPrivateRepository userPrivateRepository;
 
+    @Value("${app.file.url-prefix}")
+    private String urlPrefix;
+
     @Transactional(readOnly = true)
     public MyPageResponse getMyPageInfo(UserDetailsImpl currentUser) {
 
         // 1. 유저 + organization 즉시 로딩
         User user = userRepository.findByIdWithOrganization(currentUser.getId())
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.USER_NOT_FOUND));
+                .orElseThrow(() -> new BaseException(USER_NOT_FOUND));
 
         // 3. 전화번호 복호화
         String phoneNumber = maskPhoneNumber(phoneEncryptor.decrypt(
@@ -50,7 +56,8 @@ public class MyPageService {
         if (user.getRole().equals(UserRole.UNAUTH)) {
 
             UserSignupInformation signInfo = userSignupInformationRepository.findByUser_UserPkId(currentUser.getId())
-                    .orElseThrow(() -> new BaseException(BaseResponseStatus.USER_NOT_FOUND));
+                    .orElseThrow(() -> new BaseException(USER_NOT_FOUND));
+
             return MyPageResponse.builder()
                     .role(user.getRole())
                     .isAuthentication(user.isAuthentication())
@@ -65,9 +72,16 @@ public class MyPageService {
 
             // 2. 유저 정보
             UserInformation info = userInformationRepository.findByUser_UserPkId(currentUser.getId())
-                    .orElseThrow(() -> new BaseException(BaseResponseStatus.USER_NOT_FOUND));
+                    .orElseThrow(() -> new BaseException(USER_NOT_FOUND));
             // 4. 조직 계층 이름 리스트
             List<String> hierarchyList = getOrganizationNameHierarchy(user.getOrganization());
+
+            String path = info.getProfileImagePath(); // e.g. "PROFILE/uuid_파일명.png"
+            String imageUrl = null, thumbnailUrl = null;
+            if (path != null) {
+                imageUrl      = urlPrefix + "/" + path;
+                thumbnailUrl  = urlPrefix + "/" + path.replaceFirst("PROFILE/", "PROFILE_THUMB/");
+            }
 
             return MyPageResponse.builder()
                     .organizationId(user.getOrganizationId())
@@ -83,6 +97,8 @@ public class MyPageService {
                     .universityId(info.getUniversity().getSchoolId())
                     .organizationHierarchyList(hierarchyList)
                     .username(user.getName())
+                    .profileImageUrl(imageUrl)
+                    .profileThumbnailUrl(thumbnailUrl)
                     .build();
         }
     }
