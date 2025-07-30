@@ -408,7 +408,15 @@ public class TodoService {
         }
 
         return allTodos.stream()
-                .filter(todo -> progressStatus == null || todo.getProgressStatus() == progressStatus)
+                .filter(todo -> {
+                    if (progressStatus == null) return true;
+                    if (progressStatus == ProgressStatus.DUE_TODAY) { // 오늘까지
+                        return todo.getProgressStatus() != ProgressStatus.COMPLETED &&
+                                todo.getDueAt() != null &&
+                                !todo.getDueAt().isAfter(LocalDate.now().atTime(LocalTime.MAX)); // 오늘까지
+                    }
+                    return todo.getProgressStatus() == progressStatus;
+                })
                 .sorted(Comparator.comparing(TodoSimpleResponse::getDueAt, Comparator.nullsLast(Comparator.naturalOrder()))) // dueAt이 null이면 가장 마지막으로
                 .toList();
     }
