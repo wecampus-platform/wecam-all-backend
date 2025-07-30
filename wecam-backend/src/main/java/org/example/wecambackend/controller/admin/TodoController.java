@@ -105,10 +105,16 @@ public class TodoController {
                     @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
     )
     public ResponseEntity<TodoDetailResponse> getTodoDetail(@PathVariable Long todoId,
-                                                            @PathVariable String councilName
-    ) {
+                                                            @PathVariable String councilName,
+                                                            @AuthenticationPrincipal UserDetailsImpl userDetails
+
+                                                            ) {
         TodoDetailResponse response = todoService.getTodoDetail(todoId);
-        System.out.println("디버깅 응답: " + response);
+        System.out.println("💬 [GET /DETAIL] 요청 도착");
+        System.out.println("    🔸 유저 ID: " + userDetails.getId());
+        System.out.println("    🔸 학생회 이름: " + councilName);
+        System.out.println("    🔸 요청온 todoId: " + todoId);
+        System.out.println("    🔸 response: " + response);
         return ResponseEntity.ok(response);
     }
 
@@ -157,8 +163,13 @@ public class TodoController {
             @PathVariable String councilName
 
     ) {
-
+        Long councilId = CouncilContextHolder.getCouncilId();
         todoService.updateTodoStatus(todoId,userDetails.getId(), request.getProgressStatus());
+        System.out.println("💬 [patch/status] 요청 도착");
+        System.out.println("    🔸 유저 ID: " + userDetails.getId());
+        System.out.println("    🔸 학생회 이름: " + councilName);
+        System.out.println("    🔸 councilId (from Redis): " + councilId);
+        System.out.println("    🔸 변경요청된 progressStatus: " + request.getProgressStatus());
 
         return ResponseEntity.ok("진행 상태가 변경되었습니다.");
     }
