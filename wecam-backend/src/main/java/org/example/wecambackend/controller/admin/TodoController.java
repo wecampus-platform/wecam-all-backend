@@ -15,6 +15,7 @@ import org.example.model.todo.Todo;
 import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.CheckOwner;
+import org.example.wecambackend.config.security.annotation.CheckTodoAccess;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
 import org.example.wecambackend.dto.Enum.TodoTypeDTO;
 import org.example.wecambackend.dto.requestDTO.TodoCreateRequest;
@@ -98,7 +99,7 @@ public class TodoController {
     }
 
     @IsCouncil // 접속한 유저가 선택한 학생회 관리지 페이지가 맞는지 (프론트에서 주는 councilId 와 Redis 에 저장해두었던 학생회 접속 Id 비교)
-    @CheckOwner(entity = Todo.class, idParam = "todoId", authorGetter = "getCreateUser.getUserPkId")
+    @CheckTodoAccess(idParam = "todoId")
     @GetMapping("/{todoId}")
     @Operation(summary = "할 일 상세 조회",
             parameters = {

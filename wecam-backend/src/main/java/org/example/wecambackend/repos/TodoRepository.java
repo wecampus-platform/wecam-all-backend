@@ -25,6 +25,9 @@ public interface TodoRepository extends JpaRepository<Todo,Long> {
 
     List<Todo> findAllByCreateUser_UserPkIdAndCouncil_Id(Long userId,Long councilId);
 
+    @Query("SELECT t FROM Todo t LEFT JOIN FETCH t.managers m LEFT JOIN FETCH m.user WHERE t.id = :todoId")
+    Optional<Todo> findWithManagersAndUsersById(@Param("todoId") Long todoId);
+
     List<Todo> findByCouncil_IdAndManagers_User_UserPkIdAndDueAtBetween(
             Long councilId,
             Long userId,
