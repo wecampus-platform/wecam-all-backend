@@ -2,6 +2,7 @@ package org.example.model.todo;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.model.common.BaseTimeEntity;

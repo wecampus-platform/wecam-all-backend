@@ -1,5 +1,7 @@
 package org.example.wecambackend.service.admin;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.council.Council;
@@ -48,6 +50,8 @@ public class TodoService {
     private final TodoFileRepository todoFileRepository;
     private final CouncilMemberRepository councilMemberRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * [설명]
@@ -140,20 +144,6 @@ public class TodoService {
         // 2. 담당자 변경
         updateTodoManagers(todo,request.getManagers(),councilId);
 
-        List<Long> managers = request.getManagers();
-        if (managers == null || managers.isEmpty()) {
-            // 기본 작성자만 담당자로 지정
-            TodoManager managerEntity = TodoManager.of(todo, todo.getCreateUser());
-            todoManagerRepository.save(managerEntity);
-        } else {
-            for (Long managerId : managers) {
-                User manager = councilMemberRepository.findUserByUserUserPkIdAndCouncil_IdAndIsActiveTrue(managerId, councilId)
-                        .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
-
-                TodoManager managerEntity = TodoManager.of(todo, manager);
-                todoManagerRepository.save(managerEntity);
-            }
-        }
 
         // 3. 첨부파일 삭제 요청 처리
         if (request.getDeleteFileIds() != null && !request.getDeleteFileIds().isEmpty()) {
@@ -189,6 +179,7 @@ public class TodoService {
 
      [필요한 변수]
      todo: 대상 할 일 엔티티
+     TODO : 나중에 , 선택한 학생회 애들 (멤버들) 이 실제로 학생회 멤버인지 확인절차 필요함
      newManagerIds: 새로운 담당자 ID 리스트
      councilId: 해당 할 일이 소속된 학생회 ID (담당자 유효성 검증용)
      [반환값]
@@ -196,17 +187,39 @@ public class TodoService {
      [호출 위치 / 사용 예시]
      updateTodo 내부에서 담당자 목록 변경 시 사용
      */
+    @Transactional
     public void updateTodoManagers(Todo todo, List<Long> newManagerIds, Long councilId) {
-        // 1. 기존 매니저 전체 삭제
-        todoManagerRepository.deleteByTodo(todo);
+        List<TodoManager> existing = todoManagerRepository.findByTodo_TodoId(todo.getTodoId());
+        Set<Long> existingIds = existing.stream()
+                .map(tm -> tm.getUser().getUserPkId())
+                .collect(Collectors.toSet());
 
-        // 2. 새로운 매니저 등록
-        for (Long userId : newManagerIds) {
-            User user = councilMemberRepository
-                    .findUserByUserUserPkIdAndCouncil_IdAndIsActiveTrue(userId, councilId)
-                    .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MISMATCH));
-            TodoManager manager = TodoManager.of(todo, user);
-            todoManagerRepository.save(manager);
+        Set<Long> newIds = new HashSet<>(Optional.ofNullable(newManagerIds).orElse(Collections.emptyList()));
+        Set<Long> toAdd = new HashSet<>(newIds);
+        toAdd.removeAll(existingIds);
+
+        Set<Long> toDelete = new HashSet<>(existingIds);
+        toDelete.removeAll(newIds);
+
+        if (!toDelete.isEmpty()) {
+            todoManagerRepository.deleteByTodo_TodoIdAndUser_UserPkIdIn(todo.getTodoId(), toDelete);
+            entityManager.flush();
+            entityManager.clear();
+        }
+
+        // 🧠 todo가 clear 이후 detach되므로 다시 붙여야 함
+        Todo mergedTodo = entityManager.merge(todo);
+
+        if (newIds.isEmpty()) {
+            // 기본 작성자만 추가
+            TodoManager tm = TodoManager.of(mergedTodo, mergedTodo.getCreateUser());
+            todoManagerRepository.save(tm);
+        } else {
+            for (Long id : toAdd) {
+                User manager = entityManager.getReference(User.class, id);
+                TodoManager tm = TodoManager.of(mergedTodo, manager);
+                todoManagerRepository.save(tm);
+            }
         }
     }
 

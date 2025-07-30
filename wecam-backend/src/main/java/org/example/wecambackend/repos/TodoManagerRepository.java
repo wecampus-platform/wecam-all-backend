@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 public interface TodoManagerRepository extends JpaRepository<TodoManager, TodoManagerId> {
     @Query("""
@@ -22,4 +23,8 @@ public interface TodoManagerRepository extends JpaRepository<TodoManager, TodoMa
     boolean existsByTodo_TodoIdAndUser_UserPkId(Long todoId, Long userId);
 
     void deleteByTodo(Todo todo);
+
+    List<TodoManager> findByTodo_TodoId(Long todoId);
+
+    void deleteByTodo_TodoIdAndUser_UserPkIdIn(Long todoId, Set<Long> toDelete);
 }
