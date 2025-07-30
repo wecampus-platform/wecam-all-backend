@@ -475,7 +475,7 @@ public class TodoService {
         List<Todo> weekTodos = todoRepository.findByCouncil_IdAndManagers_User_UserPkIdAndDueAtBetween(
                 councilId, userId, weekStart, weekEnd);
         int weekTotal = weekTodos.size();
-        int weekDone = (int) todayTodos.stream()
+        int weekDone = (int) weekTodos.stream()
                 .filter(todo -> todo.getProgressStatus() == ProgressStatus.COMPLETED) // 완료한 일
                 .count();
         int weekRate = (weekTotal == 0) ? 0 : (int) ((double) weekDone / weekTotal * 100);
@@ -483,14 +483,14 @@ public class TodoService {
         // 받은 일 _ 담당자가 나인 학생회 할일
         List<Todo> received = todoRepository.findAllByManagers_User_UserPkIdAndCouncil_Id(userId, councilId);
         int receivedTotal = received.size();
-        int receivedDone = (int) todayTodos.stream()
+        int receivedDone = (int) received.stream()
                 .filter(todo -> todo.getProgressStatus() == ProgressStatus.COMPLETED) // 완료한 일
                 .count();
 
         // 보낸 일
         List<Todo> sent = todoRepository.findAllByCreateUser_UserPkIdAndCouncil_Id(userId,councilId);
         int sentTotal = sent.size();
-        int sentDone =(int) todayTodos.stream()
+        int sentDone =(int) sent.stream()
                 .filter(todo -> todo.getProgressStatus() == ProgressStatus.COMPLETED) // 완료한 일
                 .count();
 

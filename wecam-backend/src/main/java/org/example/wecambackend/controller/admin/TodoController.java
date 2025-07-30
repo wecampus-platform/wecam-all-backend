@@ -196,7 +196,7 @@ public class TodoController {
             parameters = {
                     @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
     )
-    public ResponseEntity<TodoSummaryResponse> deleteTodo(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ResponseEntity<TodoSummaryResponse> summaryTodo(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                           @PathVariable String councilName) {
         Long councilId = CouncilContextHolder.getCouncilId();
         TodoSummaryResponse response = todoService.getTodoSummary(councilId,userDetails.getId());
