@@ -11,11 +11,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface TodoManagerRepository extends JpaRepository<TodoManager, TodoManagerId> {
-    List<TodoManager> findByTodo_TodoId(Long todo);
-
-    void deleteByTodoAndUserUserPkId(Todo todo, Long removeId);
-
-
     @Query("""
     SELECT new org.example.wecambackend.dto.projection.ManagerInfo(
         u.userPkId, u.name
@@ -26,4 +21,5 @@ public interface TodoManagerRepository extends JpaRepository<TodoManager, TodoMa
 
     boolean existsByTodo_TodoIdAndUser_UserPkId(Long todoId, Long userId);
 
+    void deleteByTodo(Todo todo);
 }

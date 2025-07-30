@@ -197,34 +197,16 @@ public class TodoService {
      updateTodo 내부에서 담당자 목록 변경 시 사용
      */
     public void updateTodoManagers(Todo todo, List<Long> newManagerIds, Long councilId) {
-        // 기존 매니저 ID들 조회
-        List<TodoManager> existingManagers = todoManagerRepository.findByTodo_TodoId(todo.getTodoId());
-        Set<Long> existingManagerIds = existingManagers.stream()
-                .map(tm -> tm.getUser().getUserPkId())
-                .collect(Collectors.toSet());
+        // 1. 기존 매니저 전체 삭제
+        todoManagerRepository.deleteByTodo(todo);
 
-        Set<Long> newManagerIdSet = new HashSet<>(newManagerIds);
-
-        // 추가해야 할 매니저 = 새 목록에 있지만 기존에는 없던 것
-        Set<Long> toAdd = new HashSet<>(newManagerIdSet);
-        toAdd.removeAll(existingManagerIds);
-
-        // 제거해야 할 매니저 = 기존 목록에는 있지만 새 목록에는 없는 것
-        Set<Long> toRemove = new HashSet<>(existingManagerIds);
-        toRemove.removeAll(newManagerIdSet);
-
-        // 삭제
-        for (Long removeId : toRemove) {
-            todoManagerRepository.deleteByTodoAndUserUserPkId(todo, removeId);
-        }
-
-        // 추가
-        for (Long addId : toAdd) {
-            User manager = councilMemberRepository
-                    .findUserByUserUserPkIdAndCouncil_IdAndIsActiveTrue(addId, councilId)
+        // 2. 새로운 매니저 등록
+        for (Long userId : newManagerIds) {
+            User user = councilMemberRepository
+                    .findUserByUserUserPkIdAndCouncil_IdAndIsActiveTrue(userId, councilId)
                     .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MISMATCH));
-            TodoManager newManager = TodoManager.of(todo, manager);
-            todoManagerRepository.save(newManager);
+            TodoManager manager = TodoManager.of(todo, user);
+            todoManagerRepository.save(manager);
         }
     }
 
