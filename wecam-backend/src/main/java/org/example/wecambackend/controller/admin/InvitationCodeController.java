@@ -12,6 +12,7 @@ import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.CheckCouncilEntity;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
+import org.example.wecambackend.dto.responseDTO.CreateTodoResponse;
 import org.example.wecambackend.dto.responseDTO.InvitationCodeResponse;
 import org.example.wecambackend.service.admin.InvitationCodeService;
 import org.springframework.http.ResponseEntity;
@@ -67,14 +68,14 @@ public class InvitationCodeController {
                     @Parameter(name = "codeType", description = "`student_member` 또는 `council_member` 중 선택", required = true)}
     )
     @PostMapping("/create/{codeType}")
-    public ResponseEntity<?> makeInvitationCode(
+    public ResponseEntity<CreateTodoResponse> makeInvitationCode(
             @PathVariable String councilName,
             @PathVariable CodeType codeType,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         Long councilId = CouncilContextHolder.getCouncilId();
-        invitationCodeService.createInvitationCode(codeType, userDetails.getId(),councilId);
-        return ResponseEntity.ok("초대 코드 생성이 완료되었습니다.");
+        return ResponseEntity.ok(invitationCodeService.createInvitationCode(codeType, userDetails.getId(),councilId));
+
     }
 
     @IsCouncil

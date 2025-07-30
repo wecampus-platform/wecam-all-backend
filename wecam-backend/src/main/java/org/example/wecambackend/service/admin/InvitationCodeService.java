@@ -19,6 +19,7 @@ import org.example.model.user.UserSignupInformation;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
+import org.example.wecambackend.dto.responseDTO.CreateTodoResponse;
 import org.example.wecambackend.dto.responseDTO.InvitationCodeResponse;
 import org.example.wecambackend.dto.responseDTO.InvitationUsedHistoryResponse;
 import org.example.wecambackend.repos.*;
@@ -52,7 +53,7 @@ public class InvitationCodeService {
     }
 
     @Transactional
-    public void createInvitationCode(CodeType codeType, Long userId,Long councilId){
+    public CreateTodoResponse createInvitationCode(CodeType codeType, Long userId, Long councilId){
     // 1. 유저 조회
     User user = entityFinderService.getUserByIdOrThrow(userId);
 
@@ -85,6 +86,13 @@ public class InvitationCodeService {
 
     // 5. 저장
     invitationCodeRepository.save(invitationCode);
+
+    CreateTodoResponse createTodoResponse = CreateTodoResponse.builder()
+            .code(invitationCode.getCode())
+            .expiredAt(invitationCode.getExpirationDate())
+            .build();
+
+    return createTodoResponse;
     }
 
     private static final int CODE_LENGTH = 6;
