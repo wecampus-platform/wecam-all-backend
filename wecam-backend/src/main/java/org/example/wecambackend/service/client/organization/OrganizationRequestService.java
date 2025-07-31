@@ -117,4 +117,8 @@ public class OrganizationRequestService {
             }
         }
     }
+
+    public String viewSchoolName(Long userId){
+        return userSignupInformationRepository.findSchoolNameByUserPkId(userId);
+    }
 }
