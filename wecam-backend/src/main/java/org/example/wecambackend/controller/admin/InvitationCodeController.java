@@ -118,7 +118,7 @@ public class InvitationCodeController {
             }
 
     )
-    @PostMapping("/{invitationId}/show/history")
+    @GetMapping("/{invitationId}/show/history")
     public ResponseEntity<?> ShowHistoryInvitationCode(
             @PathVariable String councilName,
             @PathVariable Long invitationId
