@@ -21,7 +21,7 @@ public interface UserSignupInformationRepository extends JpaRepository<UserSignu
         ELSE s.school_name 
       END AS school_name 
     FROM user_signup_information usi 
-    LEFT JOIN university s ON usi.select_school_id = s.id 
+    LEFT JOIN university s ON usi.select_school_id = s.school_id 
     WHERE usi.user_pk_id = :userPkId
     """, nativeQuery = true)
     String findSchoolNameByUserPkId(@Param("userPkId") Long userPkId);
