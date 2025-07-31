@@ -257,6 +257,7 @@ public class InvitationCodeService {
                             .usedAtTime(usage.getUsedAt())
                             .userName(user.getName())
                             .userEmail(user.getEmail())
+                            .userPkId(user.getUserPkId())
                             .build();
                 })
                 .collect(Collectors.toList());

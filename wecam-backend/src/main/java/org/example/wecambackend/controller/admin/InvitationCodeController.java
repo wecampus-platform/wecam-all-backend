@@ -9,11 +9,13 @@ import lombok.RequiredArgsConstructor;
 import org.example.model.enums.CodeType;
 import org.example.model.invitation.InvitationCode;
 import org.example.wecambackend.common.context.CouncilContextHolder;
+import org.example.wecambackend.common.response.BaseResponse;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.CheckCouncilEntity;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
 import org.example.wecambackend.dto.responseDTO.CreateTodoResponse;
 import org.example.wecambackend.dto.responseDTO.InvitationCodeResponse;
+import org.example.wecambackend.dto.responseDTO.InvitationUsedHistoryResponse;
 import org.example.wecambackend.service.admin.InvitationCodeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -119,12 +121,11 @@ public class InvitationCodeController {
 
     )
     @GetMapping("/{invitationId}/show/history")
-    public ResponseEntity<?> ShowHistoryInvitationCode(
+    public BaseResponse<List<InvitationUsedHistoryResponse>> ShowHistoryInvitationCode(
             @PathVariable String councilName,
             @PathVariable Long invitationId
     ) {
         Long councilId = CouncilContextHolder.getCouncilId();
-        return ResponseEntity.ok(invitationCodeService.showHistoryInvitationCode(invitationId));
+        return new BaseResponse(invitationCodeService.showHistoryInvitationCode(invitationId));
     }
-
 }
