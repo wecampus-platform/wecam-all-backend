@@ -139,4 +139,29 @@ public class AffiliationCertificationController {
         return new BaseResponse<>(BaseResponseStatus.SUCCESS);
     }
 
+
+    @IsCouncil
+    @HasAffiliationApprovalAuthority
+    @Operation(
+            summary = "학생회 관리자 페이지 소속 인증 요청 거절",
+            description = "해당 학생회가 관리하는 조직으로 들어온 소속 인증 요청을 거절함.",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
+    )
+    @PutMapping("/reject")
+    public BaseResponse<?> rejectAffiliationRequest(
+            @RequestParam("userId") Long userId,
+            @RequestParam("authType") AuthenticationType authType,
+            @CurrentUser UserDetailsImpl currentUser,
+            @RequestParam("reason") String reason
+    ) {
+        AffiliationCertificationId id = new AffiliationCertificationId(userId, authType);
+
+        Long councilId = CouncilContextHolder.getCouncilId();
+        affiliationCertificationAdminService.rejectAffiliationRequest(id, councilId, currentUser,reason);
+
+        //TODO : 나중에 알림 추가해야함.
+        return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+    }
+
 }

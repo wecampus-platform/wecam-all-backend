@@ -28,6 +28,7 @@ import org.example.wecambackend.service.client.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -67,7 +68,7 @@ public class AffiliationCertificationAdminService {
         }).toList();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<AffiliationCertificationSummaryResponse> getRequestsByCouncilIdList(Long councilId) {
         Council council = entityFinderService.getCouncilByIdOrThrow(councilId);
         Long organizationId = council.getOrganization().getOrganizationId();
@@ -76,7 +77,7 @@ public class AffiliationCertificationAdminService {
     }
 
 
-    @Transactional
+    @Transactional(readOnly = true)
     public AffiliationVerificationResponse getRequestsByAffiliationIdDetail(Long userId, AuthenticationType authenticationType,Long councilId) {
 
         AffiliationCertification ac =
@@ -205,5 +206,20 @@ public class AffiliationCertificationAdminService {
             }
         }
         return failedList;
+    }
+
+
+    // 거절 로직 , 이떄 reason 에 선택한 거절 사유가 들어간다.
+    public void rejectAffiliationRequest(AffiliationCertificationId id, Long councilId, UserDetailsImpl currentUser,String reason) {
+        AffiliationCertification cert = affiliationCertificationRepository.findById(id)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
+        User user = entityFinderService.getUserByIdOrThrow(currentUser.getId());
+        cert.setStatus(AuthenticationStatus.REJECTED);
+        cert.setReason(reason);
+        cert.setReviewedAt(LocalDateTime.now());
+        cert.setReviewUser(user);
+        affiliationCertificationRepository.save(cert);
+
+        log.warn("[소속 인증 거절] userId={}, 이유={}", currentUser.getId(),reason);
     }
 }
