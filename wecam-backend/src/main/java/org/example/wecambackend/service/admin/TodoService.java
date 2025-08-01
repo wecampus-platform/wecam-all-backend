@@ -423,6 +423,16 @@ public class TodoService {
         String createUserName = userRepository.findNameByUserPkId(createUserId);
         List<ManagerInfo> managers = todoManagerRepository.findManagersByTodoId(todoId);
 
+        LocalDate today = LocalDate.now();
+        LocalDate dueDate = todo.getDueAt() != null
+                ? todo.getDueAt().toLocalDate()
+                : null;
+
+        boolean dueToday = dueDate != null
+                && (dueDate.isEqual(today) || dueDate.isBefore(today))
+                && (todo.getProgressStatus() == ProgressStatus.NOT_STARTED
+                || todo.getProgressStatus() == ProgressStatus.IN_PROGRESS);
+
         return new TodoSimpleResponse(
                 todoId,
                 todo.getTitle(),
@@ -432,7 +442,8 @@ public class TodoService {
                 createUserId,
                 createUserName,
                 type,
-                todo.getProgressStatus()
+                todo.getProgressStatus(),
+                dueToday
         );
     }
 

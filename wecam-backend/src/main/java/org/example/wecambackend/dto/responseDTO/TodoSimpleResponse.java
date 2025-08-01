@@ -23,9 +23,12 @@ public class TodoSimpleResponse {
     private TodoTypeDTO todoTypeDTO;
     private ProgressStatus progressStatus;
 
+    // 오늘까지 태그 여부
+    private boolean dueToday;
+
     public TodoSimpleResponse(Long todoId, String title, String content,
                               LocalDateTime dueAt, List<ManagerInfo> managers,Long createUserId, String createUserName,
-                              TodoTypeDTO todoTypeDTO, ProgressStatus progressStatus
+                              TodoTypeDTO todoTypeDTO, ProgressStatus progressStatus, boolean dueToday
                               ) {
         this.todoId = todoId;
         this.title = title;
@@ -36,6 +39,7 @@ public class TodoSimpleResponse {
         this.createUserId = createUserId;
         this.todoTypeDTO = todoTypeDTO;
         this.progressStatus = progressStatus;
+        this.dueToday = dueToday;
     }
 
     // equals & hashCode를 todoId 기준으로 오버라이딩 필요
