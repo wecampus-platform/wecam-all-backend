@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.model.enums.ProgressStatus;
 import org.example.model.todo.Todo;
 import org.example.wecambackend.common.context.CouncilContextHolder;
+import org.example.wecambackend.common.response.BaseResponse;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.CheckOwner;
 import org.example.wecambackend.config.security.annotation.CheckTodoAccess;
@@ -129,7 +130,7 @@ public class TodoController {
                     @Parameter(name = "progressStatus", description = "진행 상태", required = false)
             }
     )
-    public ResponseEntity<List<TodoSimpleResponse>> getTodoList(
+    public BaseResponse<List<TodoSimpleResponse>> getTodoList(
             @PathVariable String councilName,
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(required = false) TodoTypeDTO todoType,
@@ -147,7 +148,7 @@ public class TodoController {
                 userDetails.getId(), councilId, todoType, progressStatus);
 
         System.out.println("    🔹 반환 항목 수: " + response.size());
-        return ResponseEntity.ok(response);
+        return new BaseResponse<>(response);
     }
 
 
