@@ -38,9 +38,8 @@ public class AffiliationCertificationController {
                     @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
     )
     @GetMapping("/requests/all")
-    public ResponseEntity<List<AffiliationCertificationSummaryResponse>> getAffiliationRequestsAll(
-            @RequestParam("councilId") Long councilId
-    ) {
+    public ResponseEntity<List<AffiliationCertificationSummaryResponse>> getAffiliationRequestsAll() {
+        Long councilId = CouncilContextHolder.getCouncilId();
         return ResponseEntity.ok(
                 affiliationCertificationAdminService.getRequestsByCouncilIdList(councilId)
         );
@@ -84,11 +83,10 @@ public class AffiliationCertificationController {
     public ResponseEntity<?> approveAffiliationRequest(
             @RequestParam("userId") Long userId,
             @RequestParam("authType") AuthenticationType authType,
-            @RequestParam("councilId") Long councilId,
             @CurrentUser UserDetailsImpl currentUser
     ) {
         AffiliationCertificationId id = new AffiliationCertificationId(userId, authType);
-
+        Long councilId = CouncilContextHolder.getCouncilId();
         affiliationCertificationAdminService.approveAffiliationRequest(id, councilId, currentUser);
         return ResponseEntity.ok("소속 인증 요청이 승인되었습니다.");
     }
@@ -130,11 +128,11 @@ public class AffiliationCertificationController {
     public ResponseEntity<?> deleteAffiliationRequest(
             @RequestParam("userId") Long userId,
             @RequestParam("authType") AuthenticationType authType,
-            @RequestParam("councilId") Long councilId,
             @CurrentUser UserDetailsImpl currentUser
     ) {
         AffiliationCertificationId id = new AffiliationCertificationId(userId, authType);
 
+        Long councilId = CouncilContextHolder.getCouncilId();
         affiliationCertificationAdminService.deleteAffiliationRequest(id, councilId, currentUser);
         return ResponseEntity.ok("소속 인증 요청이 삭제되었습니다.");
     }
