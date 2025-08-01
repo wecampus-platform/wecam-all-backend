@@ -2,6 +2,7 @@ package org.example.wecambackend.service.admin;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.model.enums.AuthenticationStatus;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
@@ -117,14 +118,17 @@ public class AffiliationCertificationAdminService {
     }
 
 
+    //TODO: 요청에 대한 승인 , 거절 진행시 user 의 활동여부 확인 로직 공통으로 만들기
+
     //복합 도메인 트랜잭션 처리->
     @Transactional
     public void approveAffiliationRequest(AffiliationCertificationId id, Long councilId,UserDetailsImpl currentUser) {
         // 인증 요청 조회
         AffiliationCertification cert = affiliationCertificationRepository.findById(id)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
-
-
+        if (cert.getStatus() == AuthenticationStatus.APPROVED ||cert.getStatus() == AuthenticationStatus.REJECTED ||cert.getStatus() == AuthenticationStatus.EXPIRED ) {
+            throw new BaseException(BaseResponseStatus.ACCESS_DENIED_REQUEST);
+        }
         // 요청이 해당 councilId가 관리하는 범위에 있는지 검증 (선택) --- TODO: 할지 말지 모르겠음. 우선 제외
         User uploadUser = cert.getUser();
         AuthenticationType type = cert.getAuthenticationType();
@@ -160,6 +164,7 @@ public class AffiliationCertificationAdminService {
     private final SchoolRepository schoolRepository;
 
 
+    //TODO : 삭제하면 log 확인을 못함....
     //삭제
     @Transactional
     public void deleteAffiliationRequest(AffiliationCertificationId id, Long councilId, UserDetailsImpl currentUser) {

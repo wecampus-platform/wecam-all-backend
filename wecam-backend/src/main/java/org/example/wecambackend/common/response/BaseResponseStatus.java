@@ -73,6 +73,7 @@ public enum BaseResponseStatus {
     PHONE_INFO_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "전화번호 정보가 없습니다."),
     //로그인 시 이메일 정보 일치하지 않을 떄
     EMAIL_INFO_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "이메일 정보가 없습니다."),
+    ACCESS_DENIED_REQUEST(false, HttpStatus.NOT_FOUND.value(), "이미 승인됐거나 거절된 요청입니다."),
 
 
 
