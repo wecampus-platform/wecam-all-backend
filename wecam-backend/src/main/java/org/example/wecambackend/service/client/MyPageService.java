@@ -4,6 +4,7 @@ import org.example.model.enums.UserRole;
 import org.example.model.user.UserSignupInformation;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
+import org.example.wecambackend.dto.requestDTO.MyPageOrganizationEditRequest;
 import org.example.wecambackend.repos.UserSignupInformationRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,6 +119,44 @@ public class MyPageService {
     public static String maskPhoneNumber(String phoneNumber) {
         if (phoneNumber == null || phoneNumber.length() < 7) return phoneNumber;
         return phoneNumber.substring(0, 3) + "-****-" + phoneNumber.substring(phoneNumber.length() - 4);
+    }
+
+
+
+    //마이페이지 정보 편집 - 이름 수정
+    @Transactional
+    public String editUserName(Long userId,String userName){
+        User user = userRepository.findUserByUserPkId(userId).orElseThrow(()->new BaseException(USER_NOT_FOUND));
+        if (userName != null )
+        {user.setName(userName);
+        userRepository.save(user);}
+        return userName;
+    }
+
+    //마이페이지 정보 편집 - 학년 , 재학여부, 학번 수정
+    @Transactional
+    public void editUserOrganizationInfo(Long userId, MyPageOrganizationEditRequest req){
+        UserInformation userInformation = userInformationRepository.findByUser_UserPkId(userId).orElseThrow(()->
+                new BaseException(USER_NOT_FOUND));
+        boolean isModified = false;
+
+        if (req.getAcademicStatus() != null) {
+            userInformation.setAcademicStatus(req.getAcademicStatus());
+            isModified = true;
+        }
+        if (req.getSchoolGrade() != null) {
+            userInformation.setStudentGrade(req.getSchoolGrade());
+            isModified = true;
+        }
+        if (req.getStudentNumber() != null) {
+            userInformation.setStudentId(req.getStudentNumber());
+            isModified = true;
+        }
+
+        if (isModified) {
+            userInformationRepository.save(userInformation);
+        }
+
     }
 
     private final UserSignupInformationRepository userSignupInformationRepository;

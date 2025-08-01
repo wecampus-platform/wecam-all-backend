@@ -126,6 +126,6 @@ public class InvitationCodeController {
             @PathVariable Long invitationId
     ) {
         Long councilId = CouncilContextHolder.getCouncilId();
-        return new BaseResponse(invitationCodeService.showHistoryInvitationCode(invitationId));
+        return new BaseResponse<>(invitationCodeService.showHistoryInvitationCode(invitationId));
     }
 }
