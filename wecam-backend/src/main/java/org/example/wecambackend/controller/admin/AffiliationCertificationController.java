@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.wecambackend.common.context.CouncilContextHolder;
+import org.example.wecambackend.common.response.BaseResponse;
+import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.CurrentUser;
 import org.example.wecambackend.config.security.annotation.HasAffiliationApprovalAuthority;
@@ -80,7 +82,7 @@ public class AffiliationCertificationController {
                     @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
     )
     @PostMapping("/approve")
-    public ResponseEntity<?> approveAffiliationRequest(
+    public BaseResponse<?> approveAffiliationRequest(
             @RequestParam("userId") Long userId,
             @RequestParam("authType") AuthenticationType authType,
             @CurrentUser UserDetailsImpl currentUser
@@ -88,7 +90,7 @@ public class AffiliationCertificationController {
         AffiliationCertificationId id = new AffiliationCertificationId(userId, authType);
         Long councilId = CouncilContextHolder.getCouncilId();
         affiliationCertificationAdminService.approveAffiliationRequest(id, councilId, currentUser);
-        return ResponseEntity.ok("소속 인증 요청이 승인되었습니다.");
+        return new BaseResponse<>(BaseResponseStatus.SUCCESS);
     }
 
 
@@ -101,7 +103,7 @@ public class AffiliationCertificationController {
                     @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
     )
     @PostMapping("/select/approve")
-    public ResponseEntity<?> approveSelectAffiliationRequest(
+    public BaseResponse<?> approveSelectAffiliationRequest(
             @RequestBody List<AffiliationApprovalRequest> requests,
             @CurrentUser UserDetailsImpl currentUser
     ) {
@@ -110,9 +112,9 @@ public class AffiliationCertificationController {
                 affiliationCertificationAdminService.approveAffiliationRequests(requests, councilId, currentUser);
 
         if (failedList.isEmpty()) {
-            return ResponseEntity.ok("전체 요청이 성공적으로 승인되었습니다.");
+            return new BaseResponse<>(BaseResponseStatus.SUCCESS);
         } else {
-            return ResponseEntity.status(207).body(failedList);
+            return new BaseResponse<>(BaseResponseStatus.PARTIAL_SUCCESS,failedList);
         }
     }
 
@@ -125,7 +127,7 @@ public class AffiliationCertificationController {
                     @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER)}
     )
     @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteAffiliationRequest(
+    public BaseResponse<?> deleteAffiliationRequest(
             @RequestParam("userId") Long userId,
             @RequestParam("authType") AuthenticationType authType,
             @CurrentUser UserDetailsImpl currentUser
@@ -134,7 +136,7 @@ public class AffiliationCertificationController {
 
         Long councilId = CouncilContextHolder.getCouncilId();
         affiliationCertificationAdminService.deleteAffiliationRequest(id, councilId, currentUser);
-        return ResponseEntity.ok("소속 인증 요청이 삭제되었습니다.");
+        return new BaseResponse<>(BaseResponseStatus.SUCCESS);
     }
 
 }

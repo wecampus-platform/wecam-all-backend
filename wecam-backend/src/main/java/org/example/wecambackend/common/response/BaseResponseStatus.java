@@ -13,6 +13,10 @@ public enum BaseResponseStatus {
      */
     SUCCESS(true, HttpStatus.OK.value(), "요청에 성공하였습니다."),
 
+
+
+    PARTIAL_SUCCESS(true, 207, "일부 항목 처리에 실패했습니다."),
+
     /**
      * 400 : Request, Response 오류
      */
