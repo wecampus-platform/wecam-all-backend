@@ -6,36 +6,39 @@ package org.example.model.enums;
  */
 public enum CouncilPermissionType {
 
-    // 학생회 관리자 페이지 접근 권한
+    // 1. 학생회 관리자 페이지 접속
     ACCESS_ADMIN_PAGE("학생회 관리자 페이지 접속"),
 
-    // 구성원 권한 부여 (예: 부서장, 일반 구성원 등)
+    // 2. 권한 부여 가능 여부 (구성원 에게 역할 및 권한 설정 가능)
     GRANT_ROLE("구성원 권한 부여"),
 
-    // 구성원 목록 조회
+    // 3. 구성원 목록 열람
     VIEW_MEMBERS("구성원 열람"),
 
-    // 구성원 제명 처리
+    // 4. 구성원 제명
     REMOVE_MEMBER("구성원 제명"),
 
-    // 부서 생성 및 부서명 수정
+    // 5. 부서 생성 및 부서명 변경
     MANAGE_DEPARTMENT("부서 생성 및 부서명 변경"),
 
-    // 부서에 인원 배치
+    // 6. 부서 배정 (인원 배치)
     ASSIGN_TO_DEPARTMENT("부서 배정"),
 
-    // 초대 코드 생성 (학생회 or 일반)
-    GENERATE_INVITATION_CODE("초대코드 생성"),
+    // 7. 초대 코드 생성
+    GENERATE_INVITATION_CODE("초대 코드 생성"),
 
-    // 소속 인증 요청 승인/반려
-    PROCESS_AFFILIATION_VERIFICATION("소속인증 처리"),
+    // 8. 소속 인증 요청 승인/반려
+    PROCESS_AFFILIATION_VERIFICATION("소속 인증 처리"),
 
-    // 공지사항 작성, 수정, 삭제 등
-    MANAGE_NOTICE("공지 관리");
+    // 9. 공지 사항 작성/수정/삭제
+    MANAGE_NOTICE("공지사항 관리"),
+
+    // 10. 학생 개인 정보 (전화 번호와 학번 까지 _ 마스킹 없이 볼수 있게. )
+    VIEW_STUDENT_PRIVATE_INFO("학생 개인 정보 조회");
 
     private final String description;
 
-    CouncilPermissionType (String description) {
+    CouncilPermissionType(String description) {
         this.description = description;
     }
 

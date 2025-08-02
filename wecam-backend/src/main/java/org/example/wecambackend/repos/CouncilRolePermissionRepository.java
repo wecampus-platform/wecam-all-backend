@@ -1,9 +1,9 @@
 package org.example.wecambackend.repos;
 
-import org.example.model.council.CouncilMemberPermission;
+import org.example.model.council.CouncilRolePermission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CouncilMemberPermissionRepository extends JpaRepository<CouncilMemberPermission, Long> {
+public interface CouncilRolePermissionRepository extends JpaRepository<CouncilRolePermission, Long> {
 }

@@ -4,14 +4,16 @@ import jakarta.persistence.*;
 import org.example.model.enums.CouncilPermissionType;
 
 @Entity
-public class CouncilMemberPermission {
+@Table(name = "council_role_permission")
+public class CouncilRolePermission {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private CouncilMember member;
+    @JoinColumn(name = "department_role_id")
+    private CouncilDepartmentRole role;
 
     @Enumerated(EnumType.STRING)
     private CouncilPermissionType permission;
