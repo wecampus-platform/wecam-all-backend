@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.*;
 import org.example.model.council.Council;
+import org.example.model.council.CouncilDepartment;
+import org.example.model.council.CouncilDepartmentRole;
 import org.example.model.council.CouncilMember;
 import org.example.model.enums.MemberRole;
 
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -74,6 +77,7 @@ public class AdminOrganizationService {
         //실제 워크스페이스(학생회 테이블) 생성
         createWorkspace(request.getCouncilName(),request);
 
+
         //학생회장 _ 신청서 작성자 회원가입 완료 시키기
         organizationRequestRepository.save(request);
 
@@ -85,9 +89,9 @@ public class AdminOrganizationService {
         return organizationRequestDTOS;
     }
 
-    private void createWorkspace(String councilName,OrganizationRequest request) {
+    private void createWorkspace(String councilName, OrganizationRequest request) {
         OrganizationType type = request.getOrganizationType(); // enum 타입
-// 1. 조직 이름 추출
+        // 1. 조직 이름 추출
         String orgName = switch (type) {
             case UNIVERSITY -> request.getSchoolName();
             case COLLEGE -> request.getCollegeName();
@@ -95,7 +99,7 @@ public class AdminOrganizationService {
             default -> throw new IllegalArgumentException("알 수 없는 조직 타입");
         };
 
-// 2. schoolId 결정
+        // 2. schoolId 결정
         Long schoolId;
         if (request.getSchoolName() != null) {
             schoolId = universityRepository.findBySchoolName(request.getSchoolName())
@@ -109,18 +113,18 @@ public class AdminOrganizationService {
             throw new IllegalStateException("학교 정보를 찾을 수 없습니다.");
         }
 
-// 3. 조직 조회
+        // 3. 조직 조회
         Organization org = organizationRepository
                 .findByOrganizationNameAndOrganizationTypeAndUniversity_SchoolId(orgName, type, schoolId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 조직이 존재하지 않습니다."));
 
-// 4. 학생회 중복 체크
+        // 4. 학생회 중복 체크
         if (councilRepository.existsCouncilByOrganization_OrganizationId(org.getOrganizationId())) {
             throw new IllegalStateException("이미 학생회가 존재합니다.");
         }
 
         User user = request.getUser();
-// 5. 학생회 생성
+        // 5. 학생회 생성
         Council council = Council.builder()
                 .organization(org)
                 .councilName(councilName)
@@ -129,14 +133,29 @@ public class AdminOrganizationService {
                 .build();
         councilRepository.save(council);
 
+        // 기본 Department 생성시키기(학생회 부서 - 회장단) , 회장 배치
+        CouncilDepartment councilDepartment = CouncilDepartment.builder()
+                .council(council)
+                .parentId(null)
+                .name("회장단")
+                .build();
+
+        CouncilDepartmentRole councilDepartmentRole = CouncilDepartmentRole.builder()
+                .department(councilDepartment)
+                .level(0)
+                .name("회장").build();
+
         // 6. 학생회 멤버 추가
         CouncilMember councilMember = CouncilMember.builder()
                 .council(council)
                 .memberRole(MemberRole.PRESIDENT)
                 .isActive(true)
+                .department(councilDepartment)
+                .departmentRole(councilDepartmentRole)
                 .user(user)
                 .build();
         councilMemberRepository.save(councilMember);
+
 
 
     }

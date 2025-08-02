@@ -1,6 +1,10 @@
 package org.example.model.council;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * 학생회 내의 부서를 나타내는 엔티티.
@@ -9,6 +13,10 @@ import jakarta.persistence.*;
  * 계층 구조(상위/하위 부서) 및 순서를 지정할 수 있다.
  */
 @Entity
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CouncilDepartment {
 
     // 부서 고유 ID
@@ -30,4 +38,5 @@ public class CouncilDepartment {
 
     // 부서 활성 여부 (soft delete 또는 임시 비활성 처리 용도)
     private Boolean isActive = true;
+
 }
