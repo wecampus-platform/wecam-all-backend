@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -118,7 +120,7 @@ public class OrganizationRequestService {
         }
     }
 
-    public String viewSchoolName(Long userId){
-        return userSignupInformationRepository.findSchoolNameByUserPkId(userId);
+    public Map<String, Object> viewSchoolName(Long userId){
+        return userSignupInformationRepository.findSchoolInfoByUserPkId(userId);
     }
 }

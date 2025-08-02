@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -19,11 +20,13 @@ public interface UserSignupInformationRepository extends JpaRepository<UserSignu
         WHEN usi.input_school_name IS NOT NULL AND usi.input_school_name != '' 
           THEN usi.input_school_name 
         ELSE s.school_name 
-      END AS school_name 
+      END AS school_name,
+      usi.select_school_id
     FROM user_signup_information usi 
     LEFT JOIN university s ON usi.select_school_id = s.school_id 
     WHERE usi.user_pk_id = :userPkId
     """, nativeQuery = true)
-    String findSchoolNameByUserPkId(@Param("userPkId") Long userPkId);
+    Map<String, Object> findSchoolInfoByUserPkId(@Param("userPkId") Long userPkId);
+
 
 }

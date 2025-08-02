@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/client/organization-request")
@@ -37,10 +39,10 @@ public class OrganizationRequestController {
     }
 
     @GetMapping("/view")
-    @Operation(summary = "조직 요청서 만들기 위한 대학교 이름", description = "회원가입 시 입력한 대학교 이름 값 보내줌.")
-    public BaseResponse<String>viewSchoolName(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    @Operation(summary = "조직 요청서 만들기 위한 대학교 이름과 선택한 대학교가 있다면 해당 Id 까지 반환함.", description = "회원가입 시 입력한 대학교 이름 값 보내줌.")
+    public BaseResponse<Map<String, Object>>viewSchoolName(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        return new BaseResponse(organizationRequestService.viewSchoolName(userDetails.getId()));
+        return new BaseResponse<>(organizationRequestService.viewSchoolName(userDetails.getId()));
     }
 
 }
