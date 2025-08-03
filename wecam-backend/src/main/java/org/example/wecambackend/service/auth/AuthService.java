@@ -75,7 +75,7 @@ public class AuthService {
 
         List<CouncilSummary> councils = new ArrayList<>();
         if (role.equals("COUNCIL")) {
-            for (CouncilMember member : councilMemberRepository.findByUserUserPkIdAndIsActiveTrue(user.getUserPkId())) {
+            for (CouncilMember member : councilMemberRepository.findByUserUserPkIdAndStatus(user.getUserPkId())) {
                 CouncilSummary councilSummary = new CouncilSummary(
                         member.getCouncil().getId(),
                         member.getCouncil().getCouncilName(),

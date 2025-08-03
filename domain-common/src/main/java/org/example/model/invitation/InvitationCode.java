@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.example.model.council.Council;
 import org.example.model.organization.Organization;
-import org.example.model.common.BaseTimeEntity;
+import org.example.model.common.BaseEntity;
 import org.example.model.enums.CodeType;
 
 import org.example.model.user.User;
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Table(name = "invitation_code")
-public class InvitationCode extends BaseTimeEntity {
+public class InvitationCode extends BaseEntity {
 
     // 초대코드 pk키
     @Id

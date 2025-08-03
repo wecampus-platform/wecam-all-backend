@@ -141,7 +141,6 @@ public class InvitationCodeService {
             createUserInformationByCode(userEnrollYear,userRole,user,userSignupInformation.getName(),organization);
             CouncilMember councilMember = CouncilMember.builder()
                     .memberRole(MemberRole.STAFF) //일반부원으로 기본설정
-                    .isActive(true)
                     .council(invitationCode.getCouncil())
                     .user(user)
                     .build();

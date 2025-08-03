@@ -2,6 +2,7 @@ package org.example.model.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.common.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserPrivate {
+public class UserPrivate extends BaseEntity {
 
     @Id
     @Column(name = "user_pk_id")

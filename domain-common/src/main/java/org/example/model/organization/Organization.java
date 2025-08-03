@@ -3,7 +3,7 @@ package org.example.model.organization;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.model.University;
-import org.example.model.common.BaseTimeEntity;
+import org.example.model.common.BaseEntity;
 import org.example.model.enums.OrganizationType;
 import org.hibernate.annotations.BatchSize;
 
@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Organization extends BaseTimeEntity {
+public class Organization extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

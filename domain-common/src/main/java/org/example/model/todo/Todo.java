@@ -3,7 +3,7 @@ package org.example.model.todo;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.model.council.Council;
-import org.example.model.common.BaseTimeEntity;
+import org.example.model.common.BaseEntity;
 import org.example.model.enums.ProgressStatus;
 import org.example.model.user.User;
 
@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 @Table(name = "todo")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Todo extends BaseTimeEntity {
+public class Todo extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -3,7 +3,7 @@ package org.example.model.user;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.model.University;
-import org.example.model.common.BaseTimeEntity;
+import org.example.model.common.BaseEntity;
 import org.example.model.enums.AcademicStatus;
 
 @Entity
@@ -13,7 +13,7 @@ import org.example.model.enums.AcademicStatus;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserInformation extends BaseTimeEntity {
+public class UserInformation extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

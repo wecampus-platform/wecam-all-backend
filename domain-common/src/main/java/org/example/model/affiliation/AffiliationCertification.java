@@ -2,6 +2,7 @@ package org.example.model.affiliation;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.common.BaseEntity;
 import org.example.model.organization.Organization;
 import org.example.model.University;
 import org.example.model.user.User;
@@ -20,7 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AffiliationCertification {
+public class AffiliationCertification extends BaseEntity {
 
     // 소속 인증 ID
     @EmbeddedId
@@ -67,8 +68,8 @@ public class AffiliationCertification {
     private LocalDateTime issuanceDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private AuthenticationStatus status;
+    @Column(name = "authentication_status", nullable = false)
+    private AuthenticationStatus authenticationStatus;
 
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
@@ -103,14 +104,14 @@ public class AffiliationCertification {
 
     //소속 인증 승인 처리
     public void approve(User reviewer) {
-        this.status = AuthenticationStatus.APPROVED;
+        this.authenticationStatus = AuthenticationStatus.APPROVED;
         this.reviewUser = reviewer;
         this.reviewedAt = LocalDateTime.now();
     }
 
     //소속인증 처리 확인
     public boolean isApprovable() {
-        return this.status == AuthenticationStatus.PENDING;
+        return this.authenticationStatus == AuthenticationStatus.PENDING;
     }
 
 

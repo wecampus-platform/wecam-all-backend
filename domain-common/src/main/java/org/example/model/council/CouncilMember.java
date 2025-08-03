@@ -2,6 +2,7 @@ package org.example.model.council;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.common.BaseEntity;
 import org.example.model.user.User;
 import org.example.model.enums.MemberRole;
 
@@ -13,7 +14,7 @@ import org.example.model.enums.MemberRole;
 @AllArgsConstructor
 @Builder
 // 학생회 구성원
-public class CouncilMember {
+public class CouncilMember extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,7 +41,4 @@ public class CouncilMember {
     @Enumerated(EnumType.STRING)
     @Column(name = "member_role", nullable = false)
     private MemberRole memberRole;
-
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
 }
