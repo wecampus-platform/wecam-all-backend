@@ -2,7 +2,7 @@ package org.example.model.organization;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.model.common.BaseTimeEntity;
+import org.example.model.common.BaseEntity;
 
 import java.util.UUID;
 
@@ -13,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrganizationRequestFile extends BaseTimeEntity {
+public class OrganizationRequestFile extends BaseEntity {
 
     // 조직 생성 요청 첨부파일 ID
     @Id

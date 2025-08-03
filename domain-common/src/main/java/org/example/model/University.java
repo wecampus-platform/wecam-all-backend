@@ -3,7 +3,7 @@ package org.example.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.model.organization.Organization;
-import org.example.model.common.BaseTimeEntity;
+import org.example.model.common.BaseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class University extends BaseTimeEntity {
+public class University extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

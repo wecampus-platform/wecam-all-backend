@@ -1,9 +1,10 @@
 package org.example.model.council;
 
 import jakarta.persistence.*;
+import org.example.model.common.BaseEntity;
 
 @Entity
-public class CouncilDepartmentRole {
+public class CouncilDepartmentRole extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

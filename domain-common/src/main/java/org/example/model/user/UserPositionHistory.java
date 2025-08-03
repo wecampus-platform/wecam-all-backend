@@ -2,6 +2,7 @@ package org.example.model.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.common.BaseEntity;
 import org.example.model.council.Council;
 import org.example.model.organization.Organization;
 import org.example.model.enums.MemberRole;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserPositionHistory {
+public class UserPositionHistory extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -29,7 +29,6 @@ public class AffiliationFileService {
                 .uuid(uuid)
                 .fileUrl(fileUrl)
                 .fileType(FileType.IMAGE) // TODO: 우선은 IMAGE 로 고정
-                .createdAt(LocalDateTime.now())
                 .build();
 
         affiliationFileRepository.save(affiliationFile);    }
