@@ -1,4 +1,0 @@
--- -- V23__add_created_at_to_affiliation_certification.sql
--- ALTER TABLE affiliation_certification
---     ADD COLUMN created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
---      ADD COLUMN updated_at TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6);

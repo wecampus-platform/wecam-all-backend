@@ -1,4 +1,0 @@
-ALTER TABLE council_role_permission
-    ADD COLUMN status ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE';
-ALTER TABLE council_permission_policy
-    ADD COLUMN status ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE';
