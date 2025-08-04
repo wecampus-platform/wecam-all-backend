@@ -13,6 +13,7 @@ import org.example.model.enums.OrganizationType;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.dto.responseDTO.OrganizationRequestDetailResponse;
+import org.example.wecambackend.dto.responseDTO.SubOrganizationResponse;
 import org.example.wecambackend.repos.organization.OrganizationRequestFileRepository;
 import org.example.wecambackend.repos.organization.OrganizationRequestRepository;
 import org.example.wecambackend.repos.organization.OrganizationRepository;
@@ -161,6 +162,74 @@ public class AdminOrganizationService {
         } else {
             return file.getFileUrl() != null ? file.getFileUrl() : file.getFilePath();
         }
+    }
+
+    /**
+     * 하위 학생회 목록 조회 (단과대/총학생회 전용)
+     */
+    @Transactional
+    public List<SubOrganizationResponse> getSubOrganizations() {
+        // 현재 접속한 학생회의 조직 정보 가져오기
+        Long currentCouncilId = CouncilContextHolder.getCouncilId();
+        Council currentCouncil = councilRepository.findByIdWithOrganization(currentCouncilId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
+        
+        // 권한 검증: 단과대/총학생회만 접근 가능
+        validateSubOrganizationAccess(currentCouncil.getOrganization());
+        
+        // 하위 학생회 목록 조회
+        List<Council> subCouncils = councilRepository.findSubCouncilsByParentOrganization(
+                currentCouncil.getOrganization().getOrganizationId(),
+                currentCouncil.getOrganization().getLevel());
+        
+        return subCouncils.stream()
+                .map(this::buildSubOrganizationResponse)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * 하위 학생회 접근 권한 검증
+     */
+    private void validateSubOrganizationAccess(Organization currentOrganization) {
+        // 단과대(level 1) 또는 총학생회(level 0)만 접근 가능 (MAJOR도 있긴 한데 일단은..)
+        if (currentOrganization.getLevel() > 1) {
+            throw new BaseException(BaseResponseStatus.INVALID_COUNCIL_ACCESS);
+        }
+    }
+    
+    /**
+     * 하위 학생회 응답 객체 생성
+     */
+    private SubOrganizationResponse buildSubOrganizationResponse(Council council) {
+        Organization organization = council.getOrganization();
+        
+        // 학생회 단위 결정
+        String organizationType = organization.getOrganizationType().name();
+        
+        // 단과대 이름과 학과 이름 추출
+        String collegeName = null;
+        String departmentName = null;
+        
+        if (organization.getOrganizationType() == OrganizationType.COLLEGE) {
+            // 단과대인 경우
+            collegeName = organization.getOrganizationName();
+        } else if (organization.getOrganizationType() == OrganizationType.DEPARTMENT) {
+            // 학과인 경우 상위 조직이 단과대
+            collegeName = organization.getParent() != null ? organization.getParent().getOrganizationName() : null;
+            departmentName = organization.getOrganizationName();
+        }
+        
+        return SubOrganizationResponse.builder()
+                .councilId(council.getId())
+                .organizationType(organizationType)
+                .collegeName(collegeName)
+                .departmentName(departmentName)
+                .organizationName(council.getCouncilName())
+                .representativeProfileImage(council.getUser().getUserInformation() != null ? 
+                        council.getUser().getUserInformation().getProfileImagePath() : null)
+                .representativeName(council.getUser().getName())
+                .workspaceCreatedAt(council.getStartDate())
+                .build();
     }
 
     /**

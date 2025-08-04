@@ -9,10 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.wecambackend.common.response.BaseResponse;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
 import org.example.wecambackend.dto.responseDTO.OrganizationRequestDetailResponse;
+import org.example.wecambackend.dto.responseDTO.SubOrganizationResponse;
 import org.example.wecambackend.service.admin.AdminOrganizationService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -64,5 +67,23 @@ public class AdminOrganizationController {
         
         String downloadUrl = organizationRequestAdminService.getFileDownloadUrl(fileId);
         return new BaseResponse<>(downloadUrl);
+    }
+
+    @GetMapping("/subs")
+    @Operation(summary = "하위 학생회 목록 조회",
+            description = "현재 학생회의 하위 학생회 목록을 조회합니다. (단과대/총학생회 전용)",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER),
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH)
+            })
+    public BaseResponse<List<SubOrganizationResponse>> getSubOrganizations(
+            @PathVariable String councilName,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        
+        log.info("하위 학생회 목록 조회: councilName={}, user={}", 
+                councilName, userDetails.getUsername());
+        
+        List<SubOrganizationResponse> response = organizationRequestAdminService.getSubOrganizations();
+        return new BaseResponse<>(response);
     }
 }
