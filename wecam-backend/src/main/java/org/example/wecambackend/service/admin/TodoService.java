@@ -91,7 +91,7 @@ public class TodoService {
         else {
         // 2. 담당자들 저장 (todo_manager)
         for (Long managerId : request.getManagers()) {
-            User manager = councilMemberRepository.findUserByUserUserPkIdAndCouncil_IdAndIsActiveTrue(managerId,councilId)
+            User manager = councilMemberRepository.findUserByUserUserPkIdAndCouncil_IdAndStatusActive(managerId,councilId)
                     .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
 
             TodoManager managerEntity = TodoManager.of(todo, manager);

@@ -28,7 +28,4 @@ public class CouncilDepartment extends BaseEntity {
 
     // 상위 부서 ID (null이면 최상위 부서)
     private Long parentId;
-
-    // 부서 활성 여부 (soft delete 또는 임시 비활성 처리 용도)
-    private Boolean isActive = true;
 }

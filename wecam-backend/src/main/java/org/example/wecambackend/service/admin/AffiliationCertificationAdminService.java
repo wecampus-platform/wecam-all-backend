@@ -62,7 +62,7 @@ public class AffiliationCertificationAdminService {
                     ac.getSelEnrollYear(),
                     authenticationType,
                     ac.getOcrResult(),
-                    ac.getStatus().name(),
+                    ac.getAuthenticationStatus().name(),
                     ac.getRequestedAt()
             );
         }).toList();
@@ -109,7 +109,7 @@ public class AffiliationCertificationAdminService {
                 ac.getSelEnrollYear(),
                 ac.getUsername(),
                 ac.getOcrResult().name(),
-                ac.getStatus().name(),
+                ac.getAuthenticationStatus().name(),
                 ac.getRequestedAt(),
                 filePath,
                 ac.getIssuanceDate()
@@ -127,7 +127,7 @@ public class AffiliationCertificationAdminService {
         // 인증 요청 조회
         AffiliationCertification cert = affiliationCertificationRepository.findById(id)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
-        if (cert.getStatus() == AuthenticationStatus.APPROVED ||cert.getStatus() == AuthenticationStatus.REJECTED ||cert.getStatus() == AuthenticationStatus.EXPIRED ) {
+        if (cert.getAuthenticationStatus() == AuthenticationStatus.APPROVED ||cert.getAuthenticationStatus() == AuthenticationStatus.REJECTED ||cert.getAuthenticationStatus() == AuthenticationStatus.EXPIRED ) {
             throw new BaseException(BaseResponseStatus.ACCESS_DENIED_REQUEST);
         }
         // 요청이 해당 councilId가 관리하는 범위에 있는지 검증 (선택) --- TODO: 할지 말지 모르겠음. 우선 제외
@@ -214,7 +214,7 @@ public class AffiliationCertificationAdminService {
         AffiliationCertification cert = affiliationCertificationRepository.findById(id)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
         User user = entityFinderService.getUserByIdOrThrow(currentUser.getId());
-        cert.setStatus(AuthenticationStatus.REJECTED);
+        cert.setAuthenticationStatus(AuthenticationStatus.REJECTED);
         cert.setReason(reason);
         cert.setReviewedAt(LocalDateTime.now());
         cert.setReviewUser(user);

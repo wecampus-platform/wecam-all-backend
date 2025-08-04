@@ -2,6 +2,7 @@ package org.example.model.affiliation;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.common.BaseEntity;
 import org.example.model.organization.Organization;
 import org.example.model.University;
 import org.example.model.user.User;

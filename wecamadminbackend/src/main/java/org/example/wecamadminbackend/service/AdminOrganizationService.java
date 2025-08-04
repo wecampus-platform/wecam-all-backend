@@ -46,23 +46,23 @@ public class AdminOrganizationService {
         OrganizationRequest request = organizationRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 요청이 존재하지 않습니다."));
 
-        if (request.getStatus() != RequestStatus.PENDING) {
+        if (request.getRequestStatus() != RequestStatus.PENDING) {
             throw new IllegalStateException("이미 처리된 요청입니다.");
         }
         User user = request.getUser();
 
         //탈퇴된 사용자 필터링
-        if (user.getStatus() == UserStatus.WITHDRAWN) {
+        if (user.getUserStatus() == UserStatus.WITHDRAWN) {
             throw new IllegalStateException("탈퇴한 사용자의 요청은 승인할 수 없습니다.");
         }
 
         // 정지 상태일 경우
-        if (user.getStatus() == UserStatus.SUSPENDED) {
+        if (user.getUserStatus() == UserStatus.SUSPENDED) {
             throw new IllegalStateException("정지된 사용자의 요청은 승인할 수 없습니다.");
         }
 
         // 승인 처리
-        request.setStatus(RequestStatus.APPROVED);
+        request.setRequestStatus(RequestStatus.APPROVED);
         //가입 조직의 테이블 생성
 
         //가입할때의 user 정보 가져옴
@@ -125,7 +125,6 @@ public class AdminOrganizationService {
                 .organization(org)
                 .councilName(councilName)
                 .user(user)
-                .isActive(true)
                 .build();
         councilRepository.save(council);
 
@@ -133,7 +132,6 @@ public class AdminOrganizationService {
         CouncilMember councilMember = CouncilMember.builder()
                 .council(council)
                 .memberRole(MemberRole.PRESIDENT)
-                .isActive(true)
                 .user(user)
                 .build();
         councilMemberRepository.save(councilMember);
