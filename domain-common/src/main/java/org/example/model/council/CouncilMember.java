@@ -2,6 +2,7 @@ package org.example.model.council;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.common.BaseTimeEntity;
 import org.example.model.user.User;
 import org.example.model.enums.MemberRole;
 
@@ -13,7 +14,7 @@ import org.example.model.enums.MemberRole;
 @AllArgsConstructor
 @Builder
 // 학생회 구성원
-public class CouncilMember {
+public class CouncilMember extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

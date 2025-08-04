@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import org.example.model.common.BaseTimeEntity;
 
 
 //ENUM 으로 안할거임 -> 추후 국장 / 부장 자기가 원하는 name으로 설정할 수 있게 해야될듯.
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CouncilDepartmentRole {
+public class CouncilDepartmentRole extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

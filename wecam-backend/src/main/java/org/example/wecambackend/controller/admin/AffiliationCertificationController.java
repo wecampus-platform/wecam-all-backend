@@ -5,10 +5,13 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.example.model.council.CouncilDepartment;
+import org.example.model.invitation.InvitationCode;
 import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.common.response.BaseResponse;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
+import org.example.wecambackend.config.security.annotation.CheckCouncilEntity;
 import org.example.wecambackend.config.security.annotation.CurrentUser;
 import org.example.wecambackend.config.security.annotation.HasAffiliationApprovalAuthority;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
@@ -141,6 +144,7 @@ public class AffiliationCertificationController {
 
 
     @IsCouncil
+    // X-councilId 로 들어오는 값과 현재 저장된 X-councilId 가 같은지 확인
     @HasAffiliationApprovalAuthority
     @Operation(
             summary = "학생회 관리자 페이지 소속 인증 요청 거절",

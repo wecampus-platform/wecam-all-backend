@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.example.model.common.BaseTimeEntity;
 
 /**
  * 학생회 내의 부서를 나타내는 엔티티.
@@ -17,7 +18,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CouncilDepartment {
+public class CouncilDepartment extends BaseTimeEntity {
 
     // 부서 고유 ID
     @Id

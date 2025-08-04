@@ -15,4 +15,7 @@ public class AdminFileResponse {
     private String filePath;
     private String url;
     private LocalDateTime uploadedAt;
+
+    public static class UnassignedMemberDto {
+    }
 }
