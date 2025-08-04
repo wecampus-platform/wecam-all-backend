@@ -1,0 +1,4 @@
+ALTER TABLE council_department
+    ADD COLUMN status ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE council_department_role
+    ADD COLUMN status ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE';

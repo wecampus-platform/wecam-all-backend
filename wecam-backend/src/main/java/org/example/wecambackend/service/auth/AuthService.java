@@ -2,6 +2,7 @@ package org.example.wecambackend.service.auth;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.model.common.BaseEntity;
 import org.example.model.council.CouncilMember;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
@@ -75,7 +76,7 @@ public class AuthService {
 
         List<CouncilSummary> councils = new ArrayList<>();
         if (role.equals("COUNCIL")) {
-            for (CouncilMember member : councilMemberRepository.findByUserUserPkIdAndStatus(user.getUserPkId())) {
+            for (CouncilMember member : councilMemberRepository.findByUserUserPkIdAndStatus(user.getUserPkId(), BaseEntity.Status.ACTIVE)) {
                 CouncilSummary councilSummary = new CouncilSummary(
                         member.getCouncil().getId(),
                         member.getCouncil().getCouncilName(),
