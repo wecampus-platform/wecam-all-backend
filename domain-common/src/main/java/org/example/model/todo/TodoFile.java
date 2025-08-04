@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.model.common.BaseTimeEntity;
+import org.example.model.common.BaseEntity;
 
 import java.util.UUID;
 
@@ -13,7 +13,7 @@ import java.util.UUID;
 @Getter
 @Table(name = "todo_file")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TodoFile extends BaseTimeEntity {
+public class TodoFile extends BaseEntity {
 
     // 파일 고유 ID (UUID, 16바이트 바이너리 저장)
     @Id

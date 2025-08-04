@@ -2,6 +2,7 @@ package org.example.model.affiliation;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.common.BaseEntity;
 import org.example.model.enums.AuthenticationType;
 import org.example.model.enums.FileType;
 
@@ -17,7 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 // 소속 인증 신청 시 첨부된 파일을 저장하는 엔티티
-public class AffiliationFile {
+public class AffiliationFile extends BaseEntity {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -65,15 +66,9 @@ public class AffiliationFile {
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
-    // 등록 일자 (자동 설정)
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
     // 엔티티 저장 전 자동으로 날짜 필드 초기화
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-
+    @Override
+    protected void prePersistChild() {
         // 기본 만료일 = 10일 후 (추후 설정값으로 바꿀 수 있음)
         this.expiresAt = LocalDateTime.now().plusDays(10);
     }

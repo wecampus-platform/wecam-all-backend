@@ -2,6 +2,7 @@ package org.example.model.council;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.common.BaseEntity;
 import org.example.model.organization.Organization;
 import org.example.model.user.User;
 
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Council {
+public class Council extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,17 +39,13 @@ public class Council {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
-    // 활성화 여부
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
-
     // 학생회 생성자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_user_id",nullable = false)
     private User user;
 
-    @PrePersist
-    public void prePersist() {
+    @Override
+    protected void prePersistChild() {
         LocalDateTime now = LocalDateTime.now();
         this.startDate = now;
         this.endDate = now.plusDays(365); // 가입일 기준 365일 유효 //TODO: 추후 설정 가능하게 해야 함.

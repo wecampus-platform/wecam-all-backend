@@ -12,12 +12,12 @@ import java.util.List;
 public interface OrganizationRequestRepository extends JpaRepository<OrganizationRequest,Long> {
 
     @Query("SELECT new org.example.wecamadminbackend.dto.request.OrganizationRequestDTO(" +
-            "o.requestId, u.email, o.status, o.createdAt, o.councilName, o.schoolName, t) " +
+            "o.requestId, u.email, o.requestStatus, o.createdAt, o.councilName, o.schoolName, t) " +
             "FROM OrganizationRequest o " +
             "LEFT JOIN o.user u " +
             "LEFT JOIN o.targetOrganization t " +
-            "WHERE o.status = :status")
-    List<OrganizationRequestDTO> findRequestDtosByStatus(@Param("status") RequestStatus status);
+            "WHERE o.requestStatus = :requestStatus")
+    List<OrganizationRequestDTO> findRequestDtosByStatus(@Param("status") RequestStatus requestStatus);
 
 // 예: PENDING 상태만 조회
     //**    PENDING,

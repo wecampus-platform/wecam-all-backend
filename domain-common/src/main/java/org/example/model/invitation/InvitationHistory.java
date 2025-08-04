@@ -2,6 +2,7 @@ package org.example.model.invitation;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.common.BaseEntity;
 import org.example.model.user.User;
 
 import java.time.LocalDateTime;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @Table(name = "invitation_history")
 // 초대 코드 사용 이력
-public class InvitationHistory {
+public class InvitationHistory extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,8 +35,8 @@ public class InvitationHistory {
     @JoinColumn(name = "target_user_id")
     private User user;
 
-    @PrePersist
-    protected void onCreate() {
+    @Override
+    protected void prePersistChild() {
         this.usedAt = LocalDateTime.now();
     }
 }

@@ -1,12 +1,12 @@
 package org.example.model.council;
 
 import jakarta.persistence.*;
+import org.example.model.common.BaseEntity;
 import org.example.model.enums.CouncilPermissionType;
 
 @Entity
 @Table(name = "council_role_permission")
-public class CouncilRolePermission {
-
+public class CouncilRolePermission extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

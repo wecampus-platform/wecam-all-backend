@@ -2,7 +2,7 @@ package org.example.model.user;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.model.common.BaseTimeEntity;
+import org.example.model.common.BaseEntity;
 
 //TODO: UserSignupInformation 을 두개로 분기처리 하는게 더 나을 수도 있어 보임.
 @Entity
@@ -12,7 +12,7 @@ import org.example.model.common.BaseTimeEntity;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserSignupInformation extends BaseTimeEntity {
+public class UserSignupInformation extends BaseEntity {
 //회원가입 시 저장된 정보 (user_signup_information)
     @Id
     @Column(name = "user_pk_id")

@@ -1,6 +1,7 @@
 package org.example.model.council;
 
 import jakarta.persistence.*;
+import org.example.model.common.BaseEntity;
 
 /**
  * 학생회 내의 부서를 나타내는 엔티티.
@@ -9,7 +10,7 @@ import jakarta.persistence.*;
  * 계층 구조(상위/하위 부서) 및 순서를 지정할 수 있다.
  */
 @Entity
-public class CouncilDepartment {
+public class CouncilDepartment extends BaseEntity {
 
     // 부서 고유 ID
     @Id

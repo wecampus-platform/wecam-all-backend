@@ -5,14 +5,14 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.model.common.BaseTimeEntity;
+import org.example.model.common.BaseEntity;
 import org.example.model.user.User;
 
 @Entity
 @Getter
 @Table(name = "todo_manager")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TodoManager extends BaseTimeEntity {
+public class TodoManager extends BaseEntity {
 
     // 복합키: 할일 ID + 사용자 ID 조합
     @EmbeddedId

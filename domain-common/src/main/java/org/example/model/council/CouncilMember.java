@@ -13,7 +13,7 @@ import org.example.model.enums.MemberRole;
 @AllArgsConstructor
 @Builder
 // 학생회 구성원
-public class CouncilMember {
+public class CouncilMember extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
