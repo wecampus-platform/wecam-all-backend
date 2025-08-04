@@ -11,4 +11,5 @@ import java.util.List;
 @Repository
 public interface CouncilDepartmentRepository extends JpaRepository<CouncilDepartment, Long> {
     List<CouncilDepartment> findByCouncilAndStatus(Council council, BaseEntity.Status status);
+    List<CouncilDepartment> findByCouncilId(Long councilId);
 }

@@ -1,7 +1,17 @@
 package org.example.wecambackend.service.admin;
 
 import lombok.RequiredArgsConstructor;
+import org.example.model.council.CouncilDepartment;
+import org.example.model.council.CouncilDepartmentRole;
+import org.example.model.council.CouncilMember;
+import org.example.model.enums.MemberRole;
+import org.example.wecambackend.common.context.CouncilContextHolder;
+import org.example.wecambackend.common.exceptions.BaseException;
+import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
+import org.example.wecambackend.dto.responseDTO.DepartmentResponse;
+import org.example.wecambackend.repos.CouncilDepartmentRepository;
+import org.example.wecambackend.repos.CouncilDepartmentRoleRepository;
 import org.example.wecambackend.repos.CouncilMemberRepository;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +22,8 @@ import java.util.List;
 public class CouncilMemberService {
 
     private final CouncilMemberRepository councilMemberRepository;
+    private final CouncilDepartmentRepository councilDepartmentRepository;
+    private final CouncilDepartmentRoleRepository councilDepartmentRoleRepository;
 
 
 
@@ -28,5 +40,56 @@ public class CouncilMemberService {
      */
     public List<CouncilMemberResponse> getAllCouncilMembers(Long councilId) {
         return councilMemberRepository.findAllActiveMembersByCouncilId(councilId);
+    }
+
+    /**
+     * 학생회 부원의 부서를 배치합니다.
+     * 회장과 부회장만 이 기능을 사용할 수 있습니다.
+     */
+    public void assignMemberToDepartment(Long memberId, Long departmentId) {
+        // 1. 대상 부원 조회
+        CouncilMember member = councilMemberRepository.findById(memberId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.ENTITY_NOT_FOUND));
+
+        // 2. 현재 학생회에 속한 부원인지 확인
+        Long currentCouncilId = CouncilContextHolder.getCouncilId();
+        if (!member.getCouncil().getId().equals(currentCouncilId)) {
+            throw new BaseException(BaseResponseStatus.INVALID_COUNCIL_ACCESS);
+        }
+
+        // 3. 부서 조회
+        CouncilDepartment department = councilDepartmentRepository.findById(departmentId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.ENTITY_NOT_FOUND));
+
+        // 4. 부서가 현재 학생회에 속한 부서인지 확인
+        if (!department.getCouncil().getId().equals(currentCouncilId)) {
+            throw new BaseException(BaseResponseStatus.INVALID_COUNCIL_ACCESS);
+        }
+
+        // 5. 부서 배치 업데이트
+        member.setDepartment(department);
+        
+        // 6. 부서 배치 후 역할을 DEPUTY(부원)로 변경 (암시)
+        member.setMemberRole(MemberRole.DEPUTY);
+
+        councilMemberRepository.save(member);
+    }
+
+    /**
+     * 현재 학생회의 모든 부서와 역할 목록을 조회합니다.
+     */
+    public List<DepartmentResponse> getAllDepartments() {
+        Long currentCouncilId = CouncilContextHolder.getCouncilId();
+        
+        // 현재 학생회의 모든 부서 조회
+        List<CouncilDepartment> departments = councilDepartmentRepository.findByCouncilId(currentCouncilId);
+        
+        return departments.stream()
+                .map(department -> {
+                    // 각 부서의 역할 목록 조회
+                    List<CouncilDepartmentRole> roles = councilDepartmentRoleRepository.findByDepartment(department);
+                    return DepartmentResponse.from(department, roles);
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 }

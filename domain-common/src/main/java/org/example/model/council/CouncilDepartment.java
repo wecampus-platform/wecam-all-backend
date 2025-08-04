@@ -1,6 +1,8 @@
 package org.example.model.council;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.example.model.common.BaseEntity;
 
 /**
@@ -10,6 +12,7 @@ import org.example.model.common.BaseEntity;
  * 계층 구조(상위/하위 부서) 및 순서를 지정할 수 있다.
  */
 @Entity
+@Getter
 public class CouncilDepartment extends BaseEntity {
 
     // 부서 고유 ID
