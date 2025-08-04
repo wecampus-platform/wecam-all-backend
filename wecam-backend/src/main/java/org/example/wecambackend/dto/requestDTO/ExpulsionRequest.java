@@ -1,0 +1,13 @@
+package org.example.wecambackend.dto.requestDTO;
+
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class ExpulsionRequest {
+    
+    @Size(max = 500, message = "제명 사유는 500자 이하여야 합니다.")
+    private String reason;
+} 
