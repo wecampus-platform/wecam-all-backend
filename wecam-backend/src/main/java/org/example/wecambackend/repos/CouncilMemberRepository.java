@@ -44,10 +44,11 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
      */
     //미배치 인원도 뜨게 해야 돼서 LEFTJOIN 으로 묶었습니다.
     @Query("SELECT new org.example.wecambackend.dto.responseDTO.CouncilMemberResponse(" +
-<<<<<<< HEAD
-            "u.name, cm.memberRole, u.userPkId, cm.exitType, cm.expulsionReason) " +
+            "u.name, cm.memberRole, d.id,dr.id, u.userPkId, cm.exitType, cm.expulsionReason,d.name,dr.name) " +
             "FROM CouncilMember cm " +
             "JOIN cm.user u " +
+            "LEFT JOIN cm.department d " +
+            "LEFT JOIN cm.departmentRole dr " +
             "WHERE cm.council.id = :councilId AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE " +
             "AND cm.exitType = org.example.model.enums.ExitType.ACTIVE")
     List<CouncilMemberResponse> findAllActiveMembersByCouncilId(@Param("councilId") Long councilId);
@@ -102,28 +103,6 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
             "AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE " +
             "AND cm.exitType = org.example.model.enums.ExitType.ACTIVE")
     Optional<CouncilMember> findByCouncilAndMemberRole(@Param("councilId") Long councilId, @Param("memberRole") MemberRole memberRole);
-
-    @Query("SELECT new org.example.wecambackend.dto.responseDTO.CouncilMemberResponse(" +
-            "u.name, cm.memberRole, u.userPkId,d.id, dr.id, d.name, dr.name) " +
-            "FROM CouncilMember cm " +
-            "JOIN cm.user u " +
-            "LEFT JOIN cm.department d " +
-            "LEFT JOIN cm.departmentRole dr " +
-            "WHERE cm.council.id = :councilId AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE")
-    List<CouncilMemberResponse> findByCouncilIdAndDepartmentOrUnassigned(@Param("councilId") Long councilId, @Param("departmentId") Long departmentId);
-
-
-
-
-    @Query("SELECT new org.example.wecambackend.dto.responseDTO.CouncilMemberResponse(" +
-            "u.name, cm.memberRole, u.userPkId, d.id, dr.id, d.name, dr.name) " +
-            "FROM CouncilMember cm " +
-            "JOIN cm.user u " +
-            "LEFT JOIN cm.department d " +
-            "LEFT JOIN cm.departmentRole dr " +
-            "WHERE cm.council.id = :councilId AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE " +
-            "ORDER BY d.createdAt DESC")
-    List<CouncilMemberResponse> findAllActiveMembersByCouncilId(@Param("councilId") Long councilId);
 
     //미배치 인원
     @Query("""

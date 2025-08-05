@@ -8,27 +8,18 @@ import org.example.model.enums.MemberRole;
 import org.example.model.enums.ExitType;
 import org.example.model.enums.UserRole;
 import org.example.model.user.User;
-import org.example.model.common.BaseEntity;
 import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
-import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.dto.requestDTO.DepartmentAssignmentRequest;
 import org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
 import org.example.wecambackend.repos.CouncilMemberRepository;
 import org.springframework.stereotype.Service;
-
-import org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse;
-import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
 import org.example.wecambackend.dto.responseDTO.DepartmentResponse;
 import org.example.wecambackend.repos.CouncilDepartmentRepository;
 import org.example.wecambackend.repos.CouncilDepartmentRoleRepository;
-import org.example.wecambackend.repos.CouncilMemberRepository;
-import org.example.wecambackend.repos.UserInformationRepository;
 import org.example.wecambackend.repos.UserRepository;
-import org.example.wecambackend.service.admin.common.EntityFinderService;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;

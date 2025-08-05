@@ -1,10 +1,7 @@
 package org.example.model.council;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.example.model.common.BaseEntity;
 
 /**
@@ -16,7 +13,8 @@ import org.example.model.common.BaseEntity;
 @Entity
 @Getter
 @Setter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class CouncilDepartment extends BaseEntity {
 

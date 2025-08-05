@@ -41,10 +41,6 @@ public interface OrganizationRequestRepository extends JpaRepository<Organizatio
            ") " +
            "ORDER BY o.createdAt DESC")
     List<OrganizationRequest> findSubOrganizationRequestsByParentId(@Param("parentOrganizationId") Long parentOrganizationId);
-
-
-public interface OrganizationRequestRepository extends JpaRepository<OrganizationRequest,Long> {
-
     @Query("SELECT new org.example.wecambackend.dto.requestDTO.OrganizationRequestDTO(" +
             "o.requestId, u.email, o.requestStatus, o.createdAt, o.councilName, o.schoolName, t) " +
             "FROM OrganizationRequest o " +
