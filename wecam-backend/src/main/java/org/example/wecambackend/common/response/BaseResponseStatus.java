@@ -97,6 +97,7 @@ public enum BaseResponseStatus {
     COUNCIL_ALREADY_EXISTS(false, 409, "이미 학생회가 존재하는 조직입니다."),
     ALREADY_EXPELLED_MEMBER(false, HttpStatus.CONFLICT.value(), "이미 제명된 구성원입니다."),
     CANNOT_EXPEL_PRESIDENT(false, HttpStatus.FORBIDDEN.value(), "회장은 제명할 수 없습니다."),
+    DEPARTMENT_ROLE_ALREADY_EXISTS(false, HttpStatus.CONFLICT.value(), "해당 부서에 이미 같은 역할을 가진 구성원이 있습니다."),
 
     /**
      * 500 : Database, Server,file save 오류

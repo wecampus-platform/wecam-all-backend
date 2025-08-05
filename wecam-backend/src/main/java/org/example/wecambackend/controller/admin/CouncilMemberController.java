@@ -56,7 +56,7 @@ public class CouncilMemberController {
     @CheckCouncilEntity(idParam = "memberId", entityClass = CouncilMember.class)
     @Operation(
             summary = "학생회 부원 부서 배치/이동",
-            description = "학생회 부원을 특정 부서로 배치하거나 이동시킵니다. 회장과 부회장만 이 기능을 사용할 수 있으며(임시), 부서 배치 시 부원의 역할이 자동으로 DEPUTY로 변경됩니다.",
+            description = "학생회 부원을 특정 부서로 배치하거나 이동시킵니다. 회장과 부회장만 이 기능을 사용할 수 있습니다. 부서 배치 시 부원의 역할을 level로 설정할 수 있습니다 (0: 부장, 1: 부원). level을 생략하면 기본적으로 부원(1)으로 설정됩니다. 부장은 한 부서에 한 명만 존재할 수 있습니다.",
             parameters = {
                     @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
                     @Parameter(name = "memberId", description = "배치할 부원의 ID", in = ParameterIn.PATH, required = true),
@@ -69,7 +69,7 @@ public class CouncilMemberController {
             @PathVariable("councilName") String councilName,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        councilMemberService.assignMemberToDepartment(memberId, request.getDepartmentId());
+        councilMemberService.assignMemberToDepartment(memberId, request);
         return new BaseResponse<>(BaseResponseStatus.SUCCESS, "부서 배치가 완료되었습니다.");
     }
 

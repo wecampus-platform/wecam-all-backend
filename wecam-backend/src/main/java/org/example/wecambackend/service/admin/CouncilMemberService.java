@@ -8,9 +8,12 @@ import org.example.model.enums.MemberRole;
 import org.example.model.enums.ExitType;
 import org.example.model.enums.UserRole;
 import org.example.model.user.User;
+import org.example.model.common.BaseEntity;
 import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
+import org.example.wecambackend.config.security.UserDetailsImpl;
+import org.example.wecambackend.dto.requestDTO.DepartmentAssignmentRequest;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
 import org.example.wecambackend.dto.responseDTO.DepartmentResponse;
 import org.example.wecambackend.repos.CouncilDepartmentRepository;
@@ -24,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +59,7 @@ public class CouncilMemberService {
      * 학생회 부원의 부서를 배치합니다.
      * 회장과 부회장만 이 기능을 사용할 수 있습니다.
      */
-    public void assignMemberToDepartment(Long memberId, Long departmentId) {
+    public void assignMemberToDepartment(Long memberId, DepartmentAssignmentRequest request) {
         // 1. 대상 부원 조회
         CouncilMember member = councilMemberRepository.findById(memberId)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.ENTITY_NOT_FOUND));
@@ -67,7 +71,7 @@ public class CouncilMemberService {
         }
 
         // 3. 부서 조회
-        CouncilDepartment department = councilDepartmentRepository.findById(departmentId)
+        CouncilDepartment department = councilDepartmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.ENTITY_NOT_FOUND));
 
         // 4. 부서가 현재 학생회에 속한 부서인지 확인
@@ -75,11 +79,27 @@ public class CouncilMemberService {
             throw new BaseException(BaseResponseStatus.INVALID_COUNCIL_ACCESS);
         }
 
-        // 5. 부서 배치 업데이트
+        // 5. level 설정
+        Integer level = request.getDepartmentLevel() != null ? request.getDepartmentLevel() : 1;
+
+        // 6. 부장(level 0) 배치 시 중복 검사
+        if (level == 0) {
+            Optional<CouncilMember> existingDirector = councilMemberRepository.findByDepartmentAndRoleLevel(department, 0);
+            if (existingDirector.isPresent() && !existingDirector.get().getId().equals(memberId)) {
+                throw new BaseException(BaseResponseStatus.DEPARTMENT_ROLE_ALREADY_EXISTS);
+            }
+        }
+
+        // 7. 부서 배치 업데이트
         member.setDepartment(department);
         
-        // 6. 부서 배치 후 역할을 DEPUTY(부원)로 변경 (암시)
-        member.setMemberRole(MemberRole.DEPUTY);
+        // 8. 부서 내 역할에 따라 MemberRole 설정
+        // 부장(level 0)이면 DIRECTOR, 부원(level 1)이면 DEPUTY로 설정
+        if (level == 0) {
+            member.setMemberRole(MemberRole.DIRECTOR);
+        } else {
+            member.setMemberRole(MemberRole.DEPUTY);
+        }
 
         councilMemberRepository.save(member);
     }

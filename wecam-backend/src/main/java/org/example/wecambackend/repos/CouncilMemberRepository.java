@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import org.example.model.council.CouncilDepartment;
+import org.example.model.enums.MemberRole;
 
 public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Long> {
 
@@ -55,5 +57,34 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
             "WHERE cm.council.id = :councilId AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE " +
             "AND cm.exitType = org.example.model.enums.ExitType.ACTIVE")
     List<CouncilMember> findAllActiveMembersWithDetailsByCouncilId(@Param("councilId") Long councilId);
+
+    /**
+     * 특정 부서의 특정 level 역할을 가진 활성 멤버를 조회
+     * 
+     * @param department 부서
+     * @param level 역할 레벨
+     * @return 해당 부서와 level을 가진 활성 멤버
+     */
+    @Query("SELECT cm FROM CouncilMember cm " +
+            "JOIN cm.departmentRole cdr " +
+            "WHERE cm.department = :department " +
+            "AND cdr.level = :level " +
+            "AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE " +
+            "AND cm.exitType = org.example.model.enums.ExitType.ACTIVE")
+    Optional<CouncilMember> findByDepartmentAndRoleLevel(@Param("department") CouncilDepartment department, @Param("level") Integer level);
+
+    /**
+     * 특정 학생회의 특정 역할을 가진 활성 멤버를 조회
+     * 
+     * @param councilId 학생회 ID
+     * @param memberRole 멤버 역할
+     * @return 해당 학생회와 역할을 가진 활성 멤버
+     */
+    @Query("SELECT cm FROM CouncilMember cm " +
+            "WHERE cm.council.id = :councilId " +
+            "AND cm.memberRole = :memberRole " +
+            "AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE " +
+            "AND cm.exitType = org.example.model.enums.ExitType.ACTIVE")
+    Optional<CouncilMember> findByCouncilAndMemberRole(@Param("councilId") Long councilId, @Param("memberRole") MemberRole memberRole);
 
 }
