@@ -14,10 +14,13 @@ import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.dto.responseDTO.OrganizationRequestDetailResponse;
 import org.example.wecambackend.dto.responseDTO.SubOrganizationResponse;
+import org.example.wecambackend.dto.responseDTO.SubOrganizationDetailResponse;
+import org.example.wecambackend.dto.responseDTO.CouncilMemberDetailResponse;
 import org.example.wecambackend.repos.organization.OrganizationRequestFileRepository;
 import org.example.wecambackend.repos.organization.OrganizationRequestRepository;
 import org.example.wecambackend.repos.organization.OrganizationRepository;
 import org.example.wecambackend.repos.CouncilRepository;
+import org.example.wecambackend.repos.CouncilMemberRepository;
 import org.example.wecambackend.repos.UserRepository;
 import org.example.wecambackend.repos.UserSignupInformationRepository;
 import org.example.wecambackend.common.context.CouncilContextHolder;
@@ -35,6 +38,7 @@ public class AdminOrganizationService {
     private final OrganizationRequestRepository organizationRequestRepository;
     private final OrganizationRequestFileRepository organizationRequestFileRepository;
     private final CouncilRepository councilRepository;
+    private final CouncilMemberRepository councilMemberRepository;
     private final UserSignupInformationRepository userSignupInformationRepository;
 
     @Value("${spring.profiles.active:local}")
@@ -95,6 +99,54 @@ public class AdminOrganizationService {
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.FILE_NOT_FOUND));
         
         return getDownloadUrl(file);
+    }
+
+    /**
+     * 하위 학생회 목록 조회 (단과대/총학생회 전용)
+     */
+    @Transactional
+    public List<SubOrganizationResponse> getSubOrganizations() {
+        // 현재 접속한 학생회의 조직 정보 가져오기
+        Long currentCouncilId = CouncilContextHolder.getCouncilId();
+        Council currentCouncil = councilRepository.findByIdWithOrganization(currentCouncilId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
+
+        // 권한 검증: 단과대/총학생회만 접근 가능
+        validateSubOrganizationAccess(currentCouncil.getOrganization());
+
+        // 하위 학생회 목록 조회
+        List<Council> subCouncils = councilRepository.findSubCouncilsByParentOrganization(
+                currentCouncil.getOrganization().getOrganizationId(),
+                currentCouncil.getOrganization().getLevel());
+
+        return subCouncils.stream()
+                .map(this::buildSubOrganizationResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 하위 학생회 상세 조회 (단과대/총학생회 전용)
+     */
+    @Transactional
+    public SubOrganizationDetailResponse getSubOrganizationDetail(Long councilId) {
+        // 현재 접속한 학생회의 조직 정보 가져오기
+        Long currentCouncilId = CouncilContextHolder.getCouncilId();
+        Council currentCouncil = councilRepository.findByIdWithOrganization(currentCouncilId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
+
+        // 권한 검증: 단과대/총학생회만 접근 가능
+        validateSubOrganizationAccess(currentCouncil.getOrganization());
+
+        // 대상 학생회 조회
+        Council targetCouncil = councilRepository.findByIdWithOrganization(councilId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
+
+        // 하위 학생회인지 검증
+        if (!isSubOrganization(currentCouncil.getOrganization(), targetCouncil.getOrganization())) {
+            throw new BaseException(BaseResponseStatus.INVALID_COUNCIL_ACCESS);
+        }
+
+        return buildSubOrganizationDetailResponse(targetCouncil);
     }
 
     /**
@@ -165,29 +217,6 @@ public class AdminOrganizationService {
     }
 
     /**
-     * 하위 학생회 목록 조회 (단과대/총학생회 전용)
-     */
-    @Transactional
-    public List<SubOrganizationResponse> getSubOrganizations() {
-        // 현재 접속한 학생회의 조직 정보 가져오기
-        Long currentCouncilId = CouncilContextHolder.getCouncilId();
-        Council currentCouncil = councilRepository.findByIdWithOrganization(currentCouncilId)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
-        
-        // 권한 검증: 단과대/총학생회만 접근 가능
-        validateSubOrganizationAccess(currentCouncil.getOrganization());
-        
-        // 하위 학생회 목록 조회
-        List<Council> subCouncils = councilRepository.findSubCouncilsByParentOrganization(
-                currentCouncil.getOrganization().getOrganizationId(),
-                currentCouncil.getOrganization().getLevel());
-        
-        return subCouncils.stream()
-                .map(this::buildSubOrganizationResponse)
-                .collect(Collectors.toList());
-    }
-    
-    /**
      * 하위 학생회 접근 권한 검증
      */
     private void validateSubOrganizationAccess(Organization currentOrganization) {
@@ -233,7 +262,8 @@ public class AdminOrganizationService {
     }
 
     /**
-     * 소속 정보 문자열 생성
+     * 소속 정보 문자열 생성 (OrganizationRequest용)
+     * 워크스페이스 생성 요청 시 사용자가 입력한 학교/단과대/학과 정보를 기반으로 소속 문자열을 만듦
      */
     private String buildAffiliationString(OrganizationRequest request) {
         StringBuilder affiliation = new StringBuilder();
@@ -257,5 +287,94 @@ public class AdminOrganizationService {
         }
         
         return affiliation.toString();
+    }
+
+    /**
+     * 소속 정보 문자열 생성 (Organization용)
+     * DB에 저장된 실제 조직 엔티티의 계층 구조를 기반으로 소속 문자열을 만듦
+     */
+    private String buildAffiliationStringFromOrganization(Organization organization) {
+        StringBuilder affiliation = new StringBuilder();
+
+        // 학교 정보는 organization에서 직접 가져올 수 없으므로 상위 조직을 통해 추출
+        if (organization.getUniversity() != null) {
+            affiliation.append(organization.getUniversity().getSchoolName());
+        }
+
+        // 단과대 정보
+        if (organization.getOrganizationType() == OrganizationType.COLLEGE) {
+            if (affiliation.length() > 0) {
+                affiliation.append(" ");
+            }
+            affiliation.append(organization.getOrganizationName());
+        } else if (organization.getOrganizationType() == OrganizationType.DEPARTMENT) {
+            // 학과인 경우 상위 조직(단과대) 정보 추가
+            if (organization.getParent() != null) {
+                affiliation.append(organization.getParent().getOrganizationName());
+            }
+            if (affiliation.length() > 0) {
+                affiliation.append(" ");
+            }
+            affiliation.append(organization.getOrganizationName());
+        }
+
+        return affiliation.toString();
+    }
+
+
+    /**
+     * 하위 학생회 상세 응답 객체 생성
+     */
+    private SubOrganizationDetailResponse buildSubOrganizationDetailResponse(Council council) {
+        Organization organization = council.getOrganization();
+
+        // 학생회원 목록 조회
+        List<CouncilMemberDetailResponse> members = councilMemberRepository
+                .findAllActiveMembersWithDetailsByCouncilId(council.getId())
+                .stream()
+                .map(this::buildCouncilMemberDetailResponseFromEntity)
+                .collect(Collectors.toList());
+
+        // 소속 정보 생성
+        String affiliation = buildAffiliationStringFromOrganization(organization);
+
+        return SubOrganizationDetailResponse.builder()
+                .councilId(council.getId())
+                .organizationType(organization.getOrganizationType().name())
+                .affiliation(affiliation)
+                .organizationName(council.getCouncilName())
+                .representativeName(council.getUser().getName())
+                .representativeProfileImage(council.getUser().getUserInformation() != null ?
+                        council.getUser().getUserInformation().getProfileImagePath() : null)
+                .representativePhoneNumber(council.getUser().getUserPrivate() != null ?
+                        council.getUser().getUserPrivate().getPhoneNumber() : null)
+                .workspaceCreatedAt(council.getStartDate())
+                .members(members)
+                .build();
+    }
+
+    /**
+     * 학생회원 상세 응답 객체 생성 (CouncilMember 엔티티에서)
+     */
+    private CouncilMemberDetailResponse buildCouncilMemberDetailResponseFromEntity(org.example.model.council.CouncilMember member) {
+        String departmentName = null;
+        String departmentRoleName = null;
+        
+        if (member.getDepartment() != null) {
+            departmentName = member.getDepartment().getName();
+        }
+        if (member.getDepartmentRole() != null) {
+            departmentRoleName = member.getDepartmentRole().getName();
+        }
+        
+        return CouncilMemberDetailResponse.builder()
+                .userId(member.getUser().getUserPkId())
+                .userName(member.getUser().getName())
+                .profileImage(member.getUser().getUserInformation() != null ? 
+                        member.getUser().getUserInformation().getProfileImagePath() : null)
+                .memberRole(member.getMemberRole())
+                .departmentName(departmentName)
+                .departmentRoleName(departmentRoleName)
+                .build();
     }
 } 

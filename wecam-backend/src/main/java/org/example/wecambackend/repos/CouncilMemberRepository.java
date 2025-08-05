@@ -33,4 +33,25 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
             "WHERE cm.council.id = :councilId AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE")
     List<CouncilMemberResponse> findAllActiveMembersByCouncilId(@Param("councilId") Long councilId);
 
+    /**
+     * 특정 학생회의 활성 상태인 모든 학생회원을 상세 정보와 함께 조회
+     * 
+     * 조회되는 정보:
+     * - 학생회원 기본 정보 (CouncilMember)
+     * - 부서 정보 (CouncilDepartment)
+     * - 부서 내 역할 정보 (CouncilDepartmentRole)
+     * - 사용자 정보 (User)
+     * - 사용자 프로필 정보 (UserInformation)
+     * 
+     * @param councilId 학생회 ID
+     * @return 상세 정보가 포함된 학생회원 목록
+     */
+    @Query("SELECT cm FROM CouncilMember cm " +
+            "LEFT JOIN FETCH cm.department " +
+            "LEFT JOIN FETCH cm.departmentRole " +
+            "LEFT JOIN FETCH cm.user u " +
+            "LEFT JOIN FETCH u.userInformation " +
+            "WHERE cm.council.id = :councilId AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE")
+    List<CouncilMember> findAllActiveMembersWithDetailsByCouncilId(@Param("councilId") Long councilId);
+
 }

@@ -10,6 +10,7 @@ import org.example.wecambackend.common.response.BaseResponse;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
 import org.example.wecambackend.dto.responseDTO.OrganizationRequestDetailResponse;
 import org.example.wecambackend.dto.responseDTO.SubOrganizationResponse;
+import org.example.wecambackend.dto.responseDTO.SubOrganizationDetailResponse;
 import org.example.wecambackend.service.admin.AdminOrganizationService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -84,6 +85,26 @@ public class AdminOrganizationController {
                 councilName, userDetails.getUsername());
         
         List<SubOrganizationResponse> response = organizationRequestAdminService.getSubOrganizations();
+        return new BaseResponse<>(response);
+    }
+
+    @GetMapping("/subs/{councilId}")
+    @Operation(summary = "하위 학생회 상세 조회",
+            description = "특정 하위 학생회의 상세 정보를 조회합니다. (단과대/총학생회 전용)",
+            parameters = {
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER),
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH),
+                    @Parameter(name = "councilId", description = "조회할 하위 학생회 ID", in = ParameterIn.PATH)
+            })
+    public BaseResponse<SubOrganizationDetailResponse> getSubOrganizationDetail(
+            @PathVariable String councilName,
+            @PathVariable Long councilId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        
+        log.info("하위 학생회 상세 조회: councilName={}, councilId={}, user={}", 
+                councilName, councilId, userDetails.getUsername());
+        
+        SubOrganizationDetailResponse response = organizationRequestAdminService.getSubOrganizationDetail(councilId);
         return new BaseResponse<>(response);
     }
 }
