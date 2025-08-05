@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.*;
 import org.example.model.council.Council;
+import org.example.model.council.CouncilDepartment;
+import org.example.model.council.CouncilDepartmentRole;
 import org.example.model.council.CouncilMember;
 import org.example.model.enums.MemberRole;
 
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -128,11 +131,25 @@ public class AdminOrganizationService {
                 .build();
         councilRepository.save(council);
 
+        // 기본 Department 생성시키기(학생회 부서 - 회장단) , 회장 배치
+        CouncilDepartment councilDepartment = CouncilDepartment.builder()
+                .council(council)
+                .parentId(null)
+                .name("회장단")
+                .build();
+
+        CouncilDepartmentRole councilDepartmentRole = CouncilDepartmentRole.builder()
+                .department(councilDepartment)
+                .level(0)
+                .name("회장").build();
+
         // 6. 학생회 멤버 추가
         CouncilMember councilMember = CouncilMember.builder()
                 .council(council)
                 .memberRole(MemberRole.PRESIDENT)
                 .user(user)
+                .department(councilDepartment)
+                .departmentRole(councilDepartmentRole)
                 .build();
         councilMemberRepository.save(councilMember);
 
@@ -248,8 +265,6 @@ public class AdminOrganizationService {
         Optional<UserInformation> optionalInfo = userInformationRepository.findByUser(user);
 
         UserInformation info;
-
-
 
         if (optionalInfo.isPresent()) {
             // 이미 존재하면 업데이트

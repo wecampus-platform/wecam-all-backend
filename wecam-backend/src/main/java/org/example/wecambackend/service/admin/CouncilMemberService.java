@@ -1,6 +1,7 @@
 package org.example.wecambackend.service.admin;
 
 import lombok.RequiredArgsConstructor;
+import org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
 import org.example.wecambackend.repos.CouncilMemberRepository;
 import org.springframework.stereotype.Service;
@@ -28,5 +29,9 @@ public class CouncilMemberService {
      */
     public List<CouncilMemberResponse> getAllCouncilMembers(Long councilId) {
         return councilMemberRepository.findAllActiveMembersByCouncilId(councilId);
+    }
+
+    public List<CouncilCompositionResponse> getDepartmentCouncilMembers(Long councilId, Long departmentId) {
+        return councilMemberRepository.findByCouncilIdAndDepartmentId(councilId,departmentId);
     }
 }
