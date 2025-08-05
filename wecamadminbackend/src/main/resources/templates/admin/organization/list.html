@@ -287,7 +287,7 @@
                 <td class="university-name" th:text="${request.schoolId_Sel}">서울대학교</td>
                 <td th:text="${request.target_OrgName}">컴퓨터공학부</td>
                 <td>
-                    <span class="status-badge status-pending" th:text="${request.status}">PENDING</span>
+                    <span class="status-badge status-pending" th:text="${request.requestStatus}">PENDING</span>
                 </td>
                 <td class="request-date" th:text="${#temporals.format(request.createdAt, 'yyyy-MM-dd HH:mm')}">2025-06-02 14:30</td>
                 <td>

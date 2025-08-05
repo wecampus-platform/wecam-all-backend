@@ -10,14 +10,22 @@ import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
-import org.example.wecambackend.dto.responseDTO.InvitationCodeResponse;
-import org.example.wecambackend.dto.responseDTO.UniversitySimpleResponse;
 import org.example.wecambackend.service.admin.CouncilMemberService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.example.wecambackend.dto.requestDTO.DepartmentAssignmentRequest;
+import org.example.wecambackend.dto.requestDTO.CouncilMemberExpulsionRequest;
+import org.example.wecambackend.config.security.annotation.CheckCouncilAccess;
+import org.example.wecambackend.config.security.annotation.IsPresidentTeam;
+import org.example.wecambackend.config.security.annotation.CheckCouncilEntity;
+import org.example.wecambackend.common.response.BaseResponse;
+import org.example.wecambackend.common.response.BaseResponseStatus;
+import org.example.wecambackend.dto.responseDTO.DepartmentResponse;
+import org.example.model.council.CouncilMember;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/admin/council/{councilName}/member")
@@ -42,5 +50,68 @@ public class CouncilMemberController {
         return councilMemberService.getAllCouncilMembers(councilId);
     }
 
+    @PutMapping("/{memberId}/department")
+    @CheckCouncilAccess
+    @IsPresidentTeam
+    @CheckCouncilEntity(idParam = "memberId", entityClass = CouncilMember.class)
+    @Operation(
+            summary = "학생회 부원 부서 배치/이동",
+            description = "학생회 부원을 특정 부서로 배치하거나 이동시킵니다. 회장과 부회장만 이 기능을 사용할 수 있습니다. 부서 배치 시 부원의 역할을 level로 설정할 수 있습니다 (0: 부장, 1: 부원). level을 생략하면 기본적으로 부원(1)으로 설정됩니다. 부장은 한 부서에 한 명만 존재할 수 있습니다.",
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "memberId", description = "배치할 부원의 ID", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
+            }
+    )
+    public BaseResponse<String> assignMemberToDepartment(
+            @PathVariable Long memberId,
+            @RequestBody @Valid DepartmentAssignmentRequest request,
+            @PathVariable("councilName") String councilName,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        councilMemberService.assignMemberToDepartment(memberId, request);
+        return new BaseResponse<>(BaseResponseStatus.SUCCESS, "부서 배치가 완료되었습니다.");
+    }
 
+    @GetMapping("/departments")
+    @CheckCouncilAccess
+    @Operation(
+            summary = "학생회 부서 및 역할 목록 조회",
+            description = "현재 학생회의 모든 부서와 각 부서의 역할 목록을 조회합니다. 부서 배치 시 선택할 수 있는 부서 목록을 제공합니다.",
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
+            }
+    )
+    public BaseResponse<List<DepartmentResponse>> getAllDepartments(
+            @PathVariable("councilName") String councilName,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        List<DepartmentResponse> departments = councilMemberService.getAllDepartments();
+        return new BaseResponse<>(BaseResponseStatus.SUCCESS, departments);
+    }
+
+    @DeleteMapping("/{memberId}")
+    @CheckCouncilAccess
+    @IsPresidentTeam
+    @CheckCouncilEntity(idParam = "memberId", entityClass = CouncilMember.class)
+    @Operation(
+            summary = "학생회 구성원 제명",
+            description = "학생회 구성원을 제명합니다. 회장과 부회장만 이 기능을 사용할 수 있으며, 회장은 제명할 수 없습니다.",
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "memberId", description = "제명할 구성원의 ID", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
+            }
+    )
+    public BaseResponse<String> expelMember(
+            @PathVariable Long memberId,
+            @RequestBody(required = false) CouncilMemberExpulsionRequest request,
+            @PathVariable("councilName") String councilName,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        String reason = request != null ? request.getReason() : null;
+        councilMemberService.expelMember(memberId, reason);
+        return new BaseResponse<>(BaseResponseStatus.SUCCESS, "구성원이 성공적으로 제명되었습니다.");
+    }
 }

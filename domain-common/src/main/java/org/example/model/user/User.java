@@ -89,6 +89,14 @@ public class User extends BaseEntity {
     @Column(name="enroll_year",length = 4)
     private String enrollYear;
 
+    // 제명 이유
+    @Column(name = "expulsion_reason")
+    private String expulsionReason;
+
+    // 제명 날짜
+    @Column(name = "expulsion_date")
+    private LocalDateTime expulsionDate;
+
     /** 최초 생성 시 자동 설정되는 값들 */
     @Override
     public void prePersistChild() {

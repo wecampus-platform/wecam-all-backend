@@ -2,6 +2,7 @@ package org.example.model.council;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import org.example.model.common.BaseEntity;
 
 

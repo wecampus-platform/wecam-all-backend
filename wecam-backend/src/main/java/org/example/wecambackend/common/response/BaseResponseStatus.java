@@ -96,6 +96,9 @@ public enum BaseResponseStatus {
     ALREADY_PROCESSED(false, HttpStatus.CONFLICT.value(), "이미 처리된 인증 요청입니다."),
     AFFILIATION_ALREADY_EXISTS(false, HttpStatus.CONFLICT.value(), "이미 해당 유형의 인증 요청을 제출하셨습니다."),
     COUNCIL_ALREADY_EXISTS(false, 409, "이미 학생회가 존재하는 조직입니다."),
+    ALREADY_EXPELLED_MEMBER(false, HttpStatus.CONFLICT.value(), "이미 제명된 구성원입니다."),
+    CANNOT_EXPEL_PRESIDENT(false, HttpStatus.FORBIDDEN.value(), "회장은 제명할 수 없습니다."),
+    DEPARTMENT_ROLE_ALREADY_EXISTS(false, HttpStatus.CONFLICT.value(), "해당 부서에 이미 같은 역할을 가진 구성원이 있습니다."),
 
     /**
      * 500 : Database, Server,file save 오류

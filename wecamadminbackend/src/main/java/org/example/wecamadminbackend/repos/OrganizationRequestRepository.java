@@ -17,7 +17,7 @@ public interface OrganizationRequestRepository extends JpaRepository<Organizatio
             "LEFT JOIN o.user u " +
             "LEFT JOIN o.targetOrganization t " +
             "WHERE o.requestStatus = :requestStatus")
-    List<OrganizationRequestDTO> findRequestDtosByStatus(@Param("status") RequestStatus requestStatus);
+    List<OrganizationRequestDTO> findRequestDtosByStatus(@Param("requestStatus") RequestStatus requestStatus);
 
 // 예: PENDING 상태만 조회
     //**    PENDING,

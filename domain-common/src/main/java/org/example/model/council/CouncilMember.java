@@ -5,6 +5,9 @@ import lombok.*;
 import org.example.model.common.BaseEntity;
 import org.example.model.user.User;
 import org.example.model.enums.MemberRole;
+import org.example.model.enums.ExitType;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "council_member")
@@ -41,4 +44,17 @@ public class CouncilMember extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "member_role", nullable = false)
     private MemberRole memberRole;
+
+    // 탈퇴/만료 관련 필드
+    @Enumerated(EnumType.STRING)
+    @Column(name = "exit_type", nullable = false)
+    private ExitType exitType = ExitType.ACTIVE;
+
+    // 제명 사유 (제명인 경우에만 사용)
+    @Column(name = "expulsion_reason", length = 500)
+    private String expulsionReason;
+
+    // 탈퇴/만료 날짜
+    @Column(name = "exit_date")
+    private LocalDateTime exitDate;
 }

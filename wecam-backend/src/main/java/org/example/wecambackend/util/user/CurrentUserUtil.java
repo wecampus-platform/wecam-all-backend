@@ -1,4 +1,4 @@
-package org.example.wecambackend.util;
+package org.example.wecambackend.util.user;
 
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
