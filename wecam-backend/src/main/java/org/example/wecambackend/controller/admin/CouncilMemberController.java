@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import org.example.wecambackend.dto.requestDTO.DepartmentAssignmentRequest;
+import org.example.wecambackend.dto.requestDTO.ExpulsionRequest;
 import org.example.wecambackend.config.security.annotation.CheckCouncilAccess;
 import org.example.wecambackend.config.security.annotation.IsPresidentTeam;
 import org.example.wecambackend.config.security.annotation.CheckCouncilEntity;
@@ -93,4 +94,27 @@ public class CouncilMemberController {
         return new BaseResponse<>(BaseResponseStatus.SUCCESS, departments);
     }
 
+    @DeleteMapping("/{memberId}")
+    @CheckCouncilAccess
+    @IsPresidentTeam
+    @CheckCouncilEntity(idParam = "memberId", entityClass = CouncilMember.class)
+    @Operation(
+            summary = "학생회 구성원 제명",
+            description = "학생회 구성원을 제명합니다. 회장과 부회장만 이 기능을 사용할 수 있으며, 회장은 제명할 수 없습니다.",
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "memberId", description = "제명할 구성원의 ID", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
+            }
+    )
+    public BaseResponse<String> expelMember(
+            @PathVariable Long memberId,
+            @RequestBody(required = false) ExpulsionRequest request,
+            @PathVariable("councilName") String councilName,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        String reason = request != null ? request.getReason() : null;
+        councilMemberService.expelMember(memberId, reason);
+        return new BaseResponse<>(BaseResponseStatus.SUCCESS, "구성원이 성공적으로 제명되었습니다.");
+    }
 }

@@ -5,6 +5,7 @@ import org.example.model.council.CouncilDepartment;
 import org.example.model.council.CouncilDepartmentRole;
 import org.example.model.council.CouncilMember;
 import org.example.model.enums.MemberRole;
+import org.example.model.enums.ExitType;
 import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
@@ -14,7 +15,9 @@ import org.example.wecambackend.repos.CouncilDepartmentRepository;
 import org.example.wecambackend.repos.CouncilDepartmentRoleRepository;
 import org.example.wecambackend.repos.CouncilMemberRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -91,5 +94,42 @@ public class CouncilMemberService {
                     return DepartmentResponse.from(department, roles);
                 })
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * 학생회 구성원을 제명합니다.
+     * 회장과 부회장만 이 기능을 사용할 수 있으며, 회장은 제명할 수 없습니다.
+     * 
+     * @param memberId 제명할 구성원 ID
+     * @param reason 제명 사유 (선택사항)
+     */
+    @Transactional
+    public void expelMember(Long memberId, String reason) {
+        // 1. 대상 부원 조회
+        CouncilMember member = councilMemberRepository.findById(memberId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.ENTITY_NOT_FOUND));
+
+        // 2. 현재 학생회에 속한 부원인지 확인
+        Long currentCouncilId = CouncilContextHolder.getCouncilId();
+        if (!member.getCouncil().getId().equals(currentCouncilId)) {
+            throw new BaseException(BaseResponseStatus.INVALID_COUNCIL_ACCESS);
+        }
+
+        // 3. 이미 제명된 부원인지 확인
+        if (member.getExitType() != ExitType.ACTIVE) {
+            throw new BaseException(BaseResponseStatus.ALREADY_EXPELLED_MEMBER);
+        }
+
+        // 4. 회장은 제명할 수 없음
+        if (member.getMemberRole() == MemberRole.PRESIDENT) {
+            throw new BaseException(BaseResponseStatus.CANNOT_EXPEL_PRESIDENT);
+        }
+
+        // 5. 제명 처리
+        member.setExitType(ExitType.EXPULSION);
+        member.setExpulsionReason(reason);
+        member.setExitDate(LocalDateTime.now());
+
+        councilMemberRepository.save(member);
     }
 }

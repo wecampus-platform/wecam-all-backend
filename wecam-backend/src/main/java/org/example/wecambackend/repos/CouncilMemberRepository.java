@@ -27,10 +27,11 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
 
 
     @Query("SELECT new org.example.wecambackend.dto.responseDTO.CouncilMemberResponse(" +
-            "u.name, cm.memberRole, u.userPkId) " +
+            "u.name, cm.memberRole, u.userPkId, cm.exitType, cm.expulsionReason) " +
             "FROM CouncilMember cm " +
             "JOIN cm.user u " +
-            "WHERE cm.council.id = :councilId AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE")
+            "WHERE cm.council.id = :councilId AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE " +
+            "AND cm.exitType = org.example.model.enums.ExitType.ACTIVE")
     List<CouncilMemberResponse> findAllActiveMembersByCouncilId(@Param("councilId") Long councilId);
 
     /**
@@ -51,7 +52,8 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
             "LEFT JOIN FETCH cm.departmentRole " +
             "LEFT JOIN FETCH cm.user u " +
             "LEFT JOIN FETCH u.userInformation " +
-            "WHERE cm.council.id = :councilId AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE")
+            "WHERE cm.council.id = :councilId AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE " +
+            "AND cm.exitType = org.example.model.enums.ExitType.ACTIVE")
     List<CouncilMember> findAllActiveMembersWithDetailsByCouncilId(@Param("councilId") Long councilId);
 
 }
