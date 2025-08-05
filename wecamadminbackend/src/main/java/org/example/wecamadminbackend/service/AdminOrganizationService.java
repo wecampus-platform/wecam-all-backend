@@ -49,23 +49,23 @@ public class AdminOrganizationService {
         OrganizationRequest request = organizationRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 요청이 존재하지 않습니다."));
 
-        if (request.getStatus() != RequestStatus.PENDING) {
+        if (request.getRequestStatus() != RequestStatus.PENDING) {
             throw new IllegalStateException("이미 처리된 요청입니다.");
         }
         User user = request.getUser();
 
         //탈퇴된 사용자 필터링
-        if (user.getStatus() == UserStatus.WITHDRAWN) {
+        if (user.getUserStatus() == UserStatus.WITHDRAWN) {
             throw new IllegalStateException("탈퇴한 사용자의 요청은 승인할 수 없습니다.");
         }
 
         // 정지 상태일 경우
-        if (user.getStatus() == UserStatus.SUSPENDED) {
+        if (user.getUserStatus() == UserStatus.SUSPENDED) {
             throw new IllegalStateException("정지된 사용자의 요청은 승인할 수 없습니다.");
         }
 
         // 승인 처리
-        request.setStatus(RequestStatus.APPROVED);
+        request.setRequestStatus(RequestStatus.APPROVED);
         //가입 조직의 테이블 생성
 
         //가입할때의 user 정보 가져옴
@@ -76,7 +76,6 @@ public class AdminOrganizationService {
         createUserInformation(user , presidentSignupInfoDTO , organization);
         //실제 워크스페이스(학생회 테이블) 생성
         createWorkspace(request.getCouncilName(),request);
-
 
         //학생회장 _ 신청서 작성자 회원가입 완료 시키기
         organizationRequestRepository.save(request);
@@ -89,9 +88,9 @@ public class AdminOrganizationService {
         return organizationRequestDTOS;
     }
 
-    private void createWorkspace(String councilName, OrganizationRequest request) {
+    private void createWorkspace(String councilName,OrganizationRequest request) {
         OrganizationType type = request.getOrganizationType(); // enum 타입
-        // 1. 조직 이름 추출
+// 1. 조직 이름 추출
         String orgName = switch (type) {
             case UNIVERSITY -> request.getSchoolName();
             case COLLEGE -> request.getCollegeName();
@@ -99,7 +98,7 @@ public class AdminOrganizationService {
             default -> throw new IllegalArgumentException("알 수 없는 조직 타입");
         };
 
-        // 2. schoolId 결정
+// 2. schoolId 결정
         Long schoolId;
         if (request.getSchoolName() != null) {
             schoolId = universityRepository.findBySchoolName(request.getSchoolName())
@@ -113,23 +112,22 @@ public class AdminOrganizationService {
             throw new IllegalStateException("학교 정보를 찾을 수 없습니다.");
         }
 
-        // 3. 조직 조회
+// 3. 조직 조회
         Organization org = organizationRepository
                 .findByOrganizationNameAndOrganizationTypeAndUniversity_SchoolId(orgName, type, schoolId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 조직이 존재하지 않습니다."));
 
-        // 4. 학생회 중복 체크
+// 4. 학생회 중복 체크
         if (councilRepository.existsCouncilByOrganization_OrganizationId(org.getOrganizationId())) {
             throw new IllegalStateException("이미 학생회가 존재합니다.");
         }
 
         User user = request.getUser();
-        // 5. 학생회 생성
+// 5. 학생회 생성
         Council council = Council.builder()
                 .organization(org)
                 .councilName(councilName)
                 .user(user)
-                .isActive(true)
                 .build();
         councilRepository.save(council);
 
@@ -149,13 +147,11 @@ public class AdminOrganizationService {
         CouncilMember councilMember = CouncilMember.builder()
                 .council(council)
                 .memberRole(MemberRole.PRESIDENT)
-                .isActive(true)
+                .user(user)
                 .department(councilDepartment)
                 .departmentRole(councilDepartmentRole)
-                .user(user)
                 .build();
         councilMemberRepository.save(councilMember);
-
 
 
     }

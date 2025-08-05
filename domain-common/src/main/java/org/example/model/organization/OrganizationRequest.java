@@ -3,7 +3,7 @@ package org.example.model.organization;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.model.user.User;
-import org.example.model.common.BaseTimeEntity;
+import org.example.model.common.BaseEntity;
 import org.example.model.enums.OrganizationType;
 import org.example.model.enums.RequestStatus;
 
@@ -15,7 +15,7 @@ import org.example.model.enums.RequestStatus;
 @AllArgsConstructor
 @Builder
 // 조직(워크스페이스) 생성 요청
-public class OrganizationRequest extends BaseTimeEntity {
+public class OrganizationRequest extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,9 +46,9 @@ public class OrganizationRequest extends BaseTimeEntity {
     private OrganizationType organizationType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "request_status", nullable = false)
     @Builder.Default
-    private RequestStatus status = RequestStatus.PENDING;
+    private RequestStatus requestStatus = RequestStatus.PENDING;
 
     /*요청자 - ManyToOne 으로 바꾼 이유 : 생각해보니 비대위일때
     그 밑 학과 학생회장이 하는 경우도 있음. 내가 그랬음.*/

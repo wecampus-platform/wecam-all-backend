@@ -2,6 +2,7 @@ package org.example.model.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.common.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserPrivate {
+public class UserPrivate extends BaseEntity {
 
     @Id
     @Column(name = "user_pk_id")
@@ -28,11 +29,4 @@ public class UserPrivate {
 
     @Column(name = "password", length = 100, nullable = false)
     private String password;
-
-    @Column(name = "password_update_at")
-    private LocalDateTime passwordUpdateAt;
-
-    public void updatePassword() {
-        this.passwordUpdateAt = LocalDateTime.now();
-    }
 }

@@ -2,6 +2,7 @@ package org.example.model.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.model.common.BaseEntity;
 import org.example.model.organization.Organization;
 import org.example.model.University;
 import org.example.model.enums.UserRole;
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class User extends BaseEntity {
 
     /** 사용자 PK (Auto Increment) */
     @Id
@@ -34,14 +35,6 @@ public class User {
     /** 계정 만료일 (가입일 기준 30일 후 자동 설정됨) */
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
-
-    /** 계정 생성일 */
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    /** 마지막 업데이트 시각 */
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     /** 인증 여부 (ex. 전화번호 인증 등) */
     @Column(name = "is_authentication", nullable = false)
@@ -81,14 +74,11 @@ public class User {
     @Column(name = "user_tag", length = 5, nullable = false)
     private String userTag;
 
-
-
-
     /**사용자 활동여부 **/
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserStatus status = UserStatus.ACTIVE;
+    @Column(name = "user_status", nullable = false)
+    private UserStatus userStatus = UserStatus.ACTIVE;
 
     /** 시스템 슈퍼유저 여부 (True인 경우 플랫폼 전체 관리 권한) */
     @Column(name = "is_superuser", nullable = false)
@@ -100,21 +90,14 @@ public class User {
     private String enrollYear;
 
     /** 최초 생성 시 자동 설정되는 값들 */
-    @PrePersist
-    public void prePersist() {
+    @Override
+    public void prePersistChild() {
         LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
         this.expiresAt = now.plusDays(30); // 가입일 기준 30일 유효 //TODO: 추후 role 업데이트된 사람들은 ExpiresAT 없애야 함.
         this.isAuthentication = false;
         this.isEmailVerified = false;
         if (this.isSuperuser == null) this.isSuperuser = false;
         if (this.role ==null) this.role = UserRole.UNAUTH; // 처음 가입시 role이 null이면 UNAUTH로 설정
-    }
-
-    /** 업데이트 시 자동으로 수정 시각 갱신 */
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
