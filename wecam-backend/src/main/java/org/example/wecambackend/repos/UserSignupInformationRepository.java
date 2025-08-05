@@ -1,6 +1,7 @@
 package org.example.wecambackend.repos;
 
 import org.example.model.user.User;
+import org.example.model.user.UserInformation;
 import org.example.model.user.UserSignupInformation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -27,6 +28,5 @@ public interface UserSignupInformationRepository extends JpaRepository<UserSignu
     WHERE usi.user_pk_id = :userPkId
     """, nativeQuery = true)
     Map<String, Object> findSchoolInfoByUserPkId(@Param("userPkId") Long userPkId);
-
 
 }

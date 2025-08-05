@@ -55,4 +55,8 @@ public class OrganizationRequest extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_pk_id", nullable = false)
     private User user;
+
+    @Column(name = "reason", length = 256)
+    private String reason;
+
 }
