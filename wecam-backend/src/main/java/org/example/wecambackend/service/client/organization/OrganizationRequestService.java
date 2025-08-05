@@ -47,7 +47,7 @@ public class OrganizationRequestService {
                 .user(user)
                 .organizationType(requestDto.getOrganizationType())
                 .councilName(requestDto.getCouncilName())
-                .status(RequestStatus.PENDING);
+                .requestStatus(RequestStatus.PENDING);
 
         Organization parentOrg = null;
         String schoolName = null;

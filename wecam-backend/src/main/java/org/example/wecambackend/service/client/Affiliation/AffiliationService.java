@@ -134,7 +134,7 @@ public class AffiliationService {
                 .ocrResult(ocrResult.getResult())
                  .issuanceDate(ocrResultDto.getIssuanceDate())
                  .reason(ocrResult.getReason())
-                .status(AuthenticationStatus.PENDING)
+                .authenticationStatus(AuthenticationStatus.PENDING)
                 .requestedAt(LocalDateTime.now())
                 .organization(organization)
                 .university(school)

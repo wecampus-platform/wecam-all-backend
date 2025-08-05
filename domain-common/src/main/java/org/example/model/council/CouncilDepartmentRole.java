@@ -1,11 +1,17 @@
 package org.example.model.council;
 
 import jakarta.persistence.*;
+import lombok.*;
 import org.example.model.common.BaseEntity;
 
 
 //ENUM 으로 안할거임 -> 추후 국장 / 부장 자기가 원하는 name으로 설정할 수 있게 해야될듯.
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CouncilDepartmentRole extends BaseEntity {
 
     @Id

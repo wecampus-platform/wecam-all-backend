@@ -70,7 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserRole userRole = user.getRole();
                 List<Long> councilIds = List.of();
                 if (userRole.equals(UserRole.COUNCIL)) {
-                    councilIds = councilMemberRepository.findCouncilIdByUserUserPkIdAndIsActiveTrue(userId);
+                    councilIds = councilMemberRepository.findCouncilIdByUserUserPkIdAndStatusActive(userId);
                 }
 
                 System.out.println("👤 [JwtFilter] 사용자 ID: " + userId);

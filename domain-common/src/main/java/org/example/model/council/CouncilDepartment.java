@@ -1,6 +1,7 @@
 package org.example.model.council;
 
 import jakarta.persistence.*;
+import lombok.*;
 import org.example.model.common.BaseEntity;
 
 /**
@@ -10,6 +11,11 @@ import org.example.model.common.BaseEntity;
  * 계층 구조(상위/하위 부서) 및 순서를 지정할 수 있다.
  */
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CouncilDepartment extends BaseEntity {
 
     // 부서 고유 ID
@@ -29,6 +35,4 @@ public class CouncilDepartment extends BaseEntity {
     // 상위 부서 ID (null이면 최상위 부서)
     private Long parentId;
 
-    // 부서 활성 여부 (soft delete 또는 임시 비활성 처리 용도)
-    private Boolean isActive = true;
 }
