@@ -12,6 +12,7 @@ import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.common.response.BaseResponse;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
+
 import org.example.wecambackend.config.security.annotation.CheckCouncilEntity;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
 import org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse;
@@ -19,6 +20,8 @@ import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
 import org.example.wecambackend.service.admin.CouncilDepartmentService;
 import org.example.wecambackend.service.admin.CouncilMemberService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
+import org.example.wecambackend.service.admin.CouncilMemberService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +34,7 @@ import java.util.List;
 public class CouncilCompositionController {
     private final CouncilMemberService councilMemberService;
     private final CouncilDepartmentService councilDepartmentService;
+
 
     @IsCouncil
 //    @CheckCouncilEntity(idParam = "departmentId", entityClass = CouncilDepartment.class)
@@ -110,5 +114,6 @@ public class CouncilCompositionController {
 
         return new BaseResponse<>(BaseResponseStatus.SUCCESS);
     }
+
 
 }

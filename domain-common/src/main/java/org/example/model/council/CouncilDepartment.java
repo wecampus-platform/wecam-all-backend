@@ -11,6 +11,9 @@ import org.example.model.common.BaseEntity;
  * 계층 구조(상위/하위 부서) 및 순서를 지정할 수 있다.
  */
 @Entity
+@Getter
+@Setter
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
