@@ -20,7 +20,7 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
 
     @Query("SELECT o.organizationName FROM Organization o WHERE o.organizationId = :id")
     String findOrganizationNameByOrganizationId(@Param("id") Long id);
-}
+
 
 
     Optional<Organization> findFirstByUniversity_SchoolIdAndLevel(Long schoolId, int level);

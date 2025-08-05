@@ -34,6 +34,7 @@ import org.example.model.council.Council;
 import org.example.wecambackend.service.admin.common.EntityFinderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

@@ -14,6 +14,10 @@ import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.dto.requestDTO.DepartmentAssignmentRequest;
+import org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse;
+import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
+import org.example.wecambackend.repos.CouncilMemberRepository;
+import org.springframework.stereotype.Service;
 
 import org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
@@ -56,6 +60,7 @@ public class CouncilMemberService {
     public List<CouncilMemberResponse> getAllCouncilMembers(Long councilId) {
         return councilMemberRepository.findAllActiveMembersByCouncilId(councilId);
     }
+
 
     /**
      * 학생회 부원의 부서를 배치합니다.
@@ -166,6 +171,7 @@ public class CouncilMemberService {
         user.setRole(UserRole.STUDENT);
         userRepository.save(user);
     }
+
     public List<CouncilCompositionResponse> getDepartmentCouncilMembers(Long councilId, Long departmentId) {
         return councilMemberRepository.findByCouncilIdAndDepartmentId(councilId,departmentId);
     }

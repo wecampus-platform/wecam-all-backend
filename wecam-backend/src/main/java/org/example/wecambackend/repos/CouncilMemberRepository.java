@@ -44,6 +44,7 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
      */
     //미배치 인원도 뜨게 해야 돼서 LEFTJOIN 으로 묶었습니다.
     @Query("SELECT new org.example.wecambackend.dto.responseDTO.CouncilMemberResponse(" +
+<<<<<<< HEAD
             "u.name, cm.memberRole, u.userPkId, cm.exitType, cm.expulsionReason) " +
             "FROM CouncilMember cm " +
             "JOIN cm.user u " +
@@ -101,6 +102,8 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
             "AND cm.status = org.example.model.common.BaseEntity.Status.ACTIVE " +
             "AND cm.exitType = org.example.model.enums.ExitType.ACTIVE")
     Optional<CouncilMember> findByCouncilAndMemberRole(@Param("councilId") Long councilId, @Param("memberRole") MemberRole memberRole);
+
+    @Query("SELECT new org.example.wecambackend.dto.responseDTO.CouncilMemberResponse(" +
             "u.name, cm.memberRole, u.userPkId,d.id, dr.id, d.name, dr.name) " +
             "FROM CouncilMember cm " +
             "JOIN cm.user u " +
