@@ -165,6 +165,7 @@ public class CouncilMemberService {
         User user = member.getUser();
         user.setRole(UserRole.STUDENT);
         userRepository.save(user);
+    }
     public List<CouncilCompositionResponse> getDepartmentCouncilMembers(Long councilId, Long departmentId) {
         return councilMemberRepository.findByCouncilIdAndDepartmentId(councilId,departmentId);
     }
