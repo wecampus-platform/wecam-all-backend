@@ -12,18 +12,18 @@ import org.example.model.user.UserSignupInformation;
 import org.example.model.enums.OrganizationType;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
-import org.example.wecambackend.dto.responseDTO.OrganizationRequestDetailResponse;
+import org.example.wecambackend.dto.responseDTO.SubOrganizationRequestDetailResponse;
+import org.example.wecambackend.dto.responseDTO.SubOrganizationRequestListResponse;
 import org.example.wecambackend.dto.responseDTO.SubOrganizationResponse;
 import org.example.wecambackend.dto.responseDTO.SubOrganizationDetailResponse;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberDetailResponse;
 import org.example.wecambackend.repos.organization.OrganizationRequestFileRepository;
 import org.example.wecambackend.repos.organization.OrganizationRequestRepository;
-import org.example.wecambackend.repos.organization.OrganizationRepository;
 import org.example.wecambackend.repos.CouncilRepository;
 import org.example.wecambackend.repos.CouncilMemberRepository;
-import org.example.wecambackend.repos.UserRepository;
 import org.example.wecambackend.repos.UserSignupInformationRepository;
 import org.example.wecambackend.common.context.CouncilContextHolder;
+import org.example.wecambackend.util.OrganizationResponseBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +48,7 @@ public class AdminOrganizationService {
      * 워크스페이스 생성 요청 상세 조회
      */
     @Transactional
-    public OrganizationRequestDetailResponse getOrganizationRequestDetail(Long requestId, String councilName) {
+    public SubOrganizationRequestDetailResponse getOrganizationRequestDetail(Long requestId, String councilName) {
         // 현재 접속한 학생회의 조직 정보 가져오기
         Long currentCouncilId = CouncilContextHolder.getCouncilId();
         Council currentCouncil = councilRepository.findByIdWithOrganization(currentCouncilId)
@@ -67,15 +67,15 @@ public class AdminOrganizationService {
 
         // 증빙자료 조회
         List<OrganizationRequestFile> files = organizationRequestFileRepository.findByOrganizationRequest_RequestId(requestId);
-        List<OrganizationRequestDetailResponse.OrganizationRequestFileResponse> fileResponses = files.stream()
-                .map(file -> OrganizationRequestDetailResponse.OrganizationRequestFileResponse.builder()
+        List<SubOrganizationRequestDetailResponse.OrganizationRequestFileResponse> fileResponses = files.stream()
+                .map(file -> SubOrganizationRequestDetailResponse.OrganizationRequestFileResponse.builder()
                         .fileId(file.getFileId())
                         .originalFileName(file.getOriginalFileName())
                         .downloadUrl(getDownloadUrl(file))
                         .build())
                 .collect(Collectors.toList());
 
-        return OrganizationRequestDetailResponse.builder()
+        return SubOrganizationRequestDetailResponse.builder()
                 .requestId(request.getRequestId())
                 .requestStatus(request.getRequestStatus())
                 .createdAt(request.getCreatedAt())
@@ -120,7 +120,7 @@ public class AdminOrganizationService {
                 currentCouncil.getOrganization().getLevel());
 
         return subCouncils.stream()
-                .map(this::buildSubOrganizationResponse)
+                .map(OrganizationResponseBuilder::buildSubOrganizationResponse)
                 .collect(Collectors.toList());
     }
 
@@ -147,6 +147,24 @@ public class AdminOrganizationService {
         }
 
         return buildSubOrganizationDetailResponse(targetCouncil);
+    }
+
+    /**
+     * 현재 접속한 학생회의 하위 조직에서 요청한 워크스페이스 생성 요청 목록을 조회
+     * @return 하위 조직의 워크스페이스 생성 요청 목록
+     */
+    public List<SubOrganizationRequestListResponse> getSubOrganizationRequestList() {
+        // 현재 접속한 학생회의 조직 정보 가져오기
+        Long currentCouncilId = CouncilContextHolder.getCouncilId();
+        Council currentCouncil = councilRepository.findByIdWithOrganization(currentCouncilId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
+
+        Long currentOrganizationId = currentCouncil.getOrganization().getOrganizationId();
+
+        List<OrganizationRequest> requests = organizationRequestRepository.findSubOrganizationRequestsByParentId(currentOrganizationId);
+        return requests.stream()
+                .map(OrganizationResponseBuilder::buildSubOrganizationRequestListResponse)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -224,41 +242,6 @@ public class AdminOrganizationService {
         if (currentOrganization.getLevel() > 1) {
             throw new BaseException(BaseResponseStatus.INVALID_COUNCIL_ACCESS);
         }
-    }
-    
-    /**
-     * 하위 학생회 응답 객체 생성
-     */
-    private SubOrganizationResponse buildSubOrganizationResponse(Council council) {
-        Organization organization = council.getOrganization();
-        
-        // 학생회 단위 결정
-        String organizationType = organization.getOrganizationType().name();
-        
-        // 단과대 이름과 학과 이름 추출
-        String collegeName = null;
-        String departmentName = null;
-        
-        if (organization.getOrganizationType() == OrganizationType.COLLEGE) {
-            // 단과대인 경우
-            collegeName = organization.getOrganizationName();
-        } else if (organization.getOrganizationType() == OrganizationType.DEPARTMENT) {
-            // 학과인 경우 상위 조직이 단과대
-            collegeName = organization.getParent() != null ? organization.getParent().getOrganizationName() : null;
-            departmentName = organization.getOrganizationName();
-        }
-        
-        return SubOrganizationResponse.builder()
-                .councilId(council.getId())
-                .organizationType(organizationType)
-                .collegeName(collegeName)
-                .departmentName(departmentName)
-                .organizationName(council.getCouncilName())
-                .representativeProfileImage(council.getUser().getUserInformation() != null ? 
-                        council.getUser().getUserInformation().getProfileImagePath() : null)
-                .representativeName(council.getUser().getName())
-                .workspaceCreatedAt(council.getStartDate())
-                .build();
     }
 
     /**

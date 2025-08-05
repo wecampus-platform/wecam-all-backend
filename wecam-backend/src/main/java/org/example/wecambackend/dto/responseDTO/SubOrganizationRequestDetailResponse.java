@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class OrganizationRequestDetailResponse {
+public class SubOrganizationRequestDetailResponse {
 
     // [ 요청 기본 정보 ]
     // 워크스페이스 생성 요청 ID

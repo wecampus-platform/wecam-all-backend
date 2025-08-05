@@ -1,6 +1,7 @@
 package org.example.wecambackend.repos.organization;
 
 import org.example.model.organization.OrganizationRequest;
+import org.example.wecambackend.dto.responseDTO.SubOrganizationRequestListResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +21,21 @@ public interface OrganizationRequestRepository extends JpaRepository<Organizatio
            "LEFT JOIN FETCH o.targetOrganization t " +
            "WHERE o.requestId = :requestId")
     Optional<OrganizationRequest> findByIdWithUserAndOrganization(@Param("requestId") Long requestId);
+
+    /**
+     * 현재 학생회의 하위 조직에서 요청한 워크스페이스 생성 요청 목록을 조회
+     * @param parentOrganizationId 상위 조직 ID
+     * @return 하위 조직의 워크스페이스 생성 요청 목록
+     */
+    @Query("SELECT o FROM OrganizationRequest o " +
+           "LEFT JOIN FETCH o.user u " +
+           "LEFT JOIN FETCH u.userInformation ui " +
+           "LEFT JOIN FETCH o.targetOrganization t " +
+           "WHERE t.parent.organizationId IN (" +
+           "  SELECT child.organizationId FROM Organization child " +
+           "  WHERE child.parent.organizationId = :parentOrganizationId " +
+           "  OR child.organizationId = :parentOrganizationId" +
+           ") " +
+           "ORDER BY o.createdAt DESC")
+    List<OrganizationRequest> findSubOrganizationRequestsByParentId(@Param("parentOrganizationId") Long parentOrganizationId);
 }
