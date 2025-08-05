@@ -11,6 +11,8 @@ import org.example.wecambackend.service.admin.common.EntityFinderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class StudentService {
@@ -41,11 +43,15 @@ public class StudentService {
 //            throw new BaseException(BaseResponseStatus.NO_PERMISSION_TO_MANAGE);
 //        }
 
-        // 4. 사용자 역할을 UNAUTH로 변경
+        // 4. 제명 정보 저장
+        user.setExpulsionReason(reason);
+        user.setExpulsionDate(LocalDateTime.now());
+
+        // 5. 사용자 역할을 UNAUTH로 변경
         user.setRole(UserRole.UNAUTH);
         userRepository.save(user);
 
-        // 5. 소속 인증 상태를 미인증으로 변경
+        // 6. 소속 인증 상태를 미인증으로 변경
         userInformationRepository.findByUser_UserPkId(user.getUserPkId())
                 .ifPresent(userInfo -> {
                     userInfo.setIsAuthentication(false);
