@@ -14,6 +14,8 @@ import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.dto.requestDTO.DepartmentAssignmentRequest;
+
+import org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
 import org.example.wecambackend.dto.responseDTO.DepartmentResponse;
 import org.example.wecambackend.repos.CouncilDepartmentRepository;
@@ -163,5 +165,7 @@ public class CouncilMemberService {
         User user = member.getUser();
         user.setRole(UserRole.STUDENT);
         userRepository.save(user);
+    public List<CouncilCompositionResponse> getDepartmentCouncilMembers(Long councilId, Long departmentId) {
+        return councilMemberRepository.findByCouncilIdAndDepartmentId(councilId,departmentId);
     }
 }

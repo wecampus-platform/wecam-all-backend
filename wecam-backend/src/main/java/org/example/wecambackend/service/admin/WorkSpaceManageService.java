@@ -1,14 +1,12 @@
-package org.example.wecamadminbackend.service;
+package org.example.wecambackend.service.admin;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.example.model.*;
+import org.example.model.University;
 import org.example.model.council.Council;
 import org.example.model.council.CouncilDepartment;
 import org.example.model.council.CouncilDepartmentRole;
 import org.example.model.council.CouncilMember;
 import org.example.model.enums.MemberRole;
-
 import org.example.model.enums.OrganizationType;
 import org.example.model.enums.RequestStatus;
 import org.example.model.enums.UserRole;
@@ -18,50 +16,66 @@ import org.example.model.user.User;
 import org.example.model.user.UserInformation;
 import org.example.model.user.UserSignupInformation;
 import org.example.model.user.UserStatus;
-import org.example.wecamadminbackend.dto.PresidentSignupInfoDTO;
-import org.example.wecamadminbackend.dto.request.OrganizationRequestDTO;
-import org.example.wecamadminbackend.repos.*;
-import org.example.wecamadminbackend.service.util.UserTagGenerator;
+import org.example.wecambackend.common.exceptions.BaseException;
+import org.example.wecambackend.common.response.BaseResponseStatus;
+import org.example.wecambackend.config.security.annotation.CurrentUser;
+import org.example.wecambackend.dto.projection.PresidentSignupInfoDTO;
+import org.example.wecambackend.repos.*;
+import org.example.wecambackend.repos.organization.OrganizationRepository;
+import org.example.wecambackend.repos.organization.OrganizationRequestRepository;
+import org.example.wecambackend.service.admin.common.EntityFinderService;
+import org.example.wecambackend.service.util.UserTagGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-@Slf4j
+import org.example.model.council.Council;
+import org.example.wecambackend.service.admin.common.EntityFinderService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @RequiredArgsConstructor
-public class AdminOrganizationService {
+public class WorkSpaceManageService {
+// 워크스페이스 뷰 - 워크스페이스에 있는 targetOrg 의 parentId 가 Council 의 OrganizationId 와 동일하다면
+// 해당 학생회에게 워크스페이스 승인 인가를 줌.
+
 
     private final OrganizationRequestRepository organizationRequestRepository;
-    private final PresidentSignupInformationRepository presidentSignupInformationRepository;
-    private final OrganizationRepository organizationRepository;
-    private final UniversityRepository universityRepository;
-    private final CouncilRepository councilRepository;
     private final UserInformationRepository userInformationRepository;
-    private final UserRepository userRepository;
-    private final CouncilMemberRepository councilMemberRepository;
-
-
+//    //워크스페이스 승인 요청
+    //requestId 확인
     @Transactional
-    public void approveWorkspaceRequest(Long requestId) {
+    public void getAllWorkspaceRequestApprove(Long requestId,Long userId ) {
+
+
         OrganizationRequest request = organizationRequestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 요청이 존재하지 않습니다."));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
+        User currentUser = entityFinderService.getUserByIdOrThrow(userId);
+        Organization targetOrg = request.getTargetOrganization();
+        if (targetOrg == null) {
+            throw new BaseException(BaseResponseStatus.ACCESS_DENIED); // ← 적절한 에러 코드
+        }
+
+        Organization requestParentOrg = targetOrg.getParent();
+        if (!requestParentOrg.equals(currentUser.getOrganization())) {
+            throw new BaseException(BaseResponseStatus.ACCESS_DENIED);
+        }
 
         if (request.getRequestStatus() != RequestStatus.PENDING) {
-            throw new IllegalStateException("이미 처리된 요청입니다.");
+            throw new BaseException(BaseResponseStatus.ACCESS_DENIED_REQUEST);
         }
         User user = request.getUser();
 
         //탈퇴된 사용자 필터링
         if (user.getUserStatus() == UserStatus.WITHDRAWN) {
-            throw new IllegalStateException("탈퇴한 사용자의 요청은 승인할 수 없습니다.");
+            throw new BaseException(BaseResponseStatus.INVALID_USER);
         }
 
         // 정지 상태일 경우
         if (user.getUserStatus() == UserStatus.SUSPENDED) {
-            throw new IllegalStateException("정지된 사용자의 요청은 승인할 수 없습니다.");
+            throw new BaseException(BaseResponseStatus.INVALID_USER);
         }
 
         // 승인 처리
@@ -69,8 +83,8 @@ public class AdminOrganizationService {
         //가입 조직의 테이블 생성
 
         //가입할때의 user 정보 가져옴
-        Long userId = user.getUserPkId();
-        PresidentSignupInfoDTO presidentSignupInfoDTO = showUserSignUpInformation((userId));
+        Long requestUserId = user.getUserPkId();
+        PresidentSignupInfoDTO presidentSignupInfoDTO = showUserSignUpInformation((requestUserId));
         Organization organization = createOrganizationIfNeeded(presidentSignupInfoDTO);
 
         createUserInformation(user , presidentSignupInfoDTO , organization);
@@ -79,14 +93,9 @@ public class AdminOrganizationService {
 
         //학생회장 _ 신청서 작성자 회원가입 완료 시키기
         organizationRequestRepository.save(request);
-
-
     }
 
-    public List<OrganizationRequestDTO> getPendingRequests() {
-        List<OrganizationRequestDTO> organizationRequestDTOS =  organizationRequestRepository.findRequestDtosByStatus(RequestStatus.PENDING);
-        return organizationRequestDTOS;
-    }
+
 
     private void createWorkspace(String councilName,OrganizationRequest request) {
         OrganizationType type = request.getOrganizationType(); // enum 타입
@@ -95,31 +104,31 @@ public class AdminOrganizationService {
             case UNIVERSITY -> request.getSchoolName();
             case COLLEGE -> request.getCollegeName();
             case DEPARTMENT -> request.getDepartmentName();
-            default -> throw new IllegalArgumentException("알 수 없는 조직 타입");
+            default -> throw new BaseException(BaseResponseStatus.INVALID_ORG_TYPE);
         };
 
 // 2. schoolId 결정
         Long schoolId;
         if (request.getSchoolName() != null) {
-            schoolId = universityRepository.findBySchoolName(request.getSchoolName())
-                    .orElseThrow(() -> new RuntimeException("학교 없음")).getSchoolId();
+            schoolId = schoolRepository.findBySchoolName(request.getSchoolName())
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.SCHOOL_NOT_FOUND)).getSchoolId();
         } else if (request.getTargetOrganization() != null) {
             schoolId = request.getTargetOrganization().getUniversity().getSchoolId();
             if (orgName == null || orgName.isBlank()) {
                 orgName = request.getTargetOrganization().getOrganizationName();
             }
         } else {
-            throw new IllegalStateException("학교 정보를 찾을 수 없습니다.");
+            throw new BaseException(BaseResponseStatus.SCHOOL_NOT_FOUND);
         }
 
 // 3. 조직 조회
         Organization org = organizationRepository
                 .findByOrganizationNameAndOrganizationTypeAndUniversity_SchoolId(orgName, type, schoolId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 조직이 존재하지 않습니다."));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.ORGANIZATION_NOT_FOUND));
 
 // 4. 학생회 중복 체크
         if (councilRepository.existsCouncilByOrganization_OrganizationId(org.getOrganizationId())) {
-            throw new IllegalStateException("이미 학생회가 존재합니다.");
+            throw new BaseException(BaseResponseStatus.ALREADY_EXIST_COUNCIL);
         }
 
         User user = request.getUser();
@@ -156,8 +165,9 @@ public class AdminOrganizationService {
 
     }
 
+
     private PresidentSignupInfoDTO showUserSignUpInformation(Long userId) {
-        UserSignupInformation userSignupInformation = presidentSignupInformationRepository.findByUser_UserPkId(userId)
+        UserSignupInformation userSignupInformation = userSignupInformationRepository.findByUser_UserPkId(userId)
                 .orElseThrow(()->new IllegalArgumentException("해당 요청을 한 학생회장 회원가입이 존재하지 않습니다."));
 
         PresidentSignupInfoDTO presidentSignupInfoDTO = new PresidentSignupInfoDTO();
@@ -183,29 +193,29 @@ public class AdminOrganizationService {
         //대학교
         if (dto.getSelectSchoolId() != null) {
             university = organizationRepository.findFirstByUniversity_SchoolIdAndLevel(dto.getSelectSchoolId(), 0)
-                    .orElseThrow(() -> new IllegalArgumentException("선택한 대학교가 존재하지 않습니다."));
-            uni = universityRepository.findById(dto.getSelectSchoolId())
-                    .orElseThrow(()->new IllegalArgumentException("선택한 대학교가 존재하지 않습니다."));
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.SCHOOL_NOT_FOUND));
+            uni = schoolRepository.findById(dto.getSelectSchoolId())
+                    .orElseThrow(()->new BaseException(BaseResponseStatus.SCHOOL_NOT_FOUND));
         } else if (dto.getInputSchoolName() != null) {
-            uni  = universityRepository.findBySchoolName(dto.getInputSchoolName())
-                    .orElseGet(() -> universityRepository.save(
+            uni  = schoolRepository.findBySchoolName(dto.getInputSchoolName())
+                    .orElseGet(() -> schoolRepository.save(
                             University.builder().schoolName(dto.getInputSchoolName()).build()
                     ));
             university = organizationRepository.findByOrganizationNameAndOrganizationType(dto.getInputSchoolName(), OrganizationType.UNIVERSITY)
                     .orElseGet(() ->
                             organizationRepository.save(
-                            Organization.createUniversity(dto.getInputSchoolName(), uni)
-                    ));
+                                    Organization.createUniversity(dto.getInputSchoolName(), uni)
+                            ));
         } else {
             university = null;
             uni = null;
-            throw new IllegalArgumentException("학교 정보는 필수입니다.");
+            throw  new BaseException(BaseResponseStatus.INVALID_FIELD_VALUE);
         }
 
         //조직 선택 처리 (단과대학 or 학과)
         if (dto.getSelectOrganizationId() != null) {
             Organization selectedOrg = organizationRepository.findById(dto.getSelectOrganizationId())
-                    .orElseThrow(() -> new IllegalArgumentException("선택한 조직이 존재하지 않습니다."));
+                    .orElseThrow(() -> new BaseException(BaseResponseStatus.ORGANIZATION_NOT_FOUND));
 
             Organization finalCollege = college;
             switch (selectedOrg.getOrganizationType()) {
@@ -220,7 +230,7 @@ public class AdminOrganizationService {
                     }
                 }
                 case DEPARTMENT -> department = selectedOrg;
-                case UNIVERSITY -> throw new IllegalArgumentException("선택된 조직은 단과대학 또는 학과여야 합니다.");
+                case UNIVERSITY -> throw new BaseException(BaseResponseStatus.INVALID_ORG_TYPE);
             }
 
         } else {
@@ -284,5 +294,34 @@ public class AdminOrganizationService {
 
     }
 
+    private final UserSignupInformationRepository userSignupInformationRepository;
+    private final OrganizationRepository organizationRepository;
+    private final SchoolRepository schoolRepository;
     private final UserTagGenerator userTagGenerator;
+    private final UserRepository userRepository;
+    private final CouncilMemberRepository councilMemberRepository;
+    private final CouncilRepository councilRepository;
+    private final EntityFinderService entityFinderService;
+
+    public void getAllWorkspaceRequestReject(Long requestId, Long userId,String reason) {
+        OrganizationRequest request = organizationRequestRepository.findById(requestId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.REQUEST_NOT_FOUND));
+        User currentUser = entityFinderService.getUserByIdOrThrow(userId);
+        Organization targetOrg = request.getTargetOrganization();
+        if (targetOrg == null) {
+            throw new BaseException(BaseResponseStatus.ACCESS_DENIED); // ← 적절한 에러 코드
+        }
+
+        Organization requestParentOrg = targetOrg.getParent();
+        if (!requestParentOrg.equals(currentUser.getOrganization())) {
+            throw new BaseException(BaseResponseStatus.ACCESS_DENIED);
+        }
+
+        //거절
+        request.setRequestStatus(RequestStatus.REJECTED);
+        request.setReason(reason);
+
+        organizationRequestRepository.save(request);
+
+    }
 }

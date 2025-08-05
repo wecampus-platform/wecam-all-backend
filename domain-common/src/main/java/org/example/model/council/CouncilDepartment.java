@@ -13,6 +13,10 @@ import org.example.model.common.BaseEntity;
  */
 @Entity
 @Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CouncilDepartment extends BaseEntity {
 
     // 부서 고유 ID
@@ -26,9 +30,11 @@ public class CouncilDepartment extends BaseEntity {
     private Council council;
 
     // 부서명 (예: 기획국, 회계팀 등)
-    @Column(nullable = false)
-    private String name;
+    @Column(nullable = false) @Getter @Setter
+    @Builder.Default
+    private String name = "새로운 부서";
 
     // 상위 부서 ID (null이면 최상위 부서)
     private Long parentId;
+
 }

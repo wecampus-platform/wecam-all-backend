@@ -1,5 +1,6 @@
 package org.example.wecambackend.repos.organization;
 
+import org.example.model.enums.OrganizationType;
 import org.example.model.organization.Organization;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,3 +21,15 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
     @Query("SELECT o.organizationName FROM Organization o WHERE o.organizationId = :id")
     String findOrganizationNameByOrganizationId(@Param("id") Long id);
 }
+
+
+    Optional<Organization> findFirstByUniversity_SchoolIdAndLevel(Long schoolId, int level);
+
+    Optional<Organization> findByOrganizationNameAndOrganizationType(String inputSchoolName, OrganizationType organizationType);
+    Optional<Organization> findByOrganizationNameAndOrganizationTypeAndParent(String inputDepartmentName, OrganizationType organizationType, Organization college);
+    Optional<Organization> findByOrganizationNameAndOrganizationTypeAndUniversity_SchoolId(String name,OrganizationType organizationType,Long schoolId);
+
+
+}
+
+
