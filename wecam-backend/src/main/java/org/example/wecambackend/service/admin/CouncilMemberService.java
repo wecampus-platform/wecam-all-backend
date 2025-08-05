@@ -6,6 +6,8 @@ import org.example.model.council.CouncilDepartmentRole;
 import org.example.model.council.CouncilMember;
 import org.example.model.enums.MemberRole;
 import org.example.model.enums.ExitType;
+import org.example.model.enums.UserRole;
+import org.example.model.user.User;
 import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
@@ -14,6 +16,9 @@ import org.example.wecambackend.dto.responseDTO.DepartmentResponse;
 import org.example.wecambackend.repos.CouncilDepartmentRepository;
 import org.example.wecambackend.repos.CouncilDepartmentRoleRepository;
 import org.example.wecambackend.repos.CouncilMemberRepository;
+import org.example.wecambackend.repos.UserInformationRepository;
+import org.example.wecambackend.repos.UserRepository;
+import org.example.wecambackend.service.admin.common.EntityFinderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +32,7 @@ public class CouncilMemberService {
     private final CouncilMemberRepository councilMemberRepository;
     private final CouncilDepartmentRepository councilDepartmentRepository;
     private final CouncilDepartmentRoleRepository councilDepartmentRoleRepository;
+    private final UserRepository userRepository;
 
 
 
@@ -99,6 +105,7 @@ public class CouncilMemberService {
     /**
      * 학생회 구성원을 제명합니다.
      * 회장과 부회장만 이 기능을 사용할 수 있으며, 회장은 제명할 수 없습니다.
+     * 제명된 구성원은 일반 학생으로 복귀하며, 학생회 기능에 접근할 수 없습니다.
      * 
      * @param memberId 제명할 구성원 ID
      * @param reason 제명 사유 (선택사항)
@@ -125,11 +132,16 @@ public class CouncilMemberService {
             throw new BaseException(BaseResponseStatus.CANNOT_EXPEL_PRESIDENT);
         }
 
-        // 5. 제명 처리
+        // 5. 제명 처리 (부서/역할 정보는 보존)
         member.setExitType(ExitType.EXPULSION);
         member.setExpulsionReason(reason);
         member.setExitDate(LocalDateTime.now());
 
         councilMemberRepository.save(member);
+
+        // 6. 사용자 역할을 STUDENT로 변경 (일반 학생으로 복귀)
+        User user = member.getUser();
+        user.setRole(UserRole.STUDENT);
+        userRepository.save(user);
     }
 }

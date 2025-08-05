@@ -10,16 +10,13 @@ import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
-import org.example.wecambackend.dto.responseDTO.InvitationCodeResponse;
-import org.example.wecambackend.dto.responseDTO.UniversitySimpleResponse;
 import org.example.wecambackend.service.admin.CouncilMemberService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import org.example.wecambackend.dto.requestDTO.DepartmentAssignmentRequest;
-import org.example.wecambackend.dto.requestDTO.ExpulsionRequest;
+import org.example.wecambackend.dto.requestDTO.CouncilMemberExpulsionRequest;
 import org.example.wecambackend.config.security.annotation.CheckCouncilAccess;
 import org.example.wecambackend.config.security.annotation.IsPresidentTeam;
 import org.example.wecambackend.config.security.annotation.CheckCouncilEntity;
@@ -109,7 +106,7 @@ public class CouncilMemberController {
     )
     public BaseResponse<String> expelMember(
             @PathVariable Long memberId,
-            @RequestBody(required = false) ExpulsionRequest request,
+            @RequestBody(required = false) CouncilMemberExpulsionRequest request,
             @PathVariable("councilName") String councilName,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
