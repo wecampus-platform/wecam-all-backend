@@ -112,6 +112,7 @@ public class CouncilCompositionController {
         Long councilId = CouncilContextHolder.getCouncilId();
         councilDepartmentService.modifyCouncilDepartmentName(councilId,departmentId,newName);
 
+
         return new BaseResponse<>(BaseResponseStatus.SUCCESS);
     }
 }
