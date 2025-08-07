@@ -1,8 +1,8 @@
 ---
 name: Maintenance issue template
 about: '유지 보수 이슈 '
-title: ''
-labels: ''
+title: "[Refactor] sprint# :  "
+labels: refactoring
 assignees: ''
 
 ---
