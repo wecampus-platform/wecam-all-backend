@@ -57,4 +57,5 @@ public class CouncilMember extends BaseEntity {
     // 탈퇴/만료 날짜
     @Column(name = "exit_date")
     private LocalDateTime exitDate;
+
 }
