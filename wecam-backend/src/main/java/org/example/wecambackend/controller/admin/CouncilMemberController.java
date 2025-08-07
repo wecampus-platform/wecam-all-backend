@@ -51,7 +51,7 @@ public class CouncilMemberController {
     }
 
     @PutMapping("/{memberId}/department")
-    @CheckCouncilAccess
+    @IsCouncil
     @IsPresidentTeam
     @CheckCouncilEntity(idParam = "memberId", entityClass = CouncilMember.class)
     @Operation(
@@ -74,7 +74,7 @@ public class CouncilMemberController {
     }
 
     @GetMapping("/departments")
-    @CheckCouncilAccess
+    @IsCouncil
     @Operation(
             summary = "학생회 부서 및 역할 목록 조회",
             description = "현재 학생회의 모든 부서와 각 부서의 역할 목록을 조회합니다. 부서 배치 시 선택할 수 있는 부서 목록을 제공합니다.",
@@ -92,7 +92,7 @@ public class CouncilMemberController {
     }
 
     @DeleteMapping("/{memberId}")
-    @CheckCouncilAccess
+    @IsCouncil
     @IsPresidentTeam
     @CheckCouncilEntity(idParam = "memberId", entityClass = CouncilMember.class)
     @Operation(

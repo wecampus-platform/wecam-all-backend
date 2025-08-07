@@ -7,11 +7,8 @@ import org.example.model.council.Council;
 import org.example.model.council.CouncilDepartment;
 import org.example.model.council.CouncilDepartmentRole;
 import org.example.model.council.CouncilMember;
-import org.example.model.enums.MemberRole;
+import org.example.model.enums.*;
 
-import org.example.model.enums.OrganizationType;
-import org.example.model.enums.RequestStatus;
-import org.example.model.enums.UserRole;
 import org.example.model.organization.Organization;
 import org.example.model.organization.OrganizationRequest;
 import org.example.model.user.User;
@@ -137,11 +134,17 @@ public class AdminOrganizationService {
                 .parentId(null)
                 .name("회장단")
                 .build();
-
+        councilDepartmentRepository.save(councilDepartment);
         CouncilDepartmentRole councilDepartmentRole = CouncilDepartmentRole.builder()
                 .department(councilDepartment)
                 .level(0)
                 .name("회장").build();
+        councilDepartmentRoleRepository.save(councilDepartmentRole);
+        CouncilDepartmentRole councilDepartmentRole2 = CouncilDepartmentRole.builder()
+                .department(councilDepartment)
+                .level(0)
+                .name("부회장").build();
+        councilDepartmentRoleRepository.save(councilDepartmentRole2);
 
         // 6. 학생회 멤버 추가
         CouncilMember councilMember = CouncilMember.builder()
@@ -150,6 +153,7 @@ public class AdminOrganizationService {
                 .user(user)
                 .department(councilDepartment)
                 .departmentRole(councilDepartmentRole)
+                .exitType(ExitType.ACTIVE)
                 .build();
         councilMemberRepository.save(councilMember);
 
@@ -285,4 +289,6 @@ public class AdminOrganizationService {
     }
 
     private final UserTagGenerator userTagGenerator;
+    private final CouncilDepartmentRepository councilDepartmentRepository;
+    private final CouncilDepartmentRoleRepository councilDepartmentRoleRepository;
 }
