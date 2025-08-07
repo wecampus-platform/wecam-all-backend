@@ -46,4 +46,4 @@ public class StudentController {
         studentExpulsionService.expelStudent(userId, request.getReason());
         return new BaseResponse<>(BaseResponseStatus.SUCCESS, "학생이 성공적으로 제명되었습니다.");
     }
-} 
+}
