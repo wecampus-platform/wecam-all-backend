@@ -10,6 +10,7 @@ import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
+import org.example.wecambackend.dto.responseDTO.CouncilMemberSearchResponse;
 import org.example.wecambackend.service.admin.CouncilMemberService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -113,5 +114,25 @@ public class CouncilMemberController {
         String reason = request != null ? request.getReason() : null;
         councilMemberService.expelMember(memberId, reason);
         return new BaseResponse<>(BaseResponseStatus.SUCCESS, "구성원이 성공적으로 제명되었습니다.");
+    }
+
+    @GetMapping("/search")
+    @IsCouncil
+    @Operation(
+            summary = "학생회 구성원 검색",
+            description = "이름을 사용하여 학생회 구성원을 검색합니다.",
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "name", description = "검색할 이름", in = ParameterIn.QUERY, required = true),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
+            }
+    )
+    public BaseResponse<List<CouncilMemberSearchResponse>> searchCouncilMembers(
+            @RequestParam String name,
+            @PathVariable("councilName") String councilName,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        List<CouncilMemberSearchResponse> response = councilMemberService.searchCouncilMembers(name);
+        return new BaseResponse<>(response);
     }
 }

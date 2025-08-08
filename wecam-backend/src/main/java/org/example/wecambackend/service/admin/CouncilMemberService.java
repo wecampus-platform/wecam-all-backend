@@ -170,13 +170,14 @@ public class CouncilMemberService {
 
     /**
      * 학생회 구성원 검색 서비스
-     * 이름을 사용하여 학생회 구성원을 검색합니다.
+     * 이름을 사용하여 현재 학생회의 구성원을 검색합니다.
      * 
      * @param name 검색할 이름
      * @return 검색된 학생회 구성원 목록
      */
     @Transactional(readOnly = true)
     public List<CouncilMemberSearchResponse> searchCouncilMembers(String name) {
-        return userRepository.searchCouncilMembers(name);
+        Long councilId = CouncilContextHolder.getCouncilId();
+        return userRepository.searchCouncilMembers(name, councilId);
     }
 }

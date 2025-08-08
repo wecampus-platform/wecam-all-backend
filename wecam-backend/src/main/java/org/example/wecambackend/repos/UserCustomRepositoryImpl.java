@@ -28,7 +28,7 @@ public class UserCustomRepositoryImpl implements UserCustomRepository {
     private final QCouncilMember councilMember = QCouncilMember.councilMember;
     
     @Override
-    public List<CouncilMemberSearchResponse> searchCouncilMembers(String name) {
+    public List<CouncilMemberSearchResponse> searchCouncilMembers(String name, Long councilId) {
         return queryFactory
             .select(Projections.constructor(CouncilMemberSearchResponse.class,
                 user.userPkId,
@@ -44,6 +44,7 @@ public class UserCustomRepositoryImpl implements UserCustomRepository {
             .leftJoin(organization).on(user.organizationId.eq(organization.organizationId))
             .leftJoin(councilMember).on(user.userPkId.eq(councilMember.user.userPkId))
             .where(
+                councilMember.council.id.eq(councilId),
                 user.name.contains(name),
                 user.role.eq(UserRole.COUNCIL),
                 user.status.eq(org.example.model.common.BaseEntity.Status.ACTIVE)
@@ -61,9 +62,19 @@ public class UserCustomRepositoryImpl implements UserCustomRepository {
         builder.and(user.role.ne(UserRole.UNAUTH));
         builder.and(user.status.eq(org.example.model.common.BaseEntity.Status.ACTIVE));
         
-        // 입학년도 필터
+        // 입학년도 필터 (2019년은 이전 연도까지 포함, 나머지는 정확히 일치)
         if (years != null && !years.isEmpty()) {
-            builder.and(user.enrollYear.in(years));
+            BooleanBuilder yearBuilder = new BooleanBuilder();
+            for (String year : years) {
+                if ("2019".equals(year)) {
+                    // 2019년 이전까지 포함
+                    yearBuilder.or(user.enrollYear.loe(year));
+                } else {
+                    // 정확히 일치하는 연도만
+                    yearBuilder.or(user.enrollYear.eq(year));
+                }
+            }
+            builder.and(yearBuilder);
         }
         
         // 학년 필터
