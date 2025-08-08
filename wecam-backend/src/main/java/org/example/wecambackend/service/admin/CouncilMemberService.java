@@ -14,6 +14,7 @@ import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.dto.requestDTO.DepartmentAssignmentRequest;
 import org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
+import org.example.wecambackend.dto.responseDTO.CouncilMemberSearchResponse;
 import org.example.wecambackend.repos.CouncilMemberRepository;
 import org.springframework.stereotype.Service;
 import org.example.wecambackend.dto.responseDTO.DepartmentResponse;
@@ -165,5 +166,17 @@ public class CouncilMemberService {
 
     public List<CouncilCompositionResponse> getDepartmentCouncilMembers(Long councilId, Long departmentId) {
         return councilMemberRepository.findByCouncilIdAndDepartmentId(councilId,departmentId);
+    }
+
+    /**
+     * 학생회 구성원 검색 서비스
+     * 이름을 사용하여 학생회 구성원을 검색합니다.
+     * 
+     * @param name 검색할 이름
+     * @return 검색된 학생회 구성원 목록
+     */
+    @Transactional(readOnly = true)
+    public List<CouncilMemberSearchResponse> searchCouncilMembers(String name) {
+        return userRepository.searchCouncilMembers(name);
     }
 }

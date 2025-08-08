@@ -7,6 +7,8 @@ import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.dto.projection.OrganizationNameLevelDto;
 import org.example.wecambackend.dto.responseDTO.UserSummaryResponse;
+import org.example.wecambackend.dto.responseDTO.StudentSearchResponse;
+import org.example.wecambackend.dto.requestDTO.StudentSearchRequest;
 import org.example.wecambackend.repos.CouncilRepository;
 import org.example.wecambackend.repos.UserInformationRepository;
 import org.example.wecambackend.repos.UserRepository;
@@ -25,6 +27,8 @@ public class StudentService {
     private final UserRepository userRepository;
     private final UserInformationRepository userInformationRepository;
     private final EntityFinderService entityFinderService;
+    private final CouncilRepository councilRepository;
+
 
     /**
      * 일반 학생을 제명합니다.
@@ -101,6 +105,19 @@ public class StudentService {
                 .collect(Collectors.toList());
     }
 
-
-    private final CouncilRepository councilRepository;
+    /**
+     * 일반 학생 검색 서비스
+     * 이름, 입학년도, 학년 필터를 사용하여 학생을 검색합니다.
+     * 
+     * @param request 검색 조건
+     * @return 검색된 학생 목록
+     */
+    @Transactional(readOnly = true)
+    public List<StudentSearchResponse> searchStudents(StudentSearchRequest request) {
+        return userRepository.searchStudents(
+                request.getName(),
+                request.getYear(),
+                request.getGrade()
+        );
+    }
 }
