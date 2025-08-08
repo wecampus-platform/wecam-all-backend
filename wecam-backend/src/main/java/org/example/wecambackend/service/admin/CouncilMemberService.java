@@ -178,6 +178,6 @@ public class CouncilMemberService {
     @Transactional(readOnly = true)
     public List<CouncilMemberSearchResponse> searchCouncilMembers(String name) {
         Long councilId = CouncilContextHolder.getCouncilId();
-        return userRepository.searchCouncilMembers(name, councilId);
+        return councilMemberRepository.searchCouncilMembers(name, councilId);
     }
 }

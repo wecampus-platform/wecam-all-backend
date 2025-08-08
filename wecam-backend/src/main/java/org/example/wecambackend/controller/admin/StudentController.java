@@ -89,8 +89,8 @@ public class StudentController {
             parameters = {
                     @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
                     @Parameter(name = "name", description = "검색할 이름", in = ParameterIn.QUERY, required = true),
-                    @Parameter(name = "year", description = "입학년도 필터 (2021, 2022, 2023, 2024, 2025, 다중 선택 가능)", in = ParameterIn.QUERY),
-                    @Parameter(name = "grade", description = "학년 필터 (1~4, 다중 선택 가능)", in = ParameterIn.QUERY),
+                    @Parameter(name = "year", description = "입학년도 필터 (2019 ~ 2025, 다중 선택 가능)", in = ParameterIn.QUERY),
+                    @Parameter(name = "grade", description = "학년 필터 (1 ~ 4, 다중 선택 가능)", in = ParameterIn.QUERY),
                     @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
             }
     )
