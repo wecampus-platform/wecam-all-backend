@@ -46,7 +46,7 @@ public class CouncilMember extends BaseEntity {
     private MemberRole memberRole;
 
     // 탈퇴/만료 관련 필드
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING) @Builder.Default
     @Column(name = "exit_type", nullable = false)
     private ExitType exitType = ExitType.ACTIVE;
 
