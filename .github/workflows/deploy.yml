@@ -44,7 +44,7 @@ jobs:
             echo "!!!!!빌드 시작!!!!!!!"
 
             # 5. 빌드 (테스트 생략)
-            ./gradlew :wecam-backend:build -x test
+            ./gradlew build -x test
           EOF
       - name: Restart Backend Server
         run: |
