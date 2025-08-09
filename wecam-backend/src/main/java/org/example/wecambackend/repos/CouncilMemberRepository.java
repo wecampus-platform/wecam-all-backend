@@ -15,7 +15,7 @@ import java.util.Optional;
 import org.example.model.council.CouncilDepartment;
 import org.example.model.enums.MemberRole;
 
-public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Long> {
+public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Long>, CouncilMemberCustomRepository {
 
 //    Boolean existsByUserUserPkIdAndCouncil_Organization_organizationIdAndStatus(Long userId, Long organizationId);
     @Query("select cm.council.id from CouncilMember cm where cm.user.userPkId = :userPkId and cm.status = org.example.model.common.BaseEntity.Status.ACTIVE")

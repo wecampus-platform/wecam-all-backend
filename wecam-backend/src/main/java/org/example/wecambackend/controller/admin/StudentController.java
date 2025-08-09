@@ -12,7 +12,9 @@ import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
 import org.example.wecambackend.config.security.annotation.IsPresidentTeam;
 import org.example.wecambackend.dto.requestDTO.StudentExpulsionRequest;
+import org.example.wecambackend.dto.requestDTO.StudentSearchRequest;
 import org.example.wecambackend.dto.responseDTO.UserSummaryResponse;
+import org.example.wecambackend.dto.responseDTO.StudentSearchResponse;
 import org.example.wecambackend.service.admin.StudentService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -76,6 +78,35 @@ public class StudentController {
         List<UserSummaryResponse> response = studentExpulsionService.showStudentListByDepartmentId(
                 councilId, studentNumber, grade
         );
+        return new BaseResponse<>(response);
+    }
+
+    @GetMapping("/search")
+    @IsCouncil
+    @Operation(
+            summary = "일반 학생 검색",
+            description = "이름, 입학년도, 학년 필터를 사용하여 일반 학생을 검색합니다.",
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "name", description = "검색할 이름", in = ParameterIn.QUERY, required = true),
+                    @Parameter(name = "year", description = "입학년도 필터 (2019 ~ 2025, 다중 선택 가능)", in = ParameterIn.QUERY),
+                    @Parameter(name = "grade", description = "학년 필터 (1 ~ 4, 다중 선택 가능)", in = ParameterIn.QUERY),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
+            }
+    )
+    public BaseResponse<List<StudentSearchResponse>> searchStudents(
+            @RequestParam String name,
+            @RequestParam(required = false) List<String> year,
+            @RequestParam(required = false) List<Integer> grade,
+            @PathVariable("councilName") String councilName,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        StudentSearchRequest request = new StudentSearchRequest();
+        request.setName(name);
+        request.setYear(year);
+        request.setGrade(grade);
+        
+        List<StudentSearchResponse> response = studentExpulsionService.searchStudents(request);
         return new BaseResponse<>(response);
     }
 

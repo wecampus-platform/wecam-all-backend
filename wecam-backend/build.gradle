@@ -78,8 +78,18 @@ dependencies {
 
     implementation project(':domain-common')
 
+    // QueryDSL
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
 
 }
+
+// QueryDSL 설정 - domain-common의 Q클래스 사용
+sourceSets {
+    main.java.srcDir project(':domain-common').file('build/generated/sources/annotationProcessor/java/main')
+}
+
+// domain-common 컴파일 의존성 추가
+compileJava.dependsOn(':domain-common:compileJava')
 
 tasks.named('test') {
     useJUnitPlatform()
