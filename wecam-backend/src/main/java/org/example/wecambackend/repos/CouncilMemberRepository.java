@@ -3,6 +3,7 @@ package org.example.wecambackend.repos;
 import org.example.model.common.BaseEntity;
 import org.example.model.council.CouncilMember;
 import org.example.model.user.User;
+import org.example.wecambackend.dto.projection.CompositionFlatRow;
 import org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -126,5 +127,52 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
             @Param("councilId") Long councilId,
             @Param("departmentId") Long departmentId
     );
+
+
+
+
+    @Query(value = """
+    -- 부서 기준: 멤버가 없어도 부서가 반드시 한 행 존재
+    SELECT
+      d.id                      AS departmentId,
+      d.name                    AS departmentName,
+      u.user_pk_id              AS userId,
+      u.name                    AS userName,
+      cm.member_role            AS userCouncilRole,
+      dr.id                     AS departmentRoleId,
+      dr.name                   AS departmentRoleName,
+      cm.exit_type              AS exitType,
+      cm.expulsion_reason       AS expulsionReason
+    FROM council_department d
+    LEFT JOIN council_member cm
+      ON cm.department_id = d.id
+     AND cm.council_id    = :councilId
+     AND cm.status        = 'ACTIVE'
+     AND cm.exit_type     = 'ACTIVE'
+    LEFT JOIN user u ON u.user_pk_id = cm.user_pk_id
+    LEFT JOIN council_department_role dr ON dr.id = cm.department_role_id
+    WHERE d.council_id = :councilId
+
+    UNION ALL
+
+    -- 미배치(부서 없음) 멤버
+    SELECT
+      NULL                      AS departmentId,
+      NULL                      AS departmentName,
+      u.user_pk_id              AS userId,
+      u.name                    AS userName,
+      cm.member_role            AS userCouncilRole,
+      cm.department_role_id     AS departmentRoleId,
+      NULL                      AS departmentRoleName,
+      cm.exit_type              AS exitType,
+      cm.expulsion_reason       AS expulsionReason
+    FROM council_member cm
+    JOIN user u ON u.user_pk_id = cm.user_pk_id
+    WHERE cm.council_id   = :councilId
+      AND cm.department_id IS NULL
+      AND cm.status        = 'ACTIVE'
+      AND cm.exit_type     = 'ACTIVE'
+    """, nativeQuery = true)
+    List<CompositionFlatRow> findCompositionFlat(@Param("councilId") Long councilId);
 
 }

@@ -11,6 +11,7 @@ import org.example.model.user.User;
 import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
+import org.example.wecambackend.dto.projection.CompositionFlatRow;
 import org.example.wecambackend.dto.requestDTO.DepartmentAssignmentRequest;
 import org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
@@ -24,8 +25,7 @@ import org.example.wecambackend.repos.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -40,18 +40,68 @@ public class CouncilMemberService {
 
     /**
      * [설명]
-     * - 특정 학생회의 모든 활성화된 구성원(Council Member)을 조회합니다.
-     * [필요한 변수]
-     * - councilId: 조회할 학생회(organization)의 PK
-     * [반환값]
-     * - List<CouncilMemberResponse>: 활성화된 학생회 구성원 목록 (DTO 변환된 응답)
-     * [호출 위치 / 사용 예시]
-     * - 관리자 페이지에서 특정 학생회 구성원 목록을 조회할 때 사용됩니다.
-     * - 예: GET /admin/councils/{id}/members 와 같은 컨트롤러에서 호출될 수 있음
+     * - 구성원관리 시 부서 및 학생 정보 추출
      */
-    public List<CouncilMemberResponse> getAllCouncilMembers(Long councilId) {
-        return councilMemberRepository.findAllActiveMembersByCouncilId(councilId);
+    @Transactional(readOnly = true)
+    public CompositionResponse getComposition(Long councilId) {
+        List<CompositionFlatRow> rows = councilMemberRepository.findCompositionFlat(councilId);
+
+        Map<Long, DepartmentBlock> deptMap = new LinkedHashMap<>();
+        List<MemberItem> unassigned = new ArrayList<>();
+
+        for (CompositionFlatRow r : rows) {
+            if (r.getDepartmentId() == null) {
+                // 미배치
+                unassigned.add(new MemberItem(
+                        r.getUserId(), r.getUserName(), r.getUserCouncilRole(),
+                        r.getDepartmentRoleId(), r.getDepartmentRoleName()
+                ));
+                continue;
+            }
+
+            DepartmentBlock block = deptMap.computeIfAbsent(
+                    r.getDepartmentId(),
+                    id -> new DepartmentBlock(id, r.getDepartmentName())
+            );
+
+            // 부서만 있고 멤버가 없을 수 있음
+            if (r.getUserId() != null) {
+                boolean isLead = isLeadRole(r.getUserCouncilRole());
+                (isLead ? block.lead() : block.sub()).add(new MemberItem(
+                        r.getUserId(), r.getUserName(), r.getUserCouncilRole(),
+                        r.getDepartmentRoleId(), r.getDepartmentRoleName()
+                ));
+            }
+        }
+
+        return new CompositionResponse(new ArrayList<>(deptMap.values()), unassigned);
     }
+
+    private boolean isLeadRole(String role) {
+        if (role == null) return false;
+        return switch (role) {
+            case "PRESIDENT", "DIRECTOR", "LEADER" -> true;
+            default -> false;
+        };
+    }
+
+    // ===== 응답 DTO (record 예시) =====
+    public record CompositionResponse(
+            List<DepartmentBlock> departments,
+            List<MemberItem> unassigned
+    ) {}
+    public record DepartmentBlock(
+            Long departmentId, String departmentName,
+            List<MemberItem> lead, List<MemberItem> sub
+    ) {
+        public DepartmentBlock(Long id, String name) {
+            this(id, name, new ArrayList<>(), new ArrayList<>());
+        }
+    }
+    public record MemberItem(
+            Long userId, String userName, String userCouncilRole,
+            Long departmentRoleId, String departmentRoleName
+    ) {}
 
 
     /**
@@ -179,5 +229,9 @@ public class CouncilMemberService {
     public List<CouncilMemberSearchResponse> searchCouncilMembers(String name) {
         Long councilId = CouncilContextHolder.getCouncilId();
         return councilMemberRepository.searchCouncilMembers(name, councilId);
+    }
+
+    public List<CouncilMemberResponse> getAllCouncilMembers(Long councilId) {
+        return councilMemberRepository.findAllActiveMembersByCouncilId(councilId);
     }
 }
