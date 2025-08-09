@@ -6,10 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.model.council.Council;
 import org.example.model.council.CouncilMember;
 import org.example.model.University;
-import org.example.model.enums.AcademicStatus;
-import org.example.model.enums.CodeType;
-import org.example.model.enums.MemberRole;
-import org.example.model.enums.UserRole;
+import org.example.model.enums.*;
 import org.example.model.invitation.InvitationCode;
 import org.example.model.invitation.InvitationHistory;
 import org.example.model.organization.Organization;
@@ -143,6 +140,7 @@ public class InvitationCodeService {
                     .memberRole(MemberRole.STAFF) //일반부원으로 기본설정
                     .council(invitationCode.getCouncil())
                     .user(user)
+                    .exitType(ExitType.ACTIVE)
                     .build();
             councilMemberRepository.save(councilMember);
 
