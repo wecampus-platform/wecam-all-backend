@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.example.model.enums.CodeType;
+import org.example.wecambackend.common.response.BaseResponse;
+import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsStudent;
 import org.example.wecambackend.config.security.annotation.IsUnStudent;
@@ -29,13 +31,13 @@ public class ClientInvitationCodeController {
 
     @Operation(summary = "초대 코드 사용")
     @PostMapping("/use/{CodeType}")
-    public ResponseEntity<?> useInvitationCode(
+    public BaseResponse<?> useInvitationCode(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam("Code") String code,
             @Parameter(description = "코드 타입", required = true)
             @PathVariable("CodeType") CodeType codeType) {
         invitationCodeService.usedCode(code,userDetails,codeType);
-        return ResponseEntity.ok("코드 사용이 원활히 됐습니다.");
+        return new BaseResponse<>(BaseResponseStatus.SUCCESS);
     }
 
 }
