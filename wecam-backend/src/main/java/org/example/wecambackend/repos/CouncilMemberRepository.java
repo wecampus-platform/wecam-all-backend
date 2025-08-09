@@ -167,7 +167,7 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
       cm.exit_type              AS exitType,
       cm.expulsion_reason       AS expulsionReason
     FROM council_member cm
-    JOIN user u ON u.user_pk_id = cm."user_pk_id"
+    JOIN user u ON u.user_pk_id = cm.user_pk_id
     WHERE cm.council_id   = :councilId
       AND cm.department_id IS NULL
       AND cm.status        = 'ACTIVE'

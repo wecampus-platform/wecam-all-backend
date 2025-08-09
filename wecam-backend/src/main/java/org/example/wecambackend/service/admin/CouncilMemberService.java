@@ -230,4 +230,8 @@ public class CouncilMemberService {
         Long councilId = CouncilContextHolder.getCouncilId();
         return councilMemberRepository.searchCouncilMembers(name, councilId);
     }
+
+    public List<CouncilMemberResponse> getAllCouncilMembers(Long councilId) {
+        return councilMemberRepository.findAllActiveMembersByCouncilId(councilId);
+    }
 }
