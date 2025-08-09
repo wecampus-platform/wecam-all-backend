@@ -46,11 +46,10 @@ public class CouncilCompositionController {
             }
     )
     @GetMapping("/members")
-    public BaseResponse<List<CouncilMemberResponse>> getAllCouncilMembers(
+    public BaseResponse<CouncilMemberService.CompositionResponse> getAllCouncilMembers(
             @PathVariable String councilName) {
         Long councilId = CouncilContextHolder.getCouncilId();
-        List<CouncilMemberResponse> list = councilMemberService.getAllCouncilMembers(councilId);
-        return new BaseResponse<>(list);
+        return new BaseResponse<>(councilMemberService.getComposition(councilId));
     }
 
 
