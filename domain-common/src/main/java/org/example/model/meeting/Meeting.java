@@ -5,8 +5,6 @@ import lombok.*;
 import org.example.model.common.BaseEntity;
 import org.example.model.council.Council;
 import org.example.model.council.CouncilMember;
-import org.example.model.meeting.MeetingAttendee;
-import org.example.model.meeting.MeetingFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
