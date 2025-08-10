@@ -39,19 +39,21 @@ wecam-all-backend/
 │
 └── build.gradle / settings.gradle
 
---- 
-## 기술 스택
+---
 
-| 구분           | 기술                                                     |
+## 🛠 기술 스택
+
+| 구분           | 기술 |
 | -------------- | -------------------------------------------------------- |
 | **Backend**    | Spring Boot 3.x, Spring Security, Spring Data JPA        |
 | **Database**   | MySQL, JPA/Hibernate                                     |
 | **Auth**       | JWT, Spring Security                                     |
 | **Infra**      | AWS EC2, Docker, GitHub Actions CI/CD                    |
-| **Docs**       | Swagger(OpenAPI 3)                                       |
+| **Docs**       | Swagger (OpenAPI 3)                                      |
 | **ETC**        | Lombok, ModelMapper, Validation, Multipart File Upload   |
 
---- 
+---
+
 
 ## 모듈별 역할
 
@@ -101,351 +103,355 @@ org.example.model
  ├─ category/                      # Category, CategoryAssignment
  ├─ meeting/                       # Meeting, MeetingFile, MeetingAttendee, MeetingTemplate
  └─ University.java
+### 📌 핵심 엔티티
 
-### 핵심 엔티티
-**사용자**
+#### 👤 사용자
 - **User**
--기본키: user_pk_id
-- 주요 필드: email, password(해시 전제), role(UserRole), university, organization, academicStatus, studentGrade, nickname, auth 여부 등
+  - 기본키: `user_pk_id`
+  - 주요 필드:
+    - `email`
+    - `password` (해시 전제)
+    - `role` (`UserRole`)
+    - `university`
+    - `organization`
+    - `academicStatus`
+    - `studentGrade`
+    - `nickname`
+    - `auth` 여부
+- **UserPrivate**
+  - 민감정보(전화번호 등) 분리 저장
+- **UserInformation**
+  - 표시/프로필 등 부가 정보
+- **UserSignupInformation**
+  - 가입 시 입력 값 스냅샷 저장
 
--**UserPrivate**: 민감정보(전화번호 등) 분리 저장
+---
 
--**UserInformation**: 표시/프로필 등 부가 정보
-
--**UserSignupInformation**: 가입 시 입력 값 스냅샷
-
-**학교/조직**
+#### 🏫 학교/조직
 - **University**
+- **Organization**
+  - parent-children 구조(트리)
+  - `OrganizationType` = `UNIVERSITY` / `COLLEGE` / `DEPARTMENT` / `MAJOR`
+- **OrganizationRequest**, **OrganizationRequestFile**
+  - 대표자 조직 생성 신청 + 첨부
 
- - **Organization**
+---
 
-parent-children 구조(트리), OrganizationType = UNIVERSITY/COLLEGE/DEPARTMENT/MAJOR
+#### 🏛 학생회
+- **Council**
+- **CouncilMember**
+  - 조직별 학생회 구성원/역할/재적 상태 관리
+  - 주요 필드: `ExitType`, `MemberRole`
+- **CouncilDepartment**, **CouncilDepartmentRole**, **CouncilRolePermission**
 
-OrganizationRequest, OrganizationRequestFile: 대표자 조직 생성 신청 + 첨부
+---
 
-학생회
-Council, CouncilMember, CouncilDepartment, CouncilDepartmentRole, CouncilRolePermission
+#### 🪪 소속 인증
+- **AffiliationCertification**
+  - 복합키: `AffiliationCertificationId`
+  - 재학생/신입생 인증 (`AuthenticationType`, `AuthenticationStatus`)
+- **AffiliationFile**
+  - 첨부 파일 정보 저장
 
-CouncilMember: 조직별 학생회 구성원/역할/재적 상태(ExitType, MemberRole) 관리
+---
 
-소속 인증
-AffiliationCertification + AffiliationCertificationId(복합키)
+#### 🔑 초대코드
+- **InvitationCode**
+  - 필드: `codeType` (`CodeType`), `expiredAt`, ...
+- **InvitationHistory**
 
-재학생/신입생 인증(AuthenticationType, AuthenticationStatus)
+---
 
-첨부: AffiliationFile
+#### 📋 할 일 (Todo)
+- **Todo**
+- **TodoFile**
+- **TodoManager**
+  - 복합키: `TodoManagerId`
+  - `Todo` ↔ `User` 다:다 매핑
+- 상태: `ProgressStatus`
 
-초대코드
-InvitationCode(codeType=CodeType, expiredAt, ... ), InvitationHistory
+---
 
-할 일(Todo)
-Todo, TodoFile, TodoManager(+ TodoManagerId 복합키)
+#### 🗂 카테고리 / 회의
+- **Category**, **CategoryAssignment**
+- **Meeting**
+- **MeetingFile**
+- **MeetingAttendee**
+- **MeetingTemplate**
+  - 회의 출석 현황: `MeetingAttendanceStatus`
+  - 회의 내 역할: `MeetingRole`
 
-상태: ProgressStatus
+---
 
-담당자 다:다 매핑(TodoManager)
+### 📌 공통 베이스
+- **BaseEntity** (`@MappedSuperclass`)
+  - `created_at`, `updated_at` 컬럼 제공
+  - 감사/감사자 컬럼은 현재 소스상 미사용 (필요 시 확장 가능)
 
-카테고리/회의
-Category, CategoryAssignment
+---
 
-Meeting, MeetingFile, MeetingAttendee, MeetingTemplate
+### 📌 주요 Enum
+- `UserRole`: `UNAUTH`, `GUEST_STUDENT`, `STUDENT`, `COUNCIL`, `ADMIN`
+- `OrganizationType`: `UNIVERSITY`, `COLLEGE`, `DEPARTMENT`, `MAJOR`
+- `AuthenticationType`: `FRESHMAN`, `CURRENT_STUDENT` …
+- `AuthenticationStatus`: `PENDING`, `APPROVED`, `REJECTED` …
+- `ProgressStatus` (Todo): `TODO`, `IN_PROGRESS`, `DONE` …
+- `ExitType`, `MemberRole`, `CouncilPermissionType`, `RequestStatus`, `FileType`, `AcademicStatus`, `CodeType` 등
 
-회의 출석 현황: MeetingAttendanceStatus, 회의 내 역할 : MeetingRole
+---
 
-### 공통 베이스
-BaseEntity (@MappedSuperclass)
+### 📌 연관관계 스케치
+- `University` 1 — N `Organization` (`type=COLLEGE/DEPARTMENT/...`)
+- `Organization` (self) 1 — N children (트리 구조)
+- `User` N — 1 `University`
+- `User` N — 1 `Organization`
+- `Council` N — 1 `Organization`
+- `CouncilMember` N — 1 `Council`, N — 1 `User`, N — 1 `Department`(Optional)
+- `TodoManager` (Embeddable Id: `todoId` + `userPkId`) 로 `Todo` ↔ `User` 매핑
+- `AffiliationCertification` (Embeddable Id) 로 사용자-유형별 단일요청 제약 모델링
 
-created_at, updated_at 컬럼 제공
+---
 
-(감사/감사자 컬럼은 소스상 명시X, 필요 시 추후 확장)
+### 📌 설계 컨벤션
+- ID: `Long`
+- Enum: `@Enumerated(EnumType.STRING)`
+- 민감정보 분리 (`UserPrivate`)
+- 복합키: `@Embeddable` + 식별자 클래스
+- 대용량 텍스트: `@Column(columnDefinition="TEXT")`
+- `BaseEntity`로 생성/수정 시각 공통화
 
-### 주요 Enum 
-UserRole: UNAUTH, GUEST_STUDENT, STUDENT, COUNCIL, ADMIN
+---
+### 📌 의존/사용 방법 (멀티모듈 기준)
 
-OrganizationType: UNIVERSITY, COLLEGE, DEPARTMENT, MAJOR
-
-AuthenticationType: FRESHMAN, CURRENT_STUDENT …
-
-AuthenticationStatus: PENDING, APPROVED, REJECTED …
-
-ProgressStatus(Todo): TODO, IN_PROGRESS, DONE …
-
-ExitType, MemberRole, CouncilPermissionType, RequestStatus, FileType, AcademicStatus, CodeType 등
-
-### 연관관계 스케치
-University 1 - N Organization (type=COLLEGE/DEPARTMENT/...)
-
-Organization (self) 1 - N children (트리)
-
-User N - 1 University, User N - 1 Organization
-
-Council N - 1 Organization
-
-CouncilMember N - 1 Council, N - 1 User, N - 1 Department(Optional)
-
-TodoManager (Embeddable Id: todoId+userPkId) 로 Todo ↔ User 매핑
-
-AffiliationCertification (Embeddable Id) 로 사용자-유형별 단일요청 제약 모델링
-
-### 설계 컨벤션
-ID Long, Enum은 대부분 @Enumerated(EnumType.STRING)
-
-민감정보 분리(UserPrivate)
-
-복합키는 @Embeddable + 식별자 클래스로 관리
-
-텍스트 대용량은 @Column(columnDefinition="TEXT") 사용
-
-BaseEntity로 생성/수정 시각 공통화
-
-### 의존/사용 방법 (멀티모듈 기준)
-settings.gradle:
-
-
+**settings.gradle**
+```groovy
 include(":domain-common", ":wecam-backend", ":wecamadminbackend")
-wecam-backend/build.gradle:
+````
 
+**wecam-backend/build.gradle**
 
+```groovy
 dependencies {
   implementation(project(":domain-common"))
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   // ...
 }
-### 마이그레이션
-실제 스키마는 상위 서비스 모듈(Flyway)에서 관리
+```
 
-이 모듈은 엔티티 정의 전용 (DDL은 서비스 모듈에서 생성/검증)
+---
 
-### 주의사항
-User ↔ Organization/University 지연로딩 이슈 주의(Open-In-View 비활성 시 서비스 계층에서 fetch 필요)
+### 📌 마이그레이션
 
-Enum 저장 형식 확인(JPA 설정에서 EnumType.STRING 일관 유지)
+* 실제 스키마는 **상위 서비스 모듈(Flyway)** 에서 관리
+* 이 모듈은 **엔티티 정의 전용** (DDL은 서비스 모듈에서 생성/검증)
 
-복합키 엔티티의 Repository 기본키 타입 정의 정확히(예: TodoManagerId)
+---
 
+### 📌 주의사항
 
-## WeCam Backend (Spring Boot)
+* `User` ↔ `Organization` / `University` 지연로딩 이슈 주의
+  → Open-In-View 비활성 시 서비스 계층에서 fetch 필요
+* **Enum 저장 형식** 확인
+  → `@Enumerated(EnumType.STRING)` 일관 유지
+* **복합키 엔티티의 Repository 기본키 타입** 정의 정확히
+  → 예: `TodoManagerId`
 
-대학 학생회 중심 협업 플랫폼 WeCam의 일반 사용자용 백엔드 모듈.
+---
+# WeCam Backend (Spring Boot)
 
-회원가입(일반/대표자), 로그인/토큰 리프레시
+대학 학생회 중심 협업 플랫폼 **WeCam**의 일반 사용자용 백엔드 모듈.
 
-학교/조직 트리 조회(학교 → 단과대/학과)
+- 회원가입(일반/대표자), 로그인/토큰 리프레시  
+- 학교/조직 트리 조회(학교 → 단과대/학과)  
+- 마이페이지 수정  
+- 초대코드 사용  
+- 학생회 관리자 기능(학생/구성원/부서/할일/소속인증/하위조직 승인 등)  
 
-마이페이지 수정
+---
 
-초대코드 사용
+## 📌 Tech Stack
+- Java 21, Spring Boot 3  
+- Spring Web / Validation / Spring Security + JWT  
+- Spring Data JPA, HikariCP, Flyway  
+- MySQL 8, Redis  
+- Gradle  
+- Swagger(OpenAPI)  
 
-학생회 관리자 기능(학생/구성원/부서/할일/소속인증/하위조직 승인 등)
+---
 
-
-### Tech Stack
-Java 21, Spring Boot 3
-
-Spring Web / Validation / Spring Security + JWT
-
-Spring Data JPA, HikariCP, Flyway
-
-MySQL 8, Redis
-
-Gradle
-
-Swagger(OpenAPI)
-
-### 모듈 경로
+## 📂 모듈 경로
 (main 기준)
+```
+
 main/
- ├─ java/org/example/wecambackend/...
- └─ resources/
-     ├─ application.properties
-     ├─ application-local.properties
-     └─ application-prod.properties
+├─ java/org/example/wecambackend/...
+└─ resources/
+├─ application.properties
+├─ application-local.properties
+└─ application-prod.properties
 
+````
 
-### 보안 / 인증
+---
 
-JWT: Authorization: Bearer <accessToken>
+## 🔐 보안 / 인증
+- **JWT**: `Authorization: Bearer <accessToken>`
+- **공개 엔드포인트(permitAll)**  
+  `/public/**`, `/swagger-ui/**`, `/v3/api-docs/**`, `/auth/check/**`  
+  `/client/auth/token/refresh`, `/client/auth/logout` (permitAll)  
+- 그 외는 인증 필요  
+- 일부 관리자/학생회 영역은 **`X-Council-Id`** 헤더 필수  
 
-공개 엔드포인트(permitAll)
+---
 
-/public/**, /swagger-ui/**, /v3/api-docs/**, /auth/check/**
+## 📑 API 요약
 
-/client/auth/token/refresh, /client/auth/logout (permitAll)
+### 0) 유틸/검증
+- `GET /auth/check/email` – 이메일 중복 확인  
+- `GET /auth/check/phone` – 전화번호 중복 확인  
+- `GET /auth/check/both` – 이메일+전화 동시 확인  
 
-그 외는 인증 필요
+### 1) 공개(회원/조직/로그인)
+- `GET /public/schools` – 학교 리스트  
+- `GET /public/schools/{schoolId}/organizations` – 상위 조직(단과대 등)  
+- `GET /public/organizations/{parentId}/children` – 하위 조직(학과 등)  
+- `POST /public/auth/sign/student` – 일반 학생 회원가입  
+  ```json
+  {
+    "email":"user@ex.com",
+    "password":"****",
+    "phoneNumber":"010-1234-5678",
+    "name":"홍길동",
+    "enrollYear":"2023",
+    "selectSchoolId":1,
+    "selectOrganizationId":303
+  }```
 
-일부 관리자/학생회 영역은 X-Council-Id 헤더 필수
+* `POST /public/auth/sign/leader` – 대표자 회원가입
+* `POST /public/auth/login` – 로그인
 
-### API 요약
-0) 유틸/검증
-GET /auth/check/email – 이메일 중복 확인
+### 2) 클라이언트(로그인 후)
 
-GET /auth/check/phone – 전화번호 중복 확인
+**Auth**
 
-GET /auth/check/both – 이메일+전화 동시 확인
+* `POST /client/auth/token/refresh` – 토큰 리프레시
+* `POST /client/auth/logout` – 로그아웃
 
-1) 공개(회원/조직/로그인)
-GET /public/schools – 학교 리스트
+**마이페이지**
 
-GET /public/schools/{schoolId}/organizations – 상위 조직(단과대 등)
+* `POST /client/user/mypage/userInfo/edit` – 이름 수정
+* `POST /client/user/mypage/userOrganization/edit` – 소속 수정
+* `POST /client/user/profile-image` – 프로필 이미지 업로드
 
-GET /public/organizations/{parentId}/children – 하위 조직(학과 등)
+**초대코드**
 
-POST /public/auth/sign/student – 일반 학생 회원가입
-Request: StudentRegisterRequest
+* `POST /client/invitation-code/use/{CodeType}` – 초대코드 사용
 
+**조직 생성 요청(대표자)**
 
-{
-  "email":"user@ex.com",
-  "password":"****",
-  "phoneNumber":"010-1234-5678",
-  "name":"홍길동",
-  "enrollYear":"2023",
-  "selectSchoolId":1,
-  "selectOrganizationId":303
-}
-POST /public/auth/sign/leader – 대표자 회원가입
-Request: RepresentativeRegisterRequest (선택/수동 입력 필드 포함)
+* `POST /client/organization-request/create` – 조직 생성 신청 + 첨부
 
-POST /public/auth/login – 로그인
-Request: LoginRequest → Response: LoginResponse(access/refresh, email, role, councilList 등)
+### 3) 관리자(학생회 워크스페이스)
 
-2) 클라이언트(로그인 후)
-Auth
+> **헤더**: `X-Council-Id` 필수
+> **경로**: `{councilName}` 포함
 
-POST /client/auth/token/refresh – 토큰 리프레시
+**접근/홈**
 
-POST /client/auth/logout – 로그아웃
+* `GET /admin/council/home` – 관리자 홈
+* `GET /admin/council/change-council` – 학생회 전환(목록)
+* `GET /admin/council/{councilId}/change-council` – 특정 전환
 
-마이페이지
+**하위조직 관리**
 
-POST /client/user/mypage/userInfo/edit – 이름 수정
+* `GET /admin/council/{councilName}/organization/subs`
+* `GET /admin/council/{councilName}/organization/sub/{councilId}`
+* `GET /admin/council/{councilName}/organization/requests`
+* `GET /admin/council/{councilName}/organization/request/{requestId}/detail`
+* `GET /admin/council/{councilName}/organization/request/{requestId}/file/{fileId}/download`
 
-POST /client/user/mypage/userOrganization/edit – 소속(입학년도/조직) 수정
+**워크스페이스 승인**
 
-POST /client/user/profile-image – 프로필 이미지 업로드
+* `POST /admin/council/{councilName}/workspace/{requestId}/Approve`
+* `POST /admin/council/{councilName}/workspace/{requestId}/reject`
 
-초대코드
+**초대코드**
 
-POST /client/invitation-code/use/{CodeType} – 초대코드 사용
+* `GET /admin/council/{councilName}/invitation/list`
+* `POST /admin/council/{councilName}/invitation/create/{codeType}`
+* `PUT /admin/council/{councilName}/invitation/{invitationId}/edit/expiredAt`
+* `GET /admin/council/{councilName}/invitation/{invitationId}/show/history`
 
-조직 생성 요청(대표자)
+**학생/구성원**
 
-POST /client/organization-request/create – 조직 생성 신청 + 첨부
+* `GET /admin/council/{councilName}/student/students`
+* `GET /admin/council/{councilName}/student/search`
+* `DELETE /admin/council/{councilName}/student/{userId}`
+* `GET /admin/council/{councilName}/member/search`
+* `DELETE /admin/council/{councilName}/member/{memberId}`
 
-3) 관리자(학생회 워크스페이스)
-헤더 X-Council-Id 필수, 경로에 {councilName} 포함
+**부서**
 
-접근/홈
+* `GET /admin/council/{councilName}/composition/members`
+* `GET /admin/council/{councilName}/composition/members/department`
+* `POST /admin/council/{councilName}/composition/department/create`
+* `PUT /admin/council/{councilName}/composition/department/rename`
 
-GET /admin/council/home – 관리자 홈
+**소속 인증**
 
-GET /admin/council/change-council – 학생회 전환(목록)
+* `GET /admin/council/{councilName}/affiliation/requests/all`
+* `GET /admin/council/{councilName}/affiliation/requests/show`
+* `POST /admin/council/{councilName}/affiliation/approve`
+* `POST /admin/council/{councilName}/affiliation/select/approve`
+* `PUT /admin/council/{councilName}/affiliation/reject`
+* `DELETE /admin/council/{councilName}/affiliation/delete`
 
-GET /admin/council/{councilId}/change-council – 특정 전환
+**할 일(Todo)**
 
-하위조직(단과대/학과) 관리
+* `POST /admin/council/{councilName}/todo/{councilId}/create`
+* `PUT /admin/council/{councilName}/todo/{todoId}/edit`
+* `GET /admin/council/{councilName}/todo/{todoId}`
+* `GET /admin/council/{councilName}/todo/list`
+* `PATCH /admin/council/{councilName}/todo/{todoId}/status`
+* `DELETE /admin/council/{councilName}/todo/{todoId}/delete`
+* `GET /admin/council/{councilName}/todo/dashboard/todo-summary`
 
-GET /admin/council/{councilName}/organization/subs
+---
 
-GET /admin/council/{councilName}/organization/sub/{councilId}
+## 📌 요청/응답 예시
 
-GET /admin/council/{councilName}/organization/requests
+**로그인**
 
-GET /admin/council/{councilName}/organization/request/{requestId}/detail
-
-GET /admin/council/{councilName}/organization/request/{requestId}/file/{fileId}/download
-
-워크스페이스 승인
-
-POST /admin/council/{councilName}/workspace/{requestId}/Approve
-
-POST /admin/council/{councilName}/workspace/{requestId}/reject
-
-초대코드
-
-GET /admin/council/{councilName}/invitation/list
-
-POST /admin/council/{councilName}/invitation/create/{codeType}
-
-PUT /admin/council/{councilName}/invitation/{invitationId}/edit/expiredAt
-
-GET /admin/council/{councilName}/invitation/{invitationId}/show/history
-
-학생/구성원
-
-GET /admin/council/{councilName}/student/students
-
-GET /admin/council/{councilName}/student/search
-
-DELETE /admin/council/{councilName}/student/{userId}
-
-GET /admin/council/{councilName}/member/search
-
-DELETE /admin/council/{councilName}/member/{memberId}
-
-부서(조직 내)
-
-GET /admin/council/{councilName}/composition/members
-
-GET /admin/council/{councilName}/composition/members/department
-
-POST /admin/council/{councilName}/composition/department/create
-
-PUT /admin/council/{councilName}/composition/department/rename
-
-소속 인증(재학생/신입생 서류 등)
-
-GET /admin/council/{councilName}/affiliation/requests/all
-
-GET /admin/council/{councilName}/affiliation/requests/show
-
-POST /admin/council/{councilName}/affiliation/approve
-
-POST /admin/council/{councilName}/affiliation/select/approve
-
-PUT /admin/council/{councilName}/affiliation/reject
-
-DELETE /admin/council/{councilName}/affiliation/delete
-
-할 일(Todo)
-
-POST /admin/council/{councilName}/todo/{councilId}/create
-
-PUT /admin/council/{councilName}/todo/{todoId}/edit
-
-GET /admin/council/{councilName}/todo/{todoId}
-
-GET /admin/council/{councilName}/todo/list
-
-PATCH /admin/council/{councilName}/todo/{todoId}/status
-
-DELETE /admin/council/{councilName}/todo/{todoId}/delete
-
-GET /admin/council/{councilName}/todo/dashboard/todo-summary
-
-### 요청/응답 예시
-로그인
-
+```bash
 curl -X POST http://localhost:8080/public/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"president@example.com","password":"****"}'
+```
 
-
+```json
 {
-  "accessToken":"...","refreshToken":"...",
+  "accessToken":"...",
+  "refreshToken":"...",
   "email":"president@example.com",
   "role":"PRESIDENT",
   "auth": true,
   "councilList":[{"councilId":303,"councilName":"컴퓨터공학과", ...}]
 }
-학생회 관리자 API 호출 예시
+```
 
+**학생회 관리자 API 호출 예시**
+
+```bash
 curl -H "Authorization: Bearer <token>" \
      -H "X-Council-Id: 303" \
      http://localhost:8080/admin/council/컴퓨터공학과/todo/list
-     
-### 패키지 구조
+```
+
+---
+
+## 📂 패키지 구조
+
+```
 org.example.wecambackend
  ├─ common/response/           # BaseResponseStatus 등 공통 응답/에러
  ├─ config/
@@ -465,157 +471,186 @@ org.example.wecambackend
  │   ├─ client/
  │   └─ auth/
  └─ util/ ...
- 
-### 에러/응답 규격
-공통 래퍼: { isSuccess, code, message, result } 패턴(컨트롤러 반환 래퍼 적용)
+```
 
-에러코드: BaseResponseStatus
+---
 
-예: MISSING_COUNCIL_ID_HEADER, ACCESS_DENIED, ROLE_REQUIRED,
-INVALID_INPUT, ORGANIZATION_NOT_FOUND, INVITATION_CODE_EXPIRED 등
+##  에러/응답 규격
 
-### 파일 업로드
-저장 경로: UPLOAD_DIR (기본 ./uploads)
+* **공통 래퍼**: `{ isSuccess, code, message, result }` 패턴
+* **에러코드**: `BaseResponseStatus`
 
-URL prefix: UPLOAD_DIR_prefix (기본 /uploads)
+  * 예: `MISSING_COUNCIL_ID_HEADER`, `ACCESS_DENIED`, `ROLE_REQUIRED`,
+    `INVALID_INPUT`, `ORGANIZATION_NOT_FOUND`, `INVITATION_CODE_EXPIRED` 등
 
-Multipart 최대: spring.servlet.multipart.max-file-size=10MB (prod)
+---
 
-### 개발 팁 / 트러블슈팅
-환경변수 미로딩: IDE Run/Debug 구성에 .env 연결 or 시스템 환경변수 설정
+## 📁 파일 업로드
 
-JDBC Driver 오류: mysql-connector-j 의존성/URL 확인
+* 저장 경로: `UPLOAD_DIR` (기본 `./uploads`)
+* URL prefix: `UPLOAD_DIR_prefix` (기본 `/uploads`)
+* Multipart 최대: `spring.servlet.multipart.max-file-size=10MB` (prod)
 
-권한 문제: X-Council-Id 누락/불일치, AOP(Access/Role) 체크 로그 확인
+---
 
-CORS: Security에서 AllowedOriginPatterns("*")로 열어둠(개발용)
+## 🛠 개발 팁 / 트러블슈팅
 
+* **환경변수 미로딩**: IDE Run/Debug 구성에 `.env` 연결 or 시스템 환경변수 설정
+* **JDBC Driver 오류**: `mysql-connector-j` 의존성/URL 확인
+* **권한 문제**: `X-Council-Id` 누락/불일치, AOP(Access/Role) 체크 로그 확인
+* **CORS**: Security에서 `AllowedOriginPatterns("*")`로 열어둠(개발용)
+# WeCam Admin Backend
 
-## WeCam Admin Backend
+학생회/조직 승인 등 **관리자 전용 백오피스 서버**  
+폼 로그인 기반의 **Spring MVC + Thymeleaf** 구조로 동작하며, 조직 생성 요청 승인 등 운영 기능을 제공합니다.
 
-학생회/조직 승인 등 관리자 전용 백오피스 서버
-폼 로그인 기반의 Spring MVC + Thymeleaf 구조로 동작하며, 조직 생성 요청 승인 등 운영 기능을 제공
+---
 
+## 📌 Tech Stack
+- Java 21, Spring Boot 3
+- Spring Web (MVC), Thymeleaf
+- Spring Security (Form Login + BCrypt)
+- Spring Data JPA, HikariCP, Flyway
+- MySQL 8
+- Gradle
 
+---
 
-### Tech Stack
-Java 21, Spring Boot 3
+## 📂 패키지 구조
+```
 
-Spring Web (MVC), Thymeleaf
-
-Spring Security (Form Login + BCrypt)
-
-Spring Data JPA, HikariCP, Flyway
-
-MySQL 8
-
-Gradle
-
-
-### 패키지 구조 
 main/
- ├─ java/org/example/wecamadminbackend
- │   ├─ controller/
- │   │   ├─ AdminController.java               # /admin/login, /admin/dashboard
- │   │   ├─ HomeController.java                # "/" → /admin/login 리다이렉트
- │   │   └─ AdminOrganizationController.java   # 조직 생성 요청 리스트/승인
- │   ├─ config/
- │   │   └─ SecurityConfig.java                # 폼 로그인, 인가 정책
- │   ├─ service/
- │   │   ├─ AdminOrganizationService.java
- │   │   └─ CustomAdminUserDetailsService.java # 관리자 인증 소스
- │   ├─ repos/                                 # JPA Repositories
- │   └─ WecamadminbackendApplication.java
- └─ resources/
-     ├─ application.properties                 # active=local
-     ├─ application-local.properties           # 포트/DB/Flyway/Thymeleaf 설정
-     ├─ application-prod.properties            # (비어있음/추가 필요)
-     ├─ templates/                             # Thymeleaf 템플릿 (예: admin/organization/list.html)
-     └─ static/
+├─ java/org/example/wecamadminbackend
+│   ├─ controller/
+│   │   ├─ AdminController.java               # /admin/login, /admin/dashboard
+│   │   ├─ HomeController.java                # "/" → /admin/login 리다이렉트
+│   │   └─ AdminOrganizationController.java   # 조직 생성 요청 리스트/승인
+│   ├─ config/
+│   │   └─ SecurityConfig.java                # 폼 로그인, 인가 정책
+│   ├─ service/
+│   │   ├─ AdminOrganizationService.java
+│   │   └─ CustomAdminUserDetailsService.java # 관리자 인증 소스
+│   ├─ repos/                                 # JPA Repositories
+│   └─ WecamadminbackendApplication.java
+└─ resources/
+├─ application.properties                 # active=local
+├─ application-local.properties           # 포트/DB/Flyway/Thymeleaf 설정
+├─ application-prod.properties            # (비어있음/추가 필요)
+├─ templates/                             # Thymeleaf 템플릿 (예: admin/organization/list.html)
+└─ static/
 
+````
 
-### 보안/인증
-Spring Security (폼 로그인)
-로그인 페이지: /admin/login
+---
 
-성공 시: /admin/dashboard 이동
+## 🔐 보안 / 인증
+- **Spring Security (폼 로그인)**
+- 로그인 페이지: `/admin/login`  
+- 성공 시: `/admin/dashboard` 이동  
+- 로그아웃: `/admin/logout` → `/admin/login?logout`  
+- 비밀번호 해시: **BCrypt**
+- 인증: `CustomAdminUserDetailsService`에서 DB 기반 로드  
+  - 관리자 계정 시드 필요 시 Flyway seed 또는 수동 INSERT로 생성
 
-로그아웃: /admin/logout → /admin/login?logout
+---
 
-비밀번호 해시: BCrypt
+## 📑 주요 화면 & 라우트
 
-인증은 CustomAdminUserDetailsService를 통해 DB에서 로드됩니다.
-(관리자 계정 시드가 필요하면 Flyway seed 또는 수동 INSERT로 생성하세요.)
+### AdminController
+- `GET /admin/login` – 로그인 페이지
+- `GET /admin/dashboard` – 대시보드 (로그인 필요)
 
-### 주요 화면 & 라우트
-AdminController
-GET /admin/login – 로그인 페이지
+### HomeController
+- `GET /` → `redirect:/admin/login`
 
-GET /admin/dashboard – 대시보드(로그인 필요)
+### AdminOrganizationController (조직 생성 요청 관리)
+- `GET /admin/organization/list` – 대기 중인 요청 목록 페이지  
+  - 서비스: `AdminOrganizationService#getPendingRequests()`로 데이터 주입  
+  - 템플릿: `admin/organization/list`
+- `POST /admin/organization/{Id}/approve` – 요청 승인  
+  - 서비스: `approveWorkspaceRequest(id)`  
+  - 응답: `200 OK / "워크스페이스 생성 요청 승인 완료."`  
 
-HomeController
-GET / → redirect:/admin/login
+> 컨트롤러 네임스페이스: `@RequestMapping("admin/organization")`  
+> 메소드 매핑: `@GetMapping`, `@PostMapping`
 
-AdminOrganizationController (조직 생성 요청 관리)
-GET /admin/organization/list – 대기 중인 요청 목록 페이지
+---
 
-AdminOrganizationService#getPendingRequests()로 데이터 주입
+## 🛠 서비스 / 레포지토리
 
-템플릿: admin/organization/list
+### AdminOrganizationService
+- 조직 생성 요청 조회 및 승인 처리 플로우 담당
 
-POST /admin/organization/{Id}/approve – 요청 승인
+### CustomAdminUserDetailsService
+- 관리자 계정 로드  
+- `UserDetails` 객체 반환
 
-서비스: approveWorkspaceRequest(id)
+### 주요 Repositories
+- `OrganizationRequestRepository`  
+- `OrganizationRepository`  
+- `CouncilRepository`  
+- `CouncilMemberRepository`  
+- `UniversityRepository`  
+- `UserRepository`  
+- `CouncilDepartmentRoleRepository`  
+- `PresidentSignupInformationRepository`  
 
-응답: 200 OK / "워크스페이스 생성 요청 승인 완료."
+---
 
-컨트롤러 네임스페이스는 클래스에 @RequestMapping("admin/organization") 형태로 설정되어 있으며, 메소드 매핑(@GetMapping, @PostMapping)으로 세부 경로가 붙습니다.
+## ⚙ 설정 (`application-local.properties` 주요 항목)
+- 서버:  
+  ```properties
+  server.port=8081
+  server.address=0.0.0.0 ```
 
-### 서비스/레포지토리 
-AdminOrganizationService
+* Thymeleaf:
 
-조직 생성 요청 조회/승인 플로우
+  * 경로: `classpath:/templates/`
+  * 확장자: `.html`
+  * 캐시: 비활성(dev)
+* JPA:
 
-CustomAdminUserDetailsService
+  * `ddl-auto=validate`
+  * `open-in-view=false`
+  * `format_sql=true`
+* Flyway:
 
-관리자 계정 로드(UserDetails 반환)
+  * `enabled=true`
+  * `baseline-on-migrate=true`
+  * `locations=classpath:db/migration,classpath:db/seed`
 
-Repositories
+---
 
-OrganizationRequestRepository, OrganizationRepository, CouncilRepository,
-CouncilMemberRepository, UniversityRepository, UserRepository,
-CouncilDepartmentRoleRepository, PresidentSignupInformationRepository 등
+## 🎨 템플릿 / 정적 리소스
 
-### 설정 (application-local.properties 주요 항목)
-서버: server.port=8081, server.address=0.0.0.0
+* `templates/` 아래 **Thymeleaf 페이지** 사용
 
-Thymeleaf: classpath:/templates/, .html, 캐시 비활성(dev)
+  * 예: `admin/organization/list.html`
+* 운영용 뷰/레이아웃은 템플릿 디렉토리에 추가
 
-JPA: ddl-auto=validate, open-in-view=false, format_sql=true
+---
 
-Flyway: enabled=true, baseline-on-migrate=true,
-locations=classpath:db/migration,classpath:db/seed
+## 🚀 배포 팁
 
-### 템플릿/정적 리소스
-templates/ 아래 Thymeleaf 페이지 사용 (예: admin/organization/list.html)
+* 프로필 분리:
 
-운영용 뷰/레이아웃은 템플릿 디렉토리에 추가
+  ```bash
+  --spring.profiles.active=prod
+  ```
 
-### 배포 팁
-프로필 분리: --spring.profiles.active=prod + application-prod.properties 채우기
+  * `application-prod.properties` 채우기
+* **Secrets**: DB 계정/암호, `PHONE_ENCRYPT_KEY` 등은 환경변수 또는 CI Secrets로 주입
+* **DB 마이그레이션**: 애플리케이션 기동 시 Flyway 자동 실행
 
-Secrets: DB 계정/암호, PHONE_ENCRYPT_KEY 등은 환경변수/CI Secrets로 주입
+---
 
-DB 마이그레이션: 애플리케이션 기동 시 Flyway 자동 실행
+## 🛠 트러블슈팅
 
-### 트러블슈팅
-로그인 무한 루프: 관리자 계정 미존재/비밀번호 불일치 → 관리자 시드 확인
+* **로그인 무한 루프**: 관리자 계정 미존재/비밀번호 불일치 → 관리자 시드 확인
+* **DDL 검증 실패**: `ddl-auto=validate`로 스키마 불일치 발생 → Flyway 스크립트 확인
+* **템플릿 404**: Thymeleaf 템플릿 경로/파일명 확인 (`templates/...`, `.html`)
+* **접속 포트 충돌**: `server.port` 변경 또는 사용중인 프로세스 종료
 
-DDL 검증 실패: ddl-auto=validate로 스키마 불일치 발생 → Flyway 스크립트 확인
-
-템플릿 404: Thymeleaf 템플릿 경로/파일명 확인 (templates/…, .html)
-
-접속 포트 충돌: server.port 변경 또는 사용중 프로세스 종료
 
 # WeCam 서버 기능 총정리 (현재 구현 기준)
 
