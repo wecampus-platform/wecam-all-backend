@@ -69,6 +69,9 @@ public enum BaseResponseStatus {
     ORGANIZATION_NOT_FOUND(false,  HttpStatus.NOT_FOUND.value(), "해당 조직을 찾을 수 없습니다."),
     SCHOOL_NOT_FOUND(false,  HttpStatus.NOT_FOUND.value(), "해당 학교를 찾을 수 없습니다."),
     USER_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 유저를 찾을 수 없습니다."),
+    COUNCIL_MEMBER_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 구성원을 찾을 수 없습니다."),
+    CATEGORY_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 카테고리가 존재하지 않습니다."),
+    MEETING_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 회의가 존재하지 않습니다."),
     INVITE_CODE_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 초대코드가 존재하지 않습니다."),
     PHONE_INFO_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "전화번호 정보가 없습니다."),
     //로그인 시 이메일 정보 일치하지 않을 떄

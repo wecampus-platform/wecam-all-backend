@@ -51,7 +51,7 @@ public class Meeting extends BaseEntity {
     @JoinColumn(name = "council_id", nullable = false)
     private Council council;
 
-    // 사용된 템플릿
+    // 만든 템플릿
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "template_id")
     private MeetingTemplate template;

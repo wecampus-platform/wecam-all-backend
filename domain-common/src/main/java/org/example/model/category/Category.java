@@ -4,11 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.example.model.common.BaseEntity;
 import org.example.model.council.Council;
-import org.example.model.todo.Todo;
-import org.example.model.user.User;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.example.model.council.CouncilMember;
 
 /**
  * 학생회별 카테고리를 나타내는 엔티티.
@@ -37,10 +33,10 @@ public class Category extends BaseEntity {
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
-    // 카테고리 생성자
+    // 카테고리 생성자 (학생회 구성원)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_user_id", nullable = false)
-    private User createdUser;
+    @JoinColumn(name = "created_member_id", nullable = false)
+    private CouncilMember createdMember;
 
     // 카테고리명 업데이트 메서드
     public void updateName(String name) {

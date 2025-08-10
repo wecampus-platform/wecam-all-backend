@@ -6,7 +6,8 @@ public enum FilePath {
     CURRENT_STUDENT("current-student"),
     PROFILE("profile"),
     PROFILE_THUMB("profile-thumb"),
-    PRESIDENT_AUTH("president-auth");
+    PRESIDENT_AUTH("president-auth"),
+    MEETINGS("meetings");
 
     private final String dirName;
 
