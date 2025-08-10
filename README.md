@@ -1,77 +1,80 @@
 # WeCam Backend (Multi-Module)
-WeCam은 대학 학생회 중심의 협업 플랫폼으로, 학생회와 일반 학생 간의 원활한 소통과 효율적인 업무 관리를 지원합니다.
-본 백엔드 프로젝트는 멀티 모듈 구조로 구성되어 있으며, 다음 3개의 모듈로 나누어져 있습니다.
+WeCam은 대학 학생회 중심의 협업 플랫폼으로, 학생회와 일반 학생 간의 원활한 소통과 효율적인 업무 관리를 지원하려 함.
+본 백엔드 프로젝트는 멀티 모듈 구조로 구성되어 있으며, 다음 3개의 모듈로 나누어져 있음.
 
-domain-common : 모든 서비스에서 공통으로 사용하는 엔티티, DTO, 예외 처리, 유틸리티 모듈
+- **domain-common** : 모든 서비스에서 공통으로 사용하는 엔티티, DTO, 예외 처리, 유틸리티 모듈
+- **wecam-backend** : 일반 사용자(학생, 학생회 구성원)용 서버
+- **wecamadminbackend** : 서버 마스터 관리자(Admin)용 서버
 
-wecam-backend : 일반 사용자(학생, 학생회 구성원)용 서버
-
-wecamadminbackend : 서버 마스터 관리자(Admin)용 서버
+--- 
 
 ## 프로젝트 구조
 
 wecam-all-backend/
-├── domain-common/                  # 공통 모듈 (엔티티, DTO, 유틸)
-│   ├── model/                      # JPA 엔티티 정의
-│   ├── dto/                        # 공통 DTO
-│   ├── enums/                      # Enum 타입 정의
-│   ├── exceptions/                 # 공통 예외 처리
-│   └── utils/                       # 암호화, 날짜, 파일 등 유틸
+├── domain-common/ # 공통 모듈 (엔티티, DTO, 유틸)
+│ ├── model/ # JPA 엔티티 정의
+│ ├── dto/ # 공통 DTO
+│ ├── enums/ # Enum 타입 정의
+│ ├── exceptions/ # 공통 예외 처리
+│ └── utils/ # 암호화, 날짜, 파일 등 유틸
 │
-├── wecam-backend/                  # 일반 사용자용 서버
-│   ├── controller/                 # REST API 컨트롤러
-│   ├── service/                     # 비즈니스 로직
-│   ├── repos/                       # JPA Repository
-│   ├── config/                      # 보안, CORS, Swagger 설정
-│   ├── resources/
-│   │   ├── application.yml
-│   │   ├── application-local.properties
-│   │   ├── application-prod.properties
+├── wecam-backend/ # 일반 사용자용 서버
+│ ├── controller/ # REST API 컨트롤러
+│ ├── service/ # 비즈니스 로직
+│ ├── repos/ # JPA Repository
+│ ├── config/ # 보안, CORS, Swagger 설정
+│ ├── resources/
+│ │ ├── application.yml
+│ │ ├── application-local.properties
+│ │ ├── application-prod.properties
 │
-├── wecamadminbackend/              # 서버 관리자용 백엔드
-│   ├── controller/                 # Admin API 컨트롤러
-│   ├── service/
-│   ├── repos/
-│   ├── config/                      # SecurityConfig 등 보안설정
-│   ├── resources/
-│   │   ├── application-local.properties
-│   │   ├── application-prod.properties
+├── wecamadminbackend/ # 서버 관리자용 백엔드
+│ ├── controller/ # Admin API 컨트롤러
+│ ├── service/
+│ ├── repos/
+│ ├── config/ # SecurityConfig 등 보안설정
+│ ├── resources/
+│ │ ├── application-local.properties
+│ │ ├── application-prod.properties
 │
 └── build.gradle / settings.gradle
 
+--- 
 ## 기술 스택
 
 | 구분           | 기술                                                     |
-| ------------ | ------------------------------------------------------ |
-| **Backend**  | Spring Boot 3.x, Spring Security, Spring Data JPA      |
-| **Database** | MySQL, JPA/Hibernate                                   |
-| **Auth**     | JWT, Spring Security                                   |
-| **Infra**    | AWS EC2, Docker, GitHub Actions CI/CD                  |
-| **Docs**     | Swagger(OpenAPI 3)                                     |
-| **ETC**      | Lombok, ModelMapper, Validation, Multipart File Upload |
+| -------------- | -------------------------------------------------------- |
+| **Backend**    | Spring Boot 3.x, Spring Security, Spring Data JPA        |
+| **Database**   | MySQL, JPA/Hibernate                                     |
+| **Auth**       | JWT, Spring Security                                     |
+| **Infra**      | AWS EC2, Docker, GitHub Actions CI/CD                    |
+| **Docs**       | Swagger(OpenAPI 3)                                       |
+| **ETC**        | Lombok, ModelMapper, Validation, Multipart File Upload   |
 
+--- 
 
 ## 모듈별 역할
 
 ### 1️⃣ domain-common
-공통 엔티티 : User, Organization, University, Council, Todo 등
-공통 DTO : 인증, 응답, 페이지네이션 DTO
-공통 예외 처리 : BaseException, BaseResponse, BaseResponseStatus
-Enum 관리 : 유저 역할(Role), 상태(Status), 승인 타입 등
-유틸리티 : 암호화(AES256Util), 날짜 변환, 파일 경로 처리
+- 공통 엔티티 : User, Organization, University, Council, Todo 등
+- 공통 DTO : 인증, 응답, 페이지네이션 DTO
+- 공통 예외 처리 : BaseException, BaseResponse, BaseResponseStatus
+- Enum 관리 : 유저 역할(Role), 상태(Status), 승인 타입 등
+- 유틸리티 : 암호화(AES256Util), 날짜 변환, 파일 경로 처리
 
 ### 2️⃣ wecam-backend (User API Server)
 일반 학생/학생회 구성원 전용 API
 
 ### 3️⃣ wecamadminbackend (Admin API Server)
 서버 마스터(Admin) 전용 API
-
+---
 ## API 문서
 
-Swagger UI를 통해 API 명세 확인 가능
-wecam-backend : http://localhost:8080/swagger-ui/index.html
-wecamadminbackend : http://localhost:8081/swagger-ui/index.html
+- **Swagger** UI를 통해 API 명세 확인 가능
+- **wecam-backend** : http://localhost:8080/swagger-ui/index.html
+- **wecamadminbackend** : http://localhost:8081/swagger-ui/index.html
 
+---
 
 # 모듈별 상세 설명
 ## domain-common
@@ -79,12 +82,10 @@ wecamadminbackend : http://localhost:8081/swagger-ui/index.html
 WeCam 멀티모듈 프로젝트에서 공용 엔티티/Enum/기반 클래스를 제공하는 모듈.
 wecam-backend, wecamadminbackend가 이 모듈을 의존하여 동일한 도메인 모델을 공유함.
 
-Tech & 목적
-Java 21, JPA/Hibernate
-
-도메인: 학교/조직 트리, 학생회, 사용자, 소속 인증, 초대코드, 할일(Todo), 미팅 등
-
-공통 베이스 엔티티, Enum, 복합키, 연관관계 모델 정의
+### Tech & 목적
+- Java 21, JPA/Hibernate
+- 도메인: 학교/조직 트리, 학생회, 사용자, 소속 인증, 초대코드, 할일(Todo), 미팅 등
+- 공통 베이스 엔티티, Enum, 복합키, 연관관계 모델 정의
 
 ### 패키지 구조
 org.example.model
@@ -102,23 +103,21 @@ org.example.model
  └─ University.java
 
 ### 핵심 엔티티
-사용자
-User
+**사용자**
+- **User**
+-기본키: user_pk_id
+- 주요 필드: email, password(해시 전제), role(UserRole), university, organization, academicStatus, studentGrade, nickname, auth 여부 등
 
-기본키: user_pk_id
+-**UserPrivate**: 민감정보(전화번호 등) 분리 저장
 
-주요 필드: email, password(해시 전제), role(UserRole), university, organization, academicStatus, studentGrade, nickname, auth 여부 등
+-**UserInformation**: 표시/프로필 등 부가 정보
 
-UserPrivate: 민감정보(전화번호 등) 분리 저장
+-**UserSignupInformation**: 가입 시 입력 값 스냅샷
 
-UserInformation: 표시/프로필 등 부가 정보
+**학교/조직**
+- **University**
 
-UserSignupInformation: 가입 시 입력 값 스냅샷
-
-학교/조직
-University
-
-Organization
+ - **Organization**
 
 parent-children 구조(트리), OrganizationType = UNIVERSITY/COLLEGE/DEPARTMENT/MAJOR
 
