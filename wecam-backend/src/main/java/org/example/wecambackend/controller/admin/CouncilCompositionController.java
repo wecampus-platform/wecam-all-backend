@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
 import org.example.model.council.CouncilDepartment;
 import org.example.wecambackend.common.context.CouncilContextHolder;
@@ -15,8 +14,7 @@ import org.example.wecambackend.config.security.UserDetailsImpl;
 
 import org.example.wecambackend.config.security.annotation.CheckCouncilEntity;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
-import org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse;
-import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
+import org.example.wecambackend.dto.response.council.CouncilCompositionResponse;
 import org.example.wecambackend.service.admin.CouncilDepartmentService;
 import org.example.wecambackend.service.admin.CouncilMemberService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

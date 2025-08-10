@@ -8,8 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.model.enums.UserRole;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.model.user.User;
-import org.example.wecambackend.repos.CouncilMemberRepository;
-import org.example.wecambackend.repos.UserRepository;
+import org.example.wecambackend.repos.council.CouncilMemberRepository;
+import org.example.wecambackend.repos.user.UserRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.example.wecambackend.config.security.context.CurrentUserContext;
@@ -26,6 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
+    private final CouncilMemberRepository councilMemberRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -108,6 +109,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
-
-    private final CouncilMemberRepository councilMemberRepository;
 }

@@ -5,7 +5,7 @@ import org.example.model.user.User;
 import org.example.model.user.UserInformation;
 import org.example.model.affiliation.AffiliationCertification;
 import org.example.model.enums.AuthenticationType;
-import org.example.wecambackend.repos.UserInformationRepository;
+import org.example.wecambackend.repos.user.UserInformationRepository;
 import org.springframework.stereotype.Service;
 
 @Service

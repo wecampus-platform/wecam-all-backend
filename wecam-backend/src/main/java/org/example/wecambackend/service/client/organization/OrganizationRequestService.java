@@ -2,22 +2,23 @@ package org.example.wecambackend.service.client.organization;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.example.wecambackend.dto.requestDTO.OrganizationRegisterRequest;
+import org.example.wecambackend.dto.request.organization.OrganizationRegisterRequest;
 import org.example.model.organization.Organization;
 import org.example.model.organization.OrganizationRequest;
 import org.example.model.user.User;
 import org.example.model.user.UserSignupInformation;
 import org.example.model.enums.OrganizationType;
 import org.example.model.enums.RequestStatus;
-import org.example.wecambackend.repos.*;
+import org.example.wecambackend.repos.council.CouncilRepository;
 import org.example.wecambackend.repos.organization.OrganizationRepository;
 import org.example.wecambackend.repos.organization.OrganizationRequestRepository;
+import org.example.wecambackend.repos.user.UserRepository;
+import org.example.wecambackend.repos.user.UserSignupInformationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor

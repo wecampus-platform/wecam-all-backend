@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
-import org.example.wecambackend.dto.responseDTO.AdminFileResponse;
+import org.example.wecambackend.dto.response.admin.AdminFileResponse;
 import org.example.wecambackend.service.admin.Enum.UploadFolder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

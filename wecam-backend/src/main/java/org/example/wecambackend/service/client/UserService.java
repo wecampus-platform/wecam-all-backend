@@ -7,7 +7,7 @@ import org.example.model.University;
 import org.example.model.user.User;
 import org.example.model.enums.AuthenticationType;
 import org.example.model.enums.UserRole;
-import org.example.wecambackend.repos.UserRepository;
+import org.example.wecambackend.repos.user.UserRepository;
 import org.example.wecambackend.service.util.UserTagGenerator;
 import org.springframework.stereotype.Service;
 

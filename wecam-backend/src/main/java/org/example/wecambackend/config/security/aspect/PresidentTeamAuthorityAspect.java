@@ -12,7 +12,7 @@ import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsPresidentTeam;
-import org.example.wecambackend.repos.CouncilMemberRepository;
+import org.example.wecambackend.repos.council.CouncilMemberRepository;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

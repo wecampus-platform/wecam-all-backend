@@ -18,11 +18,15 @@ import org.example.model.user.UserSignupInformation;
 import org.example.model.user.UserStatus;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
-import org.example.wecambackend.config.security.annotation.CurrentUser;
 import org.example.wecambackend.dto.projection.PresidentSignupInfoDTO;
-import org.example.wecambackend.repos.*;
+import org.example.wecambackend.repos.council.CouncilMemberRepository;
+import org.example.wecambackend.repos.council.CouncilRepository;
 import org.example.wecambackend.repos.organization.OrganizationRepository;
 import org.example.wecambackend.repos.organization.OrganizationRequestRepository;
+import org.example.wecambackend.repos.school.SchoolRepository;
+import org.example.wecambackend.repos.user.UserInformationRepository;
+import org.example.wecambackend.repos.user.UserRepository;
+import org.example.wecambackend.repos.user.UserSignupInformationRepository;
 import org.example.wecambackend.service.admin.common.EntityFinderService;
 import org.example.wecambackend.service.util.UserTagGenerator;
 import org.springframework.stereotype.Service;
@@ -30,22 +34,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-import org.example.model.council.Council;
-import org.example.wecambackend.service.admin.common.EntityFinderService;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.stereotype.Service;
-
 @Service
 @RequiredArgsConstructor
 public class WorkSpaceManageService {
 // 워크스페이스 뷰 - 워크스페이스에 있는 targetOrg 의 parentId 가 Council 의 OrganizationId 와 동일하다면
 // 해당 학생회에게 워크스페이스 승인 인가를 줌.
 
-
     private final OrganizationRequestRepository organizationRequestRepository;
     private final UserInformationRepository userInformationRepository;
-//    //워크스페이스 승인 요청
+    private final UserSignupInformationRepository userSignupInformationRepository;
+    private final OrganizationRepository organizationRepository;
+    private final SchoolRepository schoolRepository;
+    private final UserTagGenerator userTagGenerator;
+    private final UserRepository userRepository;
+    private final CouncilMemberRepository councilMemberRepository;
+    private final CouncilRepository councilRepository;
+    private final EntityFinderService entityFinderService;
+
+    //    //워크스페이스 승인 요청
     //requestId 확인
     @Transactional
     public void getAllWorkspaceRequestApprove(Long requestId,Long userId ) {
@@ -294,15 +300,6 @@ public class WorkSpaceManageService {
         userInformationRepository.save(info);
 
     }
-
-    private final UserSignupInformationRepository userSignupInformationRepository;
-    private final OrganizationRepository organizationRepository;
-    private final SchoolRepository schoolRepository;
-    private final UserTagGenerator userTagGenerator;
-    private final UserRepository userRepository;
-    private final CouncilMemberRepository councilMemberRepository;
-    private final CouncilRepository councilRepository;
-    private final EntityFinderService entityFinderService;
 
     public void getAllWorkspaceRequestReject(Long requestId, Long userId,String reason) {
         OrganizationRequest request = organizationRequestRepository.findById(requestId)

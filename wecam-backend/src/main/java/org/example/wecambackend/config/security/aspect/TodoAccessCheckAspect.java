@@ -8,7 +8,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.example.model.todo.Todo;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.CheckTodoAccess;
-import org.example.wecambackend.repos.TodoRepository;
+import org.example.wecambackend.repos.todo.TodoRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;

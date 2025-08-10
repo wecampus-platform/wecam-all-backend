@@ -2,9 +2,8 @@ package org.example.wecambackend.repos.organization;
 
 import org.example.model.enums.RequestStatus;
 import org.example.model.organization.OrganizationRequest;
-import org.example.wecambackend.dto.responseDTO.SubOrganizationRequestListResponse;
 
-import org.example.wecambackend.dto.requestDTO.OrganizationRequestDTO;
+import org.example.wecambackend.dto.request.organization.OrganizationRequestDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -41,7 +40,7 @@ public interface OrganizationRequestRepository extends JpaRepository<Organizatio
            ") " +
            "ORDER BY o.createdAt DESC")
     List<OrganizationRequest> findSubOrganizationRequestsByParentId(@Param("parentOrganizationId") Long parentOrganizationId);
-    @Query("SELECT new org.example.wecambackend.dto.requestDTO.OrganizationRequestDTO(" +
+    @Query("SELECT new org.example.wecambackend.dto.request.organization.OrganizationRequestDTO(" +
             "o.requestId, u.email, o.requestStatus, o.createdAt, o.councilName, o.schoolName, t) " +
             "FROM OrganizationRequest o " +
             "LEFT JOIN o.user u " +
