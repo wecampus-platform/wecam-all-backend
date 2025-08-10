@@ -43,14 +43,14 @@ wecam-all-backend/
 
 ## 🛠 기술 스택
 
-| 구분           | 기술 |
-| -------------- | -------------------------------------------------------- |
-| **Backend**    | Spring Boot 3.x, Spring Security, Spring Data JPA        |
-| **Database**   | MySQL, JPA/Hibernate                                     |
-| **Auth**       | JWT, Spring Security                                     |
-| **Infra**      | AWS EC2, Docker, GitHub Actions CI/CD                    |
-| **Docs**       | Swagger (OpenAPI 3)                                      |
-| **ETC**        | Lombok, ModelMapper, Validation, Multipart File Upload   |
+| 구분         | 기술                                                    |
+| ------------ | ------------------------------------------------------- |
+| **Backend**  | Spring Boot 3.x, Spring Security, Spring Data JPA       |
+| **Database** | MySQL, JPA/Hibernate                                    |
+| **Auth**     | JWT, Spring Security                                    |
+| **Infra**    | AWS EC2, Docker, GitHub Actions CI/CD                   |
+| **Docs**     | Swagger (OpenAPI 3)                                     |
+| **ETC**      | Lombok, ModelMapper, Validation, Multipart File Upload  |
 
 ---
 
@@ -1071,10 +1071,6 @@ java -jar build/libs/wecamadminbackend-*.jar
 * **Enum 저장 타입 혼선**: 복합키/EmbeddedId와 섞일 때 `TINYINT`로 저장되지 않게 `EnumType.STRING` 재확인
 * **파일 업로드**: 빈 파일/파일명 빈 값 → `FILE_EMPTY`/`EMPTY_FILENAME`
 * **초대코드 만료 정책**: 최소 5분 이후로 설정 (`INVALID_EXPIRATION_TIME` 방지)
-
-  # 진행 상황 (표)
-
-  좋지! 앞으로 계속 추가/업데이트하기 쉬운 **진행상황(Status) 표 템플릿** 만들어줬고, 네가 정리해준 현재 구현 기준으로 **초기 데이터도 다 채워**놨어. 그대로 README에 붙여 쓰면 됨. 필요하면 섹션별로 쪼개서 써도 되고.
 
 ---
 
