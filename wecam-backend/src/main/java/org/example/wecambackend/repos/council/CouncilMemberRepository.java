@@ -30,6 +30,10 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
 
     List<CouncilMember> findByUserUserPkIdAndStatus(Long userPkId, BaseEntity.Status ACTIVE);
 
+    /**
+     * 특정 사용자가 특정 학생회에 속한 특정 상태의 멤버인지 확인
+     */
+    Optional<CouncilMember> findByUserUserPkIdAndCouncilIdAndStatus(Long userId, Long councilId, BaseEntity.Status status);
 
     /**
      * 특정 학생회(councilId)에 속한 활성화된(CouncilMember.isActive = true) 구성원 중에서

@@ -33,13 +33,26 @@ public class FileStorageService {
     private String uploadUrlPrefix; // 사용자에게 제공할 파일 접근 경로 prefix (ex: /uploads 또는 S3 도입 시 https://...)
 
     // MultipartFile을 받아 저장하고, 사용자 접근용 fileUrl을 반환합니다.
-    public Map<String, String> save(MultipartFile file, UUID uuid,FilePath fileDir) {
+    public Map<String, String> save(MultipartFile file, UUID uuid, FilePath fileDir) {
+        return save(file, uuid, fileDir, null);
+    }
+
+    // MultipartFile을 받아 저장하고, 사용자 접근용 fileUrl을 반환합니다.
+    public Map<String, String> save(MultipartFile file, UUID uuid, FilePath fileDir, Long councilId) {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("빈 파일은 저장할 수 없습니다.");
         }
 
         try {
-            String allPath = uploadDir + "/" + fileDir + "/";
+            String allPath = uploadDir + "/" + fileDir.getDirName();
+            
+            // councilId가 있고 MEETINGS 디렉토리인 경우 하위 디렉토리 추가
+            if (councilId != null && fileDir == FilePath.MEETINGS) {
+                allPath += "/" + councilId;
+            }
+            
+            allPath += "/";
+            
             // 1. 저장 디렉토리 생성
             Path basePath = Paths.get(allPath);
             Files.createDirectories(basePath);
@@ -53,9 +66,15 @@ public class FileStorageService {
             try (InputStream in = file.getInputStream()) {
                 Files.copy(in, savePath, StandardCopyOption.REPLACE_EXISTING);
             }
+            
             // 4. filePath (상대경로)와 fileUrl (접근 URL)
             String filePath = allPath + storedFileName; // DB에 저장할 상대 경로
-            String fileUrl = uploadUrlPrefix + "/" +  fileDir + "/" + storedFileName;
+            
+            String fileUrl = uploadUrlPrefix + "/" + fileDir.getDirName();
+            if (councilId != null && fileDir == FilePath.MEETINGS) {
+                fileUrl += "/" + councilId;
+            }
+            fileUrl += "/" + storedFileName;
 
             return Map.of(
                     "filePath", filePath,
