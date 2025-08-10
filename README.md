@@ -9,7 +9,7 @@ WeCam은 대학 학생회 중심의 협업 플랫폼으로, 학생회와 일반 
 --- 
 
 ## 프로젝트 구조
-
+```
 wecam-all-backend/
 ├── domain-common/ # 공통 모듈 (엔티티, DTO, 유틸)
 │ ├── model/ # JPA 엔티티 정의
@@ -38,7 +38,7 @@ wecam-all-backend/
 │ │ ├── application-prod.properties
 │
 └── build.gradle / settings.gradle
-
+```
 ---
 
 ## 🛠 기술 스택
@@ -90,6 +90,7 @@ wecam-backend, wecamadminbackend가 이 모듈을 의존하여 동일한 도메�
 - 공통 베이스 엔티티, Enum, 복합키, 연관관계 모델 정의
 
 ### 패키지 구조
+```
 org.example.model
  ├─ common/
  │   └─ BaseEntity.java            # created_at/updated_at 등 공통 컬럼
@@ -103,6 +104,7 @@ org.example.model
  ├─ category/                      # Category, CategoryAssignment
  ├─ meeting/                       # Meeting, MeetingFile, MeetingAttendee, MeetingTemplate
  └─ University.java
+```
 ### 📌 핵심 엔티티
 
 #### 👤 사용자
