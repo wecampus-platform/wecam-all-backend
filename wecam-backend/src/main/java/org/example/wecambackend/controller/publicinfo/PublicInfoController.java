@@ -3,8 +3,8 @@ package org.example.wecambackend.controller.publicinfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.example.wecambackend.dto.responseDTO.OrganizationSimpleResponse;
-import org.example.wecambackend.dto.responseDTO.UniversitySimpleResponse;
+import org.example.wecambackend.dto.response.organization.OrganizationSimpleResponse;
+import org.example.wecambackend.dto.response.UniversitySimpleResponse;
 import org.example.wecambackend.service.client.PublicInfoService;
 import org.springframework.web.bind.annotation.*;
 

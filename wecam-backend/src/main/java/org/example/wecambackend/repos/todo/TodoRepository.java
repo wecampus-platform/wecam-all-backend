@@ -1,7 +1,6 @@
 package org.example.wecambackend.repos.todo;
 
 import org.example.model.todo.Todo;
-import org.example.wecambackend.dto.responseDTO.TodoDetailResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

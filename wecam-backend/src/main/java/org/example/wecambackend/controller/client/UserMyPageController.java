@@ -3,15 +3,13 @@ package org.example.wecambackend.controller.client;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jdk.jfr.Description;
 import lombok.RequiredArgsConstructor;
 import org.example.wecambackend.common.response.BaseResponse;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
-import org.example.wecambackend.dto.requestDTO.MyPageOrganizationEditRequest;
-import org.example.wecambackend.dto.responseDTO.MyPageResponse;
+import org.example.wecambackend.dto.request.MyPageOrganizationEditRequest;
+import org.example.wecambackend.dto.response.MyPageResponse;
 import org.example.wecambackend.service.client.MyPageService;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

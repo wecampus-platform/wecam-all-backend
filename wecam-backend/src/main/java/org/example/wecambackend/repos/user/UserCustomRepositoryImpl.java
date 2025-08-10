@@ -7,9 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.model.organization.QOrganization;
 import org.example.model.user.QUser;
 import org.example.model.user.QUserInformation;
-import org.example.model.user.QUserPrivate;
 import org.example.model.enums.UserRole;
-import org.example.wecambackend.dto.responseDTO.StudentSearchResponse;
+import org.example.wecambackend.dto.response.StudentSearchResponse;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

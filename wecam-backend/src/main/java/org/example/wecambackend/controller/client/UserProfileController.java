@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.wecambackend.common.response.BaseResponse;
 import org.example.wecambackend.config.security.UserDetailsImpl;
-import org.example.wecambackend.dto.responseDTO.ProfileImageResponse;
+import org.example.wecambackend.dto.response.ProfileImageResponse;
 import org.example.wecambackend.service.client.UserProfileService;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

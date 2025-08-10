@@ -1,7 +1,7 @@
 package org.example.wecambackend.repos.user;
 
-import org.example.wecambackend.dto.responseDTO.CouncilMemberSearchResponse;
-import org.example.wecambackend.dto.responseDTO.StudentSearchResponse;
+import org.example.wecambackend.dto.response.councilMember.CouncilMemberSearchResponse;
+import org.example.wecambackend.dto.response.StudentSearchResponse;
 
 import java.util.List;
 

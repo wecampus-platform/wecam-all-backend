@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.dto.projection.OcrEvaluationResult;
-import org.example.wecambackend.dto.responseDTO.OcrResultResponse;
+import org.example.wecambackend.dto.response.OcrResultResponse;
 import org.example.model.organization.Organization;
 import org.example.model.University;
 import org.example.model.user.User;

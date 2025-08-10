@@ -1,6 +1,6 @@
 package org.example.wecambackend.repos.council;
 
-import org.example.wecambackend.dto.responseDTO.CouncilMemberSearchResponse;
+import org.example.wecambackend.dto.response.councilMember.CouncilMemberSearchResponse;
 
 import java.util.List;
 

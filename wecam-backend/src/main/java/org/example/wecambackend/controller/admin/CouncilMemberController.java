@@ -9,21 +9,20 @@ import lombok.RequiredArgsConstructor;
 import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
-import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
-import org.example.wecambackend.dto.responseDTO.CouncilMemberSearchResponse;
+import org.example.wecambackend.dto.response.councilMember.CouncilMemberResponse;
+import org.example.wecambackend.dto.response.councilMember.CouncilMemberSearchResponse;
 import org.example.wecambackend.service.admin.CouncilMemberService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import org.example.wecambackend.dto.requestDTO.DepartmentAssignmentRequest;
-import org.example.wecambackend.dto.requestDTO.CouncilMemberExpulsionRequest;
-import org.example.wecambackend.config.security.annotation.CheckCouncilAccess;
+import org.example.wecambackend.dto.request.DepartmentAssignmentRequest;
+import org.example.wecambackend.dto.request.councilMember.CouncilMemberExpulsionRequest;
 import org.example.wecambackend.config.security.annotation.IsPresidentTeam;
 import org.example.wecambackend.config.security.annotation.CheckCouncilEntity;
 import org.example.wecambackend.common.response.BaseResponse;
 import org.example.wecambackend.common.response.BaseResponseStatus;
-import org.example.wecambackend.dto.responseDTO.DepartmentResponse;
+import org.example.wecambackend.dto.response.department.DepartmentResponse;
 import org.example.model.council.CouncilMember;
 
 import jakarta.validation.Valid;

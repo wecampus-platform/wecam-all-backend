@@ -4,8 +4,8 @@ import org.example.model.common.BaseEntity;
 import org.example.model.council.CouncilMember;
 import org.example.model.user.User;
 import org.example.wecambackend.dto.projection.CompositionFlatRow;
-import org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse;
-import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
+import org.example.wecambackend.dto.response.council.CouncilCompositionResponse;
+import org.example.wecambackend.dto.response.councilMember.CouncilMemberResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,7 +44,7 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
      * 주의: 미배치 + 특정 부서 둘 다 동시에 포함하는 건 지원하지 않음.
      */
     //미배치 인원도 뜨게 해야 돼서 LEFTJOIN 으로 묶었습니다.
-    @Query("SELECT new org.example.wecambackend.dto.responseDTO.CouncilMemberResponse(" +
+    @Query("SELECT new org.example.wecambackend.dto.response.councilMember.CouncilMemberResponse(" +
             "u.name, cm.memberRole, d.id,dr.id, u.userPkId, cm.exitType, cm.expulsionReason,d.name,dr.name) " +
             "FROM CouncilMember cm " +
             "JOIN cm.user u " +
@@ -115,7 +115,7 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
 
 
 
-    @Query( "SELECT new org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse(" +
+    @Query( "SELECT new org.example.wecambackend.dto.response.council.CouncilCompositionResponse(" +
             "u.name, cm.memberRole, u.userPkId, u.enrollYear, d.name, dr.name)" +
             "FROM CouncilMember  cm " +
             "JOIN cm.user u " +

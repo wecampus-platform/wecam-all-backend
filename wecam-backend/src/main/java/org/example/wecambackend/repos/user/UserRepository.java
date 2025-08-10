@@ -1,7 +1,7 @@
 package org.example.wecambackend.repos.user;
 
 import org.example.model.user.User;
-import org.example.wecambackend.dto.responseDTO.UserSummaryResponse;
+import org.example.wecambackend.dto.response.user.UserSummaryResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,7 +31,7 @@ public interface UserRepository extends JpaRepository<User, Long>, UserCustomRep
 
 
     @Query("""
-    SELECT new org.example.wecambackend.dto.responseDTO.UserSummaryResponse(
+    SELECT new org.example.wecambackend.dto.response.user.UserSummaryResponse(
         u.userPkId, u.name,SUBSTRING(u.enrollYear, 3, 2),u.organization.organizationName,ui.studentGrade,ui.academicStatus
     ) FROM User u left JOIN UserInformation ui WHERE u.status = org.example.model.common.BaseEntity.Status.ACTIVE
     """)
