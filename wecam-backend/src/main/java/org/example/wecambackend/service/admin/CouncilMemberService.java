@@ -16,12 +16,12 @@ import org.example.wecambackend.dto.requestDTO.DepartmentAssignmentRequest;
 import org.example.wecambackend.dto.responseDTO.CouncilCompositionResponse;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberResponse;
 import org.example.wecambackend.dto.responseDTO.CouncilMemberSearchResponse;
-import org.example.wecambackend.repos.CouncilMemberRepository;
+import org.example.wecambackend.repos.council.CouncilDepartmentRepository;
+import org.example.wecambackend.repos.council.CouncilDepartmentRoleRepository;
+import org.example.wecambackend.repos.council.CouncilMemberRepository;
+import org.example.wecambackend.repos.user.UserRepository;
 import org.springframework.stereotype.Service;
 import org.example.wecambackend.dto.responseDTO.DepartmentResponse;
-import org.example.wecambackend.repos.CouncilDepartmentRepository;
-import org.example.wecambackend.repos.CouncilDepartmentRoleRepository;
-import org.example.wecambackend.repos.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;

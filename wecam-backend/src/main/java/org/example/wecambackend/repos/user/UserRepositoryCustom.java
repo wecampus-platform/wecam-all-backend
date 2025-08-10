@@ -1,4 +1,4 @@
-package org.example.wecambackend.repos;
+package org.example.wecambackend.repos.user;
 
 import org.example.wecambackend.dto.responseDTO.CouncilMemberSearchResponse;
 import org.example.wecambackend.dto.responseDTO.StudentSearchResponse;

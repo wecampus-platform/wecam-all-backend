@@ -5,8 +5,8 @@ import org.example.model.council.Council;
 import org.example.model.user.User;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
-import org.example.wecambackend.repos.CouncilRepository;
-import org.example.wecambackend.repos.UserRepository;
+import org.example.wecambackend.repos.council.CouncilRepository;
+import org.example.wecambackend.repos.user.UserRepository;
 import org.springframework.stereotype.Service;
 
 /**

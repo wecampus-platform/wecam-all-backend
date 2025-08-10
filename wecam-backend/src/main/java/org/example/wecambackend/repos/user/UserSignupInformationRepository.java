@@ -1,4 +1,4 @@
-package org.example.wecambackend.repos;
+package org.example.wecambackend.repos.user;
 
 import org.example.model.user.User;
 import org.example.model.user.UserInformation;

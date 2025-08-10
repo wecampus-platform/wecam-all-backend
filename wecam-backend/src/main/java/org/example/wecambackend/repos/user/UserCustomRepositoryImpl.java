@@ -1,4 +1,4 @@
-package org.example.wecambackend.repos;
+package org.example.wecambackend.repos.user;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;

@@ -21,7 +21,12 @@ import org.example.wecambackend.dto.responseDTO.AdminFileResponse;
 import org.example.wecambackend.dto.responseDTO.TodoDetailResponse;
 import org.example.wecambackend.dto.responseDTO.TodoSimpleResponse;
 import org.example.wecambackend.dto.responseDTO.TodoSummaryResponse;
-import org.example.wecambackend.repos.*;
+import org.example.wecambackend.repos.council.CouncilMemberRepository;
+import org.example.wecambackend.repos.todo.TodoFileRepository;
+import org.example.wecambackend.repos.todo.TodoManagerRepository;
+import org.example.wecambackend.repos.todo.TodoRepository;
+import org.example.wecambackend.repos.user.UserRepository;
+import org.example.wecambackend.repos.user.UserInformationRepository;
 import org.example.wecambackend.service.admin.Enum.UploadFolder;
 import org.example.wecambackend.service.admin.common.AdminFileStorageService;
 import org.example.wecambackend.service.admin.common.EntityFinderService;
@@ -49,6 +54,7 @@ public class TodoService {
     private final AdminFileStorageService adminFileStorageService;
     private final TodoFileRepository todoFileRepository;
     private final CouncilMemberRepository councilMemberRepository;
+    private final UserInformationRepository userInformationRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -310,10 +316,6 @@ public class TodoService {
         // 실제 삭제 (cascade + orphanRemoval 덕분에 하위 테이블 자동 삭제됨)
         todoRepository.delete(todo);
     }
-
-
-
-    private final UserInformationRepository userInformationRepository;
 
     /**
      [설명]

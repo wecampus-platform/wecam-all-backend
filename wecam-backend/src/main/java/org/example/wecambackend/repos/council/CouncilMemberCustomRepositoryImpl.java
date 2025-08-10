@@ -1,4 +1,4 @@
-package org.example.wecambackend.repos;
+package org.example.wecambackend.repos.council;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;

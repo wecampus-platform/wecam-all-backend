@@ -9,9 +9,11 @@ import org.example.model.user.User;
 import org.example.model.user.UserSignupInformation;
 import org.example.model.enums.OrganizationType;
 import org.example.model.enums.RequestStatus;
-import org.example.wecambackend.repos.*;
+import org.example.wecambackend.repos.council.CouncilRepository;
 import org.example.wecambackend.repos.organization.OrganizationRepository;
 import org.example.wecambackend.repos.organization.OrganizationRequestRepository;
+import org.example.wecambackend.repos.user.UserRepository;
+import org.example.wecambackend.repos.user.UserSignupInformationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 

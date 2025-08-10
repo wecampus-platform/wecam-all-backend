@@ -3,7 +3,7 @@ package org.example.wecambackend.service.util;
 import lombok.RequiredArgsConstructor;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
-import org.example.wecambackend.repos.UserRepository;
+import org.example.wecambackend.repos.user.UserRepository;
 import org.springframework.stereotype.Service;
 
 @Service

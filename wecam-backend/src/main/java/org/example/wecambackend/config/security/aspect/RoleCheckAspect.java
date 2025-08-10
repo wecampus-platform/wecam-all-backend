@@ -11,7 +11,7 @@ import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.model.enums.UserRole;
-import org.example.wecambackend.repos.CouncilMemberRepository;
+import org.example.wecambackend.repos.council.CouncilMemberRepository;
 import org.example.wecambackend.util.user.CurrentUserUtil;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;

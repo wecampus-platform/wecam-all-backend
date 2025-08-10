@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.model.user.UserInformation;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.dto.responseDTO.ProfileImageResponse;
-import org.example.wecambackend.repos.UserInformationRepository;
+import org.example.wecambackend.repos.user.UserInformationRepository;
 import org.example.wecambackend.service.client.common.filesave.FilePath;
 import org.example.wecambackend.service.client.common.filesave.FileStorageService;
 import org.springframework.stereotype.Service;

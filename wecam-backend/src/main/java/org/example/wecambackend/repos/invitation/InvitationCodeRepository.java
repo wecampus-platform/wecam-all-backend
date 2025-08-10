@@ -1,4 +1,4 @@
-package org.example.wecambackend.repos;
+package org.example.wecambackend.repos.invitation;
 
 
 import org.example.model.enums.CodeType;

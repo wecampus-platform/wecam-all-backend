@@ -1,4 +1,4 @@
-package org.example.wecambackend.repos;
+package org.example.wecambackend.repos.todo;
 
 import org.example.model.todo.Todo;
 

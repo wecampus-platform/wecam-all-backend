@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.wecambackend.dto.responseDTO.OrganizationSimpleResponse;
 import org.example.wecambackend.dto.responseDTO.UniversitySimpleResponse;
 import org.example.wecambackend.repos.organization.OrganizationRepository;
-import org.example.wecambackend.repos.SchoolRepository;
+import org.example.wecambackend.repos.school.SchoolRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

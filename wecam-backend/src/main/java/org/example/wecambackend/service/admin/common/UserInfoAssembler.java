@@ -4,9 +4,7 @@ import lombok.AllArgsConstructor;
 import org.example.model.user.User;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.dto.responseDTO.CouncilVisibleUserDTO;
-import org.example.wecambackend.repos.UserInformationRepository;
-import org.example.wecambackend.repos.UserPrivateRepository;
-import org.example.wecambackend.repos.UserRepository;
+import org.example.wecambackend.repos.user.UserPrivateRepository;
 import org.springframework.stereotype.Component;
 import java.util.Optional;
 

@@ -1,4 +1,4 @@
-package org.example.wecambackend.repos;
+package org.example.wecambackend.repos.council;
 
 import org.example.model.common.BaseEntity;
 import org.example.model.council.CouncilMember;
