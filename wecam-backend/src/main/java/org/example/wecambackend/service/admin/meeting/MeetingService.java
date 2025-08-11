@@ -2,31 +2,24 @@ package org.example.wecambackend.service.admin.meeting;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.model.category.Category;
+import org.example.model.category.CategoryAssignment;
 import org.example.model.common.BaseEntity;
 import org.example.model.council.Council;
 import org.example.model.council.CouncilMember;
-import org.example.model.meeting.Meeting;
-import org.example.model.meeting.MeetingAttendee;
-import org.example.model.meeting.MeetingFile;
 import org.example.model.enums.MeetingAttendanceStatus;
 import org.example.model.enums.MeetingRole;
-import org.example.model.user.User;
+import org.example.model.meeting.*;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
-import org.example.wecambackend.dto.request.meeting.MeetingCreateRequest;
+import org.example.wecambackend.dto.request.meeting.MeetingUpsertRequest;
 import org.example.wecambackend.dto.response.meeting.MeetingResponse;
-import org.example.wecambackend.repos.council.CouncilMemberRepository;
-import org.example.wecambackend.repos.council.CouncilRepository;
-import org.example.wecambackend.repos.meeting.MeetingAttendeeRepository;
-import org.example.wecambackend.repos.meeting.MeetingFileRepository;
-import org.example.wecambackend.repos.meeting.MeetingRepository;
-import org.example.wecambackend.repos.user.UserRepository;
-import org.example.wecambackend.repos.category.CategoryRepository;
 import org.example.wecambackend.repos.category.CategoryAssignmentRepository;
-import org.example.model.category.Category;
-import org.example.model.category.CategoryAssignment;
-import org.example.wecambackend.service.client.common.filesave.FileStorageService;
+import org.example.wecambackend.repos.category.CategoryRepository;
+import org.example.wecambackend.repos.council.CouncilMemberRepository;
+import org.example.wecambackend.repos.meeting.*;
 import org.example.wecambackend.service.client.common.filesave.FilePath;
+import org.example.wecambackend.service.client.common.filesave.FileStorageService;
 import org.example.wecambackend.util.FileValidationUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.Optional;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -47,8 +41,6 @@ public class MeetingService {
     private final MeetingFileRepository meetingFileRepository;
     private final MeetingAttendeeRepository meetingAttendeeRepository;
     private final CouncilMemberRepository councilMemberRepository;
-    private final CouncilRepository councilRepository;
-    private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final CategoryAssignmentRepository categoryAssignmentRepository;
     private final FileStorageService fileStorageService;
@@ -57,43 +49,39 @@ public class MeetingService {
      * 회의록 생성
      */
     @Transactional
-    public MeetingResponse createMeeting(MeetingCreateRequest request, Long userId) {
+    public MeetingResponse createMeeting(MeetingUpsertRequest request, Long userId) {
         // CouncilContextHolder에서 현재 학생회 ID 가져오기
         Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
 
-        // 1. 사용자 및 학생회 존재 확인
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.USER_NOT_FOUND));
-
-        Council council = councilRepository.findById(councilId)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
-
-        // 2. 사용자가 해당 학생회에 소속되어 있는지 확인
+        // 1. 사용자가 해당 학생회에 소속되어 있는지 확인 (CouncilMember 조회)
         CouncilMember councilMember = councilMemberRepository
                 .findByUserUserPkIdAndCouncilIdAndStatus(userId, councilId, BaseEntity.Status.ACTIVE)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MISMATCH));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MEMBER_NOT_FOUND));
 
-        // 3. 회의록 엔티티 생성
+        // 2. 회의록 엔티티 생성 (councilId로 Council 객체 생성)
         Meeting meeting = Meeting.builder()
                 .title(request.getTitle())
                 .meetingDateTime(request.getMeetingDateTime())
                 .location(request.getLocation())
                 .content(request.getContent())
-                .council(council)
+                .council(Council.builder().id(councilId).build())
                 .createdBy(councilMember)
                 .build();
 
         Meeting savedMeeting = meetingRepository.save(meeting);
 
-        // 4. 참석자 정보 저장
+        // 3. 참석자 정보 저장
         if (request.getAttendees() != null && !request.getAttendees().isEmpty()) {
-            saveMeetingAttendees(request.getAttendees(), savedMeeting);
+            saveOrUpdateMeetingAttendees(request.getAttendees(), savedMeeting);
         }
 
-        // 5. 카테고리 할당
-        if (request.getCategoryId() != null) {
-            saveCategoryAssignment(request.getCategoryId(), savedMeeting.getId(), councilId);
+        // 4. 카테고리 할당
+        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            saveOrUpdateCategoryAssignments(request.getCategoryIds(), savedMeeting.getId(), councilId);
         }
+
+        log.info("회의록 생성 완료: 회의록 ID {}, 제목: {}, 생성자 ID {}",
+                savedMeeting.getId(), savedMeeting.getTitle(), userId);
 
         return convertToResponse(savedMeeting);
     }
@@ -102,28 +90,25 @@ public class MeetingService {
      * 회의록에 파일 추가 업로드
      */
     @Transactional
-    public MeetingResponse addFilesToMeeting(Long meetingId, List<MultipartFile> files, Long userId) {
+    public MeetingResponse addFilesToMeeting(Long meetingId, Long userId, List<MultipartFile> files) {
         Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
 
-        // 사용자 검증 및 권한 확인
-        userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.USER_NOT_FOUND));
-
-        councilMemberRepository
-                .findByUserUserPkIdAndCouncilIdAndStatus(userId, councilId, BaseEntity.Status.ACTIVE)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MISMATCH));
-
-        // 회의록 조회 및 학생회 일치 확인
         Meeting meeting = meetingRepository.findById(meetingId)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.MEETING_NOT_FOUND));
-        if (!meeting.getCouncil().getId().equals(councilId)) {
-            throw new BaseException(BaseResponseStatus.COUNCIL_MISMATCH);
-        }
 
-        // 작성자만 업로드 가능 확인
-        Long creatorUserId = meeting.getCreatedBy().getUser().getUserPkId();
-        if (!creatorUserId.equals(userId)) {
-            throw new BaseException(BaseResponseStatus.ONLY_AUTHOR_CAN_MODIFY);
+        // 작성자 검증
+        CouncilMember me = councilMemberRepository
+                .findByUserUserPkIdAndCouncilIdAndStatus(userId, councilId, BaseEntity.Status.ACTIVE)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MEMBER_NOT_FOUND));
+
+        // 기존 ACTIVE 상태의 첨부파일 개수 확인
+        long existingFileCount = meetingFileRepository.countByMeetingIdAndStatus(meetingId, BaseEntity.Status.ACTIVE);
+        long newFileCount = files != null ? files.size() : 0;
+        
+        // 최대 3개 제한 확인
+        if (existingFileCount + newFileCount > 3) {
+            log.warn("첨부파일 개수 초과: 기존 {}개 + 신규 {}개 > 최대 3개", existingFileCount, newFileCount);
+            throw new BaseException(BaseResponseStatus.FILE_COUNT_EXCEEDED);
         }
 
         // 파일 검증 및 저장
@@ -138,40 +123,132 @@ public class MeetingService {
     }
 
     /**
-     * 참석자 정보 저장
-     * TODO 구성원 별로 참석, 불참 또는 지각처리 해서 기록하게 할 수도 있음.
-     * TODO 참석자 별 역할 (참석자, 진행자, 기록자)도 기록 가능
-     * 지금은 일단 참석 정보만 저장하고, 역할도 다 참석자로 처리하는 중
+     * 회의록 수정 (파일 제외)
      */
-    private void saveMeetingAttendees(List<MeetingCreateRequest.MeetingAttendeeRequest> attendeeRequests, 
-                                    Meeting meeting) {
-        List<MeetingAttendee> attendees = new ArrayList<>();
-        
-        for (MeetingCreateRequest.MeetingAttendeeRequest request : attendeeRequests) {
-            CouncilMember member = councilMemberRepository.findById(request.getCouncilMemberId())
-                    .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MEMBER_NOT_FOUND));
+    @Transactional
+    public MeetingResponse updateMeeting(Long meetingId, MeetingUpsertRequest request, Long userId) {
+        Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
 
-            MeetingAttendanceStatus status = MeetingAttendanceStatus.PRESENT;
-            if (request.getAttendanceStatus() != null) {
-                status = request.getAttendanceStatus();
-            }
+        // @CheckCouncilEntity가 이미 검증을 수행함
+        Meeting meeting = meetingRepository.findById(meetingId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.MEETING_NOT_FOUND));
 
-            MeetingRole role = MeetingRole.ATTENDEE;
-            if (request.getRole() != null) {
-                role = request.getRole();
-            }
+        // 작성자 권한 검증
+        CouncilMember changedBy = councilMemberRepository
+                .findByUserUserPkIdAndCouncilIdAndStatus(userId, councilId, BaseEntity.Status.ACTIVE)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MEMBER_NOT_FOUND));
 
-            MeetingAttendee attendee = MeetingAttendee.builder()
-                    .meeting(meeting)
-                    .councilMember(member)
-                    .attendanceStatus(status)
-                    .role(role)
-                    .build();
-
-            attendees.add(attendee);
+        // 회의록 작성자와 현재 사용자 비교
+        Long meetingCreatorUserId = meeting.getCreatedBy().getUser().getUserPkId();
+        if (!meetingCreatorUserId.equals(userId)) {
+            throw new BaseException(BaseResponseStatus.ONLY_AUTHOR_CAN_MODIFY);
         }
 
-        meetingAttendeeRepository.saveAll(attendees);
+        if (request.getTitle() != null && !Objects.equals(meeting.getTitle(), request.getTitle())) {
+            log.info("회의록 제목 변경: {} -> {}", meeting.getTitle(), request.getTitle());
+            meeting.setTitle(request.getTitle());
+        }
+        
+        if (request.getMeetingDateTime() != null && !Objects.equals(meeting.getMeetingDateTime(), request.getMeetingDateTime())) {
+            log.info("회의 일시 변경: {} -> {}", meeting.getMeetingDateTime(), request.getMeetingDateTime());
+            meeting.setMeetingDateTime(request.getMeetingDateTime());
+        }
+        
+        if (request.getLocation() != null && !Objects.equals(meeting.getLocation(), request.getLocation())) {
+            log.info("회의 장소 변경: {} -> {}", meeting.getLocation(), request.getLocation());
+            meeting.setLocation(request.getLocation());
+        }
+        
+        if (request.getContent() != null && !Objects.equals(meeting.getContent(), request.getContent())) {
+            log.info("회의 내용 변경: 회의록 ID {}", meetingId);
+            meeting.setContent(request.getContent());
+        }
+
+        // 참석자 업데이트 (필드 전달 시에만)
+        if (request.getAttendees() != null) {
+            saveOrUpdateMeetingAttendees(request.getAttendees(), meeting);
+        }
+
+        // 카테고리 업데이트 (필드 전달 시에만)
+        if (request.getCategoryIds() != null) {
+            saveOrUpdateCategoryAssignments(request.getCategoryIds(), meeting.getId(), councilId);
+        }
+
+        return convertToResponse(meeting);
+    }
+
+    /**
+     * 참석자 정보 저장 및 수정
+     * - 제거: 기존에 있고 요청에는 없는 참석자 → deleteAll
+     * - 추가: 요청에는 있고 기존에는 없는 참석자 → saveAll
+     * - 변경: 둘 다 존재하지만 상태/역할이 달라진 경우 → 엔티티 값만 변경 (JPA dirty checking)
+     */
+    private void saveOrUpdateMeetingAttendees(List<MeetingUpsertRequest.MeetingAttendeeRequest> requests,
+                                     Meeting meeting) {
+        // 기존 참석자 로드
+        List<MeetingAttendee> existingAttendees = meetingAttendeeRepository.findByMeetingIdOrderByCreatedAtAsc(meeting.getId());
+
+        // 기존 참석자 Map<memberId, attendee>
+        java.util.Map<Long, MeetingAttendee> existingByMemberId = new java.util.HashMap<>();
+        for (MeetingAttendee attendee : existingAttendees) {
+            Long memberId = attendee.getCouncilMember().getId();
+            existingByMemberId.put(memberId, attendee);
+        }
+
+        // 요청된 참석자 memberId 집합 및 추가할 목록
+        java.util.Set<Long> incomingMemberIds = new java.util.HashSet<>();
+        List<MeetingAttendee> toAdd = new ArrayList<>();
+
+        for (MeetingUpsertRequest.MeetingAttendeeRequest req : requests) {
+            Long memberId = req.getCouncilMemberId();
+            incomingMemberIds.add(memberId);
+
+            MeetingAttendanceStatus newStatus = req.getAttendanceStatus() != null
+                    ? req.getAttendanceStatus()
+                    : MeetingAttendanceStatus.PRESENT;
+            MeetingRole newRole = req.getRole() != null
+                    ? req.getRole()
+                    : MeetingRole.ATTENDEE;
+
+            MeetingAttendee existing = existingByMemberId.get(memberId);
+            if (existing == null) {
+                // 추가 대상
+                CouncilMember member = councilMemberRepository.findById(memberId)
+                        .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MEMBER_NOT_FOUND));
+
+                MeetingAttendee attendee = MeetingAttendee.builder()
+                        .meeting(meeting)
+                        .councilMember(member)
+                        .attendanceStatus(newStatus)
+                        .role(newRole)
+                        .build();
+                toAdd.add(attendee);
+            } else {
+                // 변경 대상: 상태/역할이 달라졌다면 값을 갱신 → dirty checking으로 반영됨
+                if (existing.getAttendanceStatus() != newStatus) {
+                    existing.setAttendanceStatus(newStatus);
+                }
+                if (existing.getRole() != newRole) {
+                    existing.setRole(newRole);
+                }
+            }
+        }
+
+        // 제거 대상: 기존에는 있으나 요청에는 없는 참석자들
+        List<MeetingAttendee> toRemove = new ArrayList<>();
+        for (MeetingAttendee oldAttendee : existingAttendees) {
+            Long memberId = oldAttendee.getCouncilMember().getId();
+            if (!incomingMemberIds.contains(memberId)) {
+                toRemove.add(oldAttendee);
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            meetingAttendeeRepository.deleteAll(toRemove);
+        }
+        if (!toAdd.isEmpty()) {
+            meetingAttendeeRepository.saveAll(toAdd);
+        }
     }
 
     /**
@@ -220,21 +297,48 @@ public class MeetingService {
     }
 
     /**
-     * 카테고리 할당 저장
+     * 카테고리 할당 여러 개 저장 (기존 할당과 비교하여 다를 때만 INACTIVE로 변경하고 새로운 할당 생성)
      */
-    private void saveCategoryAssignment(Long categoryId, Long meetingId, Long councilId) {
-        // 카테고리가 해당 학생회에 속하는지 확인
-        Category category = categoryRepository.findByIdAndCouncilId(categoryId, councilId)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.CATEGORY_NOT_FOUND));
-
-        // 카테고리 할당 생성
-        CategoryAssignment categoryAssignment = CategoryAssignment.create(
-                category, 
-                CategoryAssignment.EntityType.MEETING, 
-                meetingId
-        );
-
-        categoryAssignmentRepository.save(categoryAssignment);
+    private void saveOrUpdateCategoryAssignments(List<Long> categoryIds, Long meetingId, Long councilId) {
+        // 1. 기존 모든 ACTIVE 상태의 할당 조회
+        List<CategoryAssignment> existingAssignments = categoryAssignmentRepository
+                .findAllByEntityTypeAndEntityIdAndStatus(CategoryAssignment.EntityType.MEETING, meetingId, BaseEntity.Status.ACTIVE);
+        
+        // 2. 기존 할당의 카테고리 ID 집합
+        java.util.Set<Long> existingCategoryIds = existingAssignments.stream()
+                .map(assignment -> assignment.getCategory().getId())
+                .collect(java.util.stream.Collectors.toSet());
+        
+        // 3. 요청된 카테고리 ID 집합
+        java.util.Set<Long> requestedCategoryIds = new java.util.HashSet<>(categoryIds);
+        
+        // 4. 카테고리 비교: 다를 때만 기존 할당을 삭제하고 새로 생성
+        if (!existingCategoryIds.equals(requestedCategoryIds)) {
+            log.info("카테고리 변경 감지: 기존 {} -> 요청 {}", existingCategoryIds, requestedCategoryIds);
+            
+            // 기존 할당들을 모두 삭제 (Soft Delete가 아닌 Hard Delete)
+            if (!existingAssignments.isEmpty()) {
+                categoryAssignmentRepository.deleteAll(existingAssignments);
+                log.info("기존 카테고리 할당 {}개 삭제 완료", existingAssignments.size());
+            }
+            
+            // 새로운 할당 생성 (ACTIVE)
+            for (Long categoryId : categoryIds) {
+                Category category = categoryRepository.findByIdAndCouncilId(categoryId, councilId)
+                        .orElseThrow(() -> new BaseException(BaseResponseStatus.CATEGORY_NOT_FOUND));
+                
+                CategoryAssignment newAssignment = CategoryAssignment.create(
+                        category, 
+                        CategoryAssignment.EntityType.MEETING, 
+                        meetingId
+                );
+                categoryAssignmentRepository.save(newAssignment);
+                
+                log.info("새로운 카테고리 할당 생성: 회의록 ID {}, 카테고리 ID {}", meetingId, categoryId);
+            }
+        } else {
+            log.info("카테고리 변경 없음: 기존과 동일한 카테고리 유지");
+        }
     }
 
     /**
@@ -252,8 +356,9 @@ public class MeetingService {
                         .build())
                 .toList();
 
-        // 첨부파일 정보 조회
-        List<MeetingFile> files = meetingFileRepository.findByMeetingIdOrderByCreatedAtAsc(meeting.getId());
+        // 첨부파일 정보 조회 
+        List<MeetingFile> files = meetingFileRepository.findByMeetingIdAndStatusOrderByCreatedAtAsc(
+                meeting.getId(), BaseEntity.Status.ACTIVE);
         List<MeetingResponse.MeetingFileResponse> fileResponses = files.stream()
                 .map(file -> MeetingResponse.MeetingFileResponse.builder()
                         .id(file.getId())
@@ -265,14 +370,16 @@ public class MeetingService {
                 .toList();
 
         // 카테고리 정보 조회
-        String categoryName = null;
-        Long categoryId = null;
+        List<Long> categoryIds = new ArrayList<>();
+        List<String> categoryNames = new ArrayList<>();
         if (meeting.getId() != null) {
-            Optional<CategoryAssignment> categoryAssignment = categoryAssignmentRepository
-                    .findByEntityTypeAndEntityId(CategoryAssignment.EntityType.MEETING, meeting.getId());
-            if (categoryAssignment.isPresent()) {
-                categoryName = categoryAssignment.get().getCategory().getName();
-                categoryId = categoryAssignment.get().getCategory().getId();
+            // ACTIVE 상태의 카테고리 할당 모두 조회
+            List<CategoryAssignment> categoryAssignments = categoryAssignmentRepository
+                    .findAllByEntityTypeAndEntityIdAndStatus(CategoryAssignment.EntityType.MEETING, meeting.getId(), BaseEntity.Status.ACTIVE);
+            
+            for (CategoryAssignment assignment : categoryAssignments) {
+                categoryIds.add(assignment.getCategory().getId());
+                categoryNames.add(assignment.getCategory().getName());
             }
         }
 
@@ -284,8 +391,8 @@ public class MeetingService {
                 .content(meeting.getContent())
                 .createdById(meeting.getCreatedBy().getId())
                 .createdByName(meeting.getCreatedBy().getUser().getName())
-                .categoryId(categoryId)
-                .categoryName(categoryName)
+                .categoryIds(categoryIds)
+                .categoryNames(categoryNames)
                 .attendees(attendeeResponses)
                 .files(fileResponses)
                 .createdAt(meeting.getCreatedAt())

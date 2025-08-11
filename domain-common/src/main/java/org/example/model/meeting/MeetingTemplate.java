@@ -7,9 +7,7 @@ import org.example.model.council.Council;
 import org.example.model.council.CouncilMember;
 
 @Entity
-@Table(name = "meeting_template", uniqueConstraints = {
-    @UniqueConstraint(name = "UK_meeting_template_default", columnNames = {"council_id", "is_default"})
-})
+@Table(name = "meeting_template")
 @Getter
 @Setter
 @NoArgsConstructor

@@ -1,6 +1,7 @@
 package org.example.wecambackend.repos.category;
 
 import org.example.model.category.CategoryAssignment;
+import org.example.model.common.BaseEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,6 +15,16 @@ public interface CategoryAssignmentRepository extends JpaRepository<CategoryAssi
      * 특정 엔티티 타입과 ID에 대한 카테고리 할당 조회
      */
     Optional<CategoryAssignment> findByEntityTypeAndEntityId(CategoryAssignment.EntityType entityType, Long entityId);
+
+    /**
+     * 특정 엔티티 타입과 ID에 대한 ACTIVE 상태의 카테고리 할당 조회
+     */
+    Optional<CategoryAssignment> findByEntityTypeAndEntityIdAndStatus(CategoryAssignment.EntityType entityType, Long entityId, BaseEntity.Status status);
+
+    /**
+     * 특정 엔티티 타입과 ID에 대한 모든 ACTIVE 상태의 카테고리 할당 목록 조회
+     */
+    List<CategoryAssignment> findAllByEntityTypeAndEntityIdAndStatus(CategoryAssignment.EntityType entityType, Long entityId, BaseEntity.Status status);
 
     /**
      * 특정 엔티티 타입과 ID에 대한 카테고리 할당 목록 조회

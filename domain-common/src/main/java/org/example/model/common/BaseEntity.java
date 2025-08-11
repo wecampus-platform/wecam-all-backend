@@ -47,8 +47,4 @@ public class BaseEntity {
     public void updateActive() {
         this.status = Status.ACTIVE;
     }
-
-    public void updateInactive() {
-        this.status = Status.INACTIVE;
-    }
 }

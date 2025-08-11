@@ -22,6 +22,7 @@ public enum BaseResponseStatus {
      */
     INVALID_FIELD_VALUE(false, HttpStatus.BAD_REQUEST.value(), "필드 값이 올바르지 않습니다."),
     INVALID_FILE_INPUT(false, HttpStatus.BAD_REQUEST.value(), "빈 파일은 저장할 수 없습니다."),
+    FILE_COUNT_EXCEEDED(false, HttpStatus.BAD_REQUEST.value(), "첨부파일은 최대 3개까지 업로드할 수 있습니다."),
     MISSING_COUNCIL_ID_HEADER(false, HttpStatus.BAD_REQUEST.value(), "X-Council-Id 헤더가 없습니다."),
     PATH_VARIABLE_NOT_FOUND(false, HttpStatus.BAD_REQUEST.value(), "요청 경로 변수 정보를 찾을 수 없습니다."),
     EMPTY_FILENAME(false, HttpStatus.BAD_REQUEST.value(), "파일명이 비어 있습니다."),
