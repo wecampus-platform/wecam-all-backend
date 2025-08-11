@@ -36,11 +36,11 @@ public class MeetingResponse {
     @Schema(description = "회의록 생성자 이름", example = "김학생")
     private String createdByName;
 
-    @Schema(description = "카테고리 ID", example = "1")
-    private Long categoryId;
+    @Schema(description = "카테고리 ID 목록", example = "[1, 2, 3]")
+    private List<Long> categoryIds;
 
-    @Schema(description = "카테고리명", example = "정기회의")
-    private String categoryName;
+    @Schema(description = "카테고리명 목록", example = "[\"MT\", \"OT\", \"새터\"]")
+    private List<String> categoryNames;
 
     @Schema(description = "참석자 목록")
     private List<MeetingAttendeeResponse> attendees;

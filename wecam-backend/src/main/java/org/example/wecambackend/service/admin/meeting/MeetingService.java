@@ -370,16 +370,16 @@ public class MeetingService {
                 .toList();
 
         // 카테고리 정보 조회
-        String categoryName = null;
-        Long categoryId = null;
+        List<Long> categoryIds = new ArrayList<>();
+        List<String> categoryNames = new ArrayList<>();
         if (meeting.getId() != null) {
-            // ACTIVE 상태의 카테고리 할당만 조회 (첫 번째 것만 사용)
+            // ACTIVE 상태의 카테고리 할당 모두 조회
             List<CategoryAssignment> categoryAssignments = categoryAssignmentRepository
                     .findAllByEntityTypeAndEntityIdAndStatus(CategoryAssignment.EntityType.MEETING, meeting.getId(), BaseEntity.Status.ACTIVE);
-            if (!categoryAssignments.isEmpty()) {
-                CategoryAssignment categoryAssignment = categoryAssignments.get(0);
-                categoryName = categoryAssignment.getCategory().getName();
-                categoryId = categoryAssignment.getCategory().getId();
+            
+            for (CategoryAssignment assignment : categoryAssignments) {
+                categoryIds.add(assignment.getCategory().getId());
+                categoryNames.add(assignment.getCategory().getName());
             }
         }
 
@@ -391,8 +391,8 @@ public class MeetingService {
                 .content(meeting.getContent())
                 .createdById(meeting.getCreatedBy().getId())
                 .createdByName(meeting.getCreatedBy().getUser().getName())
-                .categoryId(categoryId)
-                .categoryName(categoryName)
+                .categoryIds(categoryIds)
+                .categoryNames(categoryNames)
                 .attendees(attendeeResponses)
                 .files(fileResponses)
                 .createdAt(meeting.getCreatedAt())
