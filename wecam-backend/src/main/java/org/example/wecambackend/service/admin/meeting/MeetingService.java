@@ -60,36 +60,29 @@ public class MeetingService {
         // CouncilContextHolder에서 현재 학생회 ID 가져오기
         Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
 
-        // 1. 사용자 및 학생회 존재 확인
-        userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.USER_NOT_FOUND));
-
-        Council council = councilRepository.findById(councilId)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
-
-        // 2. 사용자가 해당 학생회에 소속되어 있는지 확인
+        // 1. 사용자가 해당 학생회에 소속되어 있는지 확인 (CouncilMember 조회)
         CouncilMember councilMember = councilMemberRepository
                 .findByUserUserPkIdAndCouncilIdAndStatus(userId, councilId, BaseEntity.Status.ACTIVE)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MISMATCH));
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MEMBER_NOT_FOUND));
 
-        // 3. 회의록 엔티티 생성
+        // 2. 회의록 엔티티 생성 (councilId로 Council 객체 생성)
         Meeting meeting = Meeting.builder()
                 .title(request.getTitle())
                 .meetingDateTime(request.getMeetingDateTime())
                 .location(request.getLocation())
                 .content(request.getContent())
-                .council(council)
+                .council(Council.builder().id(councilId).build())  // ID만으로 Council 객체 생성
                 .createdBy(councilMember)
                 .build();
 
         Meeting savedMeeting = meetingRepository.save(meeting);
 
-        // 4. 참석자 정보 저장
+        // 3. 참석자 정보 저장
         if (request.getAttendees() != null && !request.getAttendees().isEmpty()) {
             saveMeetingAttendees(request.getAttendees(), savedMeeting);
         }
 
-        // 5. 카테고리 할당
+        // 4. 카테고리 할당
         if (request.getCategoryId() != null) {
             saveCategoryAssignment(request.getCategoryId(), savedMeeting.getId(), councilId);
         }
@@ -101,29 +94,11 @@ public class MeetingService {
      * 회의록에 파일 추가 업로드
      */
     @Transactional
-    public MeetingResponse addFilesToMeeting(Long meetingId, List<MultipartFile> files, Long userId) {
+    public MeetingResponse addFilesToMeeting(Long meetingId, List<MultipartFile> files) {
         Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
 
-        // 사용자 검증 및 권한 확인
-        userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.USER_NOT_FOUND));
-
-        councilMemberRepository
-                .findByUserUserPkIdAndCouncilIdAndStatus(userId, councilId, BaseEntity.Status.ACTIVE)
-                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MISMATCH));
-
-        // 회의록 조회 및 학생회 일치 확인
         Meeting meeting = meetingRepository.findById(meetingId)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.MEETING_NOT_FOUND));
-        if (!meeting.getCouncil().getId().equals(councilId)) {
-            throw new BaseException(BaseResponseStatus.COUNCIL_MISMATCH);
-        }
-
-        // 작성자만 업로드 가능 확인
-        Long creatorUserId = meeting.getCreatedBy().getUser().getUserPkId();
-        if (!creatorUserId.equals(userId)) {
-            throw new BaseException(BaseResponseStatus.ONLY_AUTHOR_CAN_MODIFY);
-        }
 
         // 파일 검증 및 저장
         if (files != null && !files.isEmpty()) {

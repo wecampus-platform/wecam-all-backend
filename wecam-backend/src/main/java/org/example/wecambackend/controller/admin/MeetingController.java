@@ -9,13 +9,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.wecambackend.common.response.BaseResponse;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
+import org.example.wecambackend.config.security.annotation.CheckOwner;
+import org.example.wecambackend.config.security.annotation.CheckCouncilEntity;
 import org.example.wecambackend.dto.request.meeting.MeetingCreateRequest;
 import org.example.wecambackend.dto.response.meeting.MeetingResponse;
 import org.example.wecambackend.service.admin.meeting.MeetingService;
 import org.springframework.http.MediaType;
+import org.example.model.meeting.Meeting;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.example.model.council.Council;
 
 import java.util.List;
 
@@ -28,7 +32,7 @@ public class MeetingController {
 
     private final MeetingService meetingService;
 
-    @IsCouncil
+    @IsCouncil  // 현재 로그인한 사용자가 X-Council-Id 헤더의 학생회에 소속되어 있는지 검증
     @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "회의록 생성",
@@ -47,7 +51,9 @@ public class MeetingController {
             return new BaseResponse<>(response);
     }
 
-    @IsCouncil
+    @IsCouncil  // 현재 로그인한 사용자가 X-Council-Id 헤더의 학생회에 소속되어 있는지 검증
+    @CheckCouncilEntity(idParam = "meetingId", entityClass = Meeting.class)  // 해당 회의록이 현재 접속한 학생회에 속하는지 검증
+    @CheckOwner(entity = Meeting.class, idParam = "meetingId", authorGetter = "getCreatedBy.getUser.getUserPkId")  // 현재 사용자가 해당 회의록의 작성자인지 검증
     @PostMapping(value = "/{meetingId}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(
             summary = "회의록 첨부파일 업로드",
@@ -64,7 +70,7 @@ public class MeetingController {
             @RequestPart(value = "files", required = true) List<MultipartFile> files,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-            MeetingResponse response = meetingService.addFilesToMeeting(meetingId, files, userDetails.getId());
+            MeetingResponse response = meetingService.addFilesToMeeting(meetingId, files);
             return new BaseResponse<>(response);
     }
 }
