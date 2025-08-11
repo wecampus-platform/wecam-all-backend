@@ -26,7 +26,7 @@ public class Meeting extends BaseEntity {
     private Long id;
 
     // 회의록 제목
-    @Column(name = "title", length = 200, nullable = false)
+    @Column(name = "title", length = 200, nullable = true)
     private String title;
 
     // 회의 장소
@@ -34,7 +34,7 @@ public class Meeting extends BaseEntity {
     private String location;
 
     // 회의 일시
-    @Column(name = "meeting_datetime", nullable = false)
+    @Column(name = "meeting_datetime", nullable = true)
     private LocalDateTime meetingDateTime;
 
     // 회의 내용 (마크다운)

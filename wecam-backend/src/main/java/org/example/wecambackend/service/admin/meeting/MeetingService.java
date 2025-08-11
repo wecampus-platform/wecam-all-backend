@@ -10,7 +10,6 @@ import org.example.model.meeting.MeetingAttendee;
 import org.example.model.meeting.MeetingFile;
 import org.example.model.enums.MeetingAttendanceStatus;
 import org.example.model.enums.MeetingRole;
-import org.example.model.user.User;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.dto.request.meeting.MeetingCreateRequest;
@@ -62,7 +61,7 @@ public class MeetingService {
         Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
 
         // 1. 사용자 및 학생회 존재 확인
-        User user = userRepository.findById(userId)
+        userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.USER_NOT_FOUND));
 
         Council council = councilRepository.findById(councilId)
