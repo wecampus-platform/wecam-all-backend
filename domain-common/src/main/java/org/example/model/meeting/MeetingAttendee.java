@@ -8,9 +8,7 @@ import org.example.model.enums.MeetingAttendanceStatus;
 import org.example.model.enums.MeetingRole;
 
 @Entity
-@Table(name = "meeting_attendee", uniqueConstraints = {
-    @UniqueConstraint(name = "UK_meeting_attendee", columnNames = {"meeting_id", "council_member_id"})
-})
+@Table(name = "meeting_attendee")
 @Getter
 @Setter
 @NoArgsConstructor

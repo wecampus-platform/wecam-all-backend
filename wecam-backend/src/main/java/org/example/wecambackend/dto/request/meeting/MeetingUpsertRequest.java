@@ -12,8 +12,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "회의록 생성 요청 DTO")
-public class MeetingCreateRequest {
+@Schema(description = "회의록 생성/수정 요청 DTO")
+public class MeetingUpsertRequest {
 
     @Schema(description = "회의록 제목", example = "2025년 1학기 정기회의")
     private String title;
@@ -27,8 +27,8 @@ public class MeetingCreateRequest {
     @Schema(description = "회의 내용 (마크다운)", example = "# 회의 안건\n1. 학생회 예산 현황\n2. 다음 달 행사 계획\n3. 기타 논의사항")
     private String content;
 
-    @Schema(description = "카테고리 ID", example = "1")
-    private Long categoryId;
+    @Schema(description = "카테고리 ID 목록 (다중 선택 가능)", example = "[1, 2, 3]")
+    private List<Long> categoryIds;
 
     @Schema(description = "참석자 목록")
     private List<MeetingAttendeeRequest> attendees;

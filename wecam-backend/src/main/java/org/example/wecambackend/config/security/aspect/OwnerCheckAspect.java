@@ -1,24 +1,19 @@
 package org.example.wecambackend.config.security.aspect;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.example.model.todo.Todo;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.CheckOwner;
-import org.example.wecambackend.config.security.annotation.CheckTodoAccess;
-import org.hibernate.LazyInitializationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -41,7 +36,6 @@ public class OwnerCheckAspect {
      * - 현재 사용자와 작성자 ID를 비교해 불일치 시 예외 발생
      */
     @Around("@annotation(checkOwner)")
-    @Transactional(readOnly = true)
     public Object checkOwnership(ProceedingJoinPoint joinPoint, CheckOwner checkOwner) throws Throwable {
         Long currentUserId = getCurrentUserId(); // 현재 로그인한 사용자 ID
 
@@ -54,20 +48,12 @@ public class OwnerCheckAspect {
             throw new BaseException(BaseResponseStatus.ENTITY_NOT_FOUND); // 예: 존재하지 않는 게시글
         }
 
-        try {
-            // 엔티티에서 작성자 ID 추출 (예: getAuthor().getId() 식의 getter chain)
-            Long authorId = extractAuthorId(entity, checkOwner.authorGetter());
+        // 엔티티에서 작성자 ID 추출 (예: getAuthor().getId() 식의 getter chain)
+        Long authorId = extractAuthorId(entity, checkOwner.authorGetter());
 
-            // 현재 사용자와 비교
-            if (!authorId.equals(currentUserId)) {
-                throw new BaseException(BaseResponseStatus.ONLY_AUTHOR_CAN_MODIFY); // 작성자 아님
-            }
-        } catch (LazyInitializationException e) {
-            // 세션 문제로 인해 작성자 정보 로드 실패 시 일관된 예외로 변환
-            throw new BaseException(BaseResponseStatus.ONLY_AUTHOR_CAN_MODIFY);
-        } catch (ReflectiveOperationException e) {
-            // 리플렉션 실패 시 접근 거부로 처리
-            throw new BaseException(BaseResponseStatus.ACCESS_DENIED);
+        // 현재 사용자와 비교
+        if (!authorId.equals(currentUserId)) {
+            throw new BaseException(BaseResponseStatus.ONLY_AUTHOR_CAN_MODIFY); // 작성자 아님
         }
 
         // 모든 검증 통과 시 원래 메서드 실행
