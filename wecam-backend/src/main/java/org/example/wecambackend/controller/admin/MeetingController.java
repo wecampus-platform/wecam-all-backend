@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.wecambackend.common.response.BaseResponse;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
-import org.example.wecambackend.config.security.annotation.CheckOwner;
 import org.example.wecambackend.config.security.annotation.CheckCouncilEntity;
 import org.example.wecambackend.dto.request.meeting.MeetingUpsertRequest;
 import org.example.wecambackend.dto.response.meeting.MeetingResponse;
@@ -19,9 +18,11 @@ import org.example.model.meeting.Meeting;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-
+import org.example.wecambackend.dto.request.meeting.MeetingListRequest;
+import org.example.wecambackend.dto.response.meeting.MeetingListResponse;
 import java.util.List;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 
 @RestController
 @RequestMapping("/admin/council/{councilName}/meeting")
@@ -93,5 +94,36 @@ public class MeetingController {
     ) {
             MeetingResponse response = meetingService.updateMeeting(meetingId, request, userDetails.getId());
             return new BaseResponse<>(response);
+    }
+
+    @IsCouncil
+    @GetMapping
+    @Operation(
+            summary = "회의록 목록 조회",
+            description = "필터링과 정렬을 지원하는 회의록 목록을 조회합니다.",
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true),
+                    @Parameter(name = "categoryId", description = "필터 : 카테고리 ID", in = ParameterIn.QUERY, required = false),
+                    @Parameter(name = "attendeeId", description = "필터 : 참석자 ID", in = ParameterIn.QUERY, required = false),
+                    @Parameter(name = "sortOrder", description = "정렬 기준", in = ParameterIn.QUERY, required = false, 
+                              schema = @Schema(allowableValues = {"LATEST", "OLDEST"}, 
+                                             description = "LATEST: 최신순, OLDEST: 오래된순"))
+            }
+    )
+    public BaseResponse<List<MeetingListResponse>> getMeetingList(
+            @PathVariable("councilName") String councilName,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
+            @RequestParam(value = "attendeeId", required = false) Long attendeeId,
+            @RequestParam(value = "sortOrder", defaultValue = "LATEST") MeetingListRequest.SortOrder sortOrder) {
+
+        MeetingListRequest request = MeetingListRequest.builder()
+                .categoryId(categoryId)
+                .attendeeId(attendeeId)
+                .sortOrder(sortOrder)
+                .build();
+
+        List<MeetingListResponse> response = meetingService.getMeetingList(request);
+        return new BaseResponse<>(response);
     }
 }

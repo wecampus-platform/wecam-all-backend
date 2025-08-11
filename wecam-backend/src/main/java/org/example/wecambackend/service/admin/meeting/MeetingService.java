@@ -14,6 +14,11 @@ import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.dto.request.meeting.MeetingUpsertRequest;
 import org.example.wecambackend.dto.response.meeting.MeetingResponse;
+import org.example.wecambackend.dto.request.meeting.MeetingListRequest;
+import org.example.wecambackend.dto.response.meeting.MeetingListResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.example.wecambackend.repos.category.CategoryAssignmentRepository;
 import org.example.wecambackend.repos.category.CategoryRepository;
 import org.example.wecambackend.repos.council.CouncilMemberRepository;
@@ -29,8 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.Optional;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -397,6 +402,61 @@ public class MeetingService {
                 .files(fileResponses)
                 .createdAt(meeting.getCreatedAt())
                 .updatedAt(meeting.getUpdatedAt())
+                .build();
+    }
+
+    /**
+     * 회의록 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<MeetingListResponse> getMeetingList(MeetingListRequest request) {
+        Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
+
+        List<Meeting> meetings = meetingRepository.findMeetingsWithFilters(
+                councilId, 
+                request.getCategoryId(), 
+                request.getAttendeeId(), 
+                request.getSortOrder().name());
+
+        List<MeetingListResponse> response = meetings.stream()
+                .map(this::convertToMeetingListResponse)
+                .collect(Collectors.toList());
+        
+        return response;
+    }
+
+    /**
+     * Meeting 엔티티를 MeetingListResponse로 변환
+     */
+    private MeetingListResponse convertToMeetingListResponse(Meeting meeting) {
+        // 카테고리 정보 조회
+        List<CategoryAssignment> categoryAssignments = categoryAssignmentRepository
+                .findAllByEntityTypeAndEntityIdAndStatus(
+                        CategoryAssignment.EntityType.MEETING, 
+                        meeting.getId(), 
+                        BaseEntity.Status.ACTIVE);
+        
+        List<String> categoryNames = categoryAssignments.stream()
+                .map(ca -> ca.getCategory().getName())
+                .collect(java.util.stream.Collectors.toList());
+
+        // 작성자 프로필 썸네일 이미지 URL 생성
+        String profileThumbnailUrl = null;
+        if (meeting.getCreatedBy().getUser().getUserInformation() != null 
+            && meeting.getCreatedBy().getUser().getUserInformation().getProfileImagePath() != null) {
+            String profilePath = meeting.getCreatedBy().getUser().getUserInformation().getProfileImagePath();
+            profileThumbnailUrl = "/uploads/" + profilePath.replaceFirst("PROFILE/", "PROFILE_THUMB/");
+        }
+
+        return MeetingListResponse.builder()
+                .meetingId(meeting.getId())
+                .title(meeting.getTitle())
+                .meetingDateTime(meeting.getMeetingDateTime())
+                .categoryNames(categoryNames)
+                .authorName(meeting.getCreatedBy().getUser().getName())
+                .authorId(meeting.getCreatedBy().getUser().getUserPkId())
+                .authorProfileThumbnailUrl(profileThumbnailUrl)
+                .createdAt(meeting.getCreatedAt())
                 .build();
     }
 }
