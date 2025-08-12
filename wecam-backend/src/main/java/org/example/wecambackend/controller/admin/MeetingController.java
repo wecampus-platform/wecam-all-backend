@@ -12,6 +12,7 @@ import org.example.wecambackend.config.security.annotation.IsCouncil;
 import org.example.wecambackend.config.security.annotation.CheckCouncilEntity;
 import org.example.wecambackend.dto.request.meeting.MeetingUpsertRequest;
 import org.example.wecambackend.dto.response.meeting.MeetingResponse;
+import org.example.wecambackend.dto.response.meeting.MeetingTemplateListResponse;
 import org.example.wecambackend.service.admin.meeting.MeetingService;
 import org.springframework.http.MediaType;
 import org.example.model.meeting.Meeting;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.example.wecambackend.dto.request.meeting.MeetingListRequest;
 import org.example.wecambackend.dto.response.meeting.MeetingListResponse;
-import org.example.wecambackend.dto.response.meeting.MeetingTemplateListResponse;
+import org.example.wecambackend.dto.response.meeting.MeetingTemplateResponse;
 import java.util.List;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -161,6 +162,24 @@ public class MeetingController {
     )
     public BaseResponse<List<MeetingTemplateListResponse>> getTemplateList(@PathVariable("councilName") String councilName) {
         List<MeetingTemplateListResponse> response = meetingService.getTemplateList();
+        return new BaseResponse<>(response);
+    }
+
+    @IsCouncil
+    @GetMapping(value = "/templates/{templateId}")
+    @Operation(
+            summary = "회의록 템플릿 상세 조회",
+            description = "특정 회의록 템플릿의 상세 내용을 조회합니다.",
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "templateId", description = "템플릿 ID", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
+            }
+    )
+    public BaseResponse<MeetingTemplateResponse> getTemplateDetail(
+            @PathVariable("councilName") String councilName,
+            @PathVariable("templateId") Long templateId) {
+        MeetingTemplateResponse response = meetingService.getTemplateDetail(templateId);
         return new BaseResponse<>(response);
     }
 }

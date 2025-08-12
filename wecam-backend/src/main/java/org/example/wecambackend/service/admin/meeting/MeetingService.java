@@ -17,6 +17,7 @@ import org.example.wecambackend.dto.response.meeting.MeetingResponse;
 import org.example.wecambackend.dto.request.meeting.MeetingListRequest;
 import org.example.wecambackend.dto.response.meeting.MeetingListResponse;
 import org.example.wecambackend.dto.response.meeting.MeetingTemplateListResponse;
+import org.example.wecambackend.dto.response.meeting.MeetingTemplateResponse;
 import org.example.wecambackend.repos.category.CategoryAssignmentRepository;
 import org.example.wecambackend.repos.category.CategoryRepository;
 import org.example.wecambackend.repos.council.CouncilMemberRepository;
@@ -436,12 +437,30 @@ public class MeetingService {
     @Transactional(readOnly = true)
     public List<MeetingTemplateListResponse> getTemplateList() {
         Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
-        
+
         List<MeetingTemplate> templates = meetingTemplateRepository.findByCouncilIdOrCommon(councilId);
-        
+
         return templates.stream()
                 .map(this::convertToTemplateListResponse)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 회의록 템플릿 상세 조회
+     */
+    @Transactional(readOnly = true)
+    public MeetingTemplateResponse getTemplateDetail(Long templateId) {
+        Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
+        
+        MeetingTemplate template = meetingTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.TEMPLATE_NOT_FOUND));
+        
+        // 해당 템플릿이 현재 학생회에 속하거나 전체 공통 템플릿인지 확인
+        if (template.getCouncil() != null && !template.getCouncil().getId().equals(councilId)) {
+            throw new BaseException(BaseResponseStatus.TEMPLATE_ACCESS_DENIED);
+        }
+        
+        return convertToTemplateResponse(template);
     }
 
     /**
@@ -487,6 +506,18 @@ public class MeetingService {
                 .templateId(template.getId())
                 .templateName(template.getName())
                 .isDefault(template.getIsDefault())
+                .build();
+    }
+
+    /**
+     * MeetingTemplate 엔티티를 MeetingTemplateResponse 변환
+     */
+    private MeetingTemplateResponse convertToTemplateResponse(MeetingTemplate template) {
+        return MeetingTemplateResponse.builder()
+                .templateId(template.getId())
+                .templateName(template.getName())
+                .description(template.getDescription())
+                .content(template.getContentTemplate())
                 .build();
     }
 }
