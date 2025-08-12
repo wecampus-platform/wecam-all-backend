@@ -16,9 +16,7 @@ import org.example.wecambackend.dto.request.meeting.MeetingUpsertRequest;
 import org.example.wecambackend.dto.response.meeting.MeetingResponse;
 import org.example.wecambackend.dto.request.meeting.MeetingListRequest;
 import org.example.wecambackend.dto.response.meeting.MeetingListResponse;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.example.wecambackend.dto.response.meeting.MeetingTemplateListResponse;
 import org.example.wecambackend.repos.category.CategoryAssignmentRepository;
 import org.example.wecambackend.repos.category.CategoryRepository;
 import org.example.wecambackend.repos.council.CouncilMemberRepository;
@@ -45,6 +43,7 @@ public class MeetingService {
     private final CategoryRepository categoryRepository;
     private final CategoryAssignmentRepository categoryAssignmentRepository;
     private final FileStorageService fileStorageService;
+    private final MeetingTemplateRepository meetingTemplateRepository;
 
     /**
      * 회의록 생성
@@ -432,6 +431,20 @@ public class MeetingService {
     }
 
     /**
+     * 회의록 템플릿 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<MeetingTemplateListResponse> getTemplateList() {
+        Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
+        
+        List<MeetingTemplate> templates = meetingTemplateRepository.findByCouncilIdOrCommon(councilId);
+        
+        return templates.stream()
+                .map(this::convertToTemplateListResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Meeting 엔티티를 MeetingListResponse로 변환
      */
     private MeetingListResponse convertToMeetingListResponse(Meeting meeting) {
@@ -463,6 +476,17 @@ public class MeetingService {
                 .authorId(meeting.getCreatedBy().getUser().getUserPkId())
                 .authorProfileThumbnailUrl(profileThumbnailUrl)
                 .createdAt(meeting.getCreatedAt())
+                .build();
+    }
+
+    /**
+     * MeetingTemplate 엔티티를 MeetingTemplateListResponse 변환
+     */
+    private MeetingTemplateListResponse convertToTemplateListResponse(MeetingTemplate template) {
+        return MeetingTemplateListResponse.builder()
+                .templateId(template.getId())
+                .templateName(template.getName())
+                .isDefault(template.getIsDefault())
                 .build();
     }
 }

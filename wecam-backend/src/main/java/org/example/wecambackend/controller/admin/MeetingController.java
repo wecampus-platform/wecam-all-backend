@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.example.wecambackend.dto.request.meeting.MeetingListRequest;
 import org.example.wecambackend.dto.response.meeting.MeetingListResponse;
+import org.example.wecambackend.dto.response.meeting.MeetingTemplateListResponse;
 import java.util.List;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -145,6 +146,21 @@ public class MeetingController {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         MeetingResponse response = meetingService.getMeeting(meetingId);
+        return new BaseResponse<>(response);
+    }
+
+    @IsCouncil
+    @GetMapping(value = "/templates")
+    @Operation(
+            summary = "회의록 템플릿 목록 조회",
+            description = "특정 학생회의 회의록 템플릿 목록을 조회합니다. isDefault가 true면 기본 템플릿입니다. (true 아니면 null)",
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
+            }
+    )
+    public BaseResponse<List<MeetingTemplateListResponse>> getTemplateList(@PathVariable("councilName") String councilName) {
+        List<MeetingTemplateListResponse> response = meetingService.getTemplateList();
         return new BaseResponse<>(response);
     }
 }
