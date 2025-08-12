@@ -134,7 +134,7 @@ public class MeetingController {
     @GetMapping(value = "/{meetingId}")
     @Operation(
             summary = "회의록 상세 조회",
-            description = "특정 회의록 내용을 상세 조회합니다. (첨부파일 제외)",
+            description = "특정 회의록 내용을 상세 조회합니다.",
             parameters = {
                     @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
                     @Parameter(name = "meetingId", description = "회의록 ID", in = ParameterIn.PATH, required = true),
@@ -181,5 +181,28 @@ public class MeetingController {
             @PathVariable("templateId") Long templateId) {
         MeetingTemplateResponse response = meetingService.getTemplateDetail(templateId);
         return new BaseResponse<>(response);
+    }
+
+    @IsCouncil
+    @CheckCouncilEntity(idParam = "meetingId", entityClass = Meeting.class)
+    @DeleteMapping(value = "/{meetingId}/files/{fileId}")
+    @Operation(
+            summary = "회의록 첨부파일 삭제",
+            description = "특정 회의록의 첨부파일을 soft delete로 삭제합니다.",
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "meetingId", description = "회의록 ID", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "fileId", description = "첨부파일 ID", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
+            }
+    )
+    public BaseResponse<String> deleteMeetingFile(
+            @PathVariable("meetingId") Long meetingId,
+            @PathVariable("fileId") Long fileId,
+            @PathVariable("councilName") String councilName,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        meetingService.deleteMeetingFile(meetingId, fileId, userDetails.getId());
+        return new BaseResponse<>("첨부파일이 성공적으로 삭제되었습니다.");
     }
 }

@@ -65,6 +65,7 @@ public enum BaseResponseStatus {
     // 404: Not Found
     REQUEST_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 요청을 찾을 수 없습니다."),
     FILE_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "삭제하려는 파일이 존재하지 않습니다."),
+    FILE_ALREADY_DELETED(false, HttpStatus.NOT_FOUND.value(), "이미 삭제된 파일입니다."),
     ENTITY_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 대상을 찾을 수 없습니다."),
     COUNCIL_NOT_FOUND(false,  HttpStatus.NOT_FOUND.value(), "학생회 정보가 없습니다."),
     ORGANIZATION_NOT_FOUND(false,  HttpStatus.NOT_FOUND.value(), "해당 조직을 찾을 수 없습니다."),

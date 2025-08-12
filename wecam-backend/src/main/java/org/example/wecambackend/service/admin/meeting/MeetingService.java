@@ -350,7 +350,7 @@ public class MeetingService {
         List<MeetingAttendee> attendees = meetingAttendeeRepository.findByMeetingIdOrderByCreatedAtAsc(meeting.getId());
         List<MeetingResponse.MeetingAttendeeResponse> attendeeResponses = attendees.stream()
                 .map(attendee -> MeetingResponse.MeetingAttendeeResponse.builder()
-                        .id(attendee.getId())
+                        .attendeeId(attendee.getId())
                         .memberName(attendee.getCouncilMember().getUser().getName())
                         .attendanceStatus(attendee.getAttendanceStatus())
                         .role(attendee.getRole())
@@ -362,7 +362,7 @@ public class MeetingService {
                 meeting.getId(), BaseEntity.Status.ACTIVE);
         List<MeetingResponse.MeetingFileResponse> fileResponses = files.stream()
                 .map(file -> MeetingResponse.MeetingFileResponse.builder()
-                        .id(file.getId())
+                        .fildId(file.getId())
                         .fileName(file.getFileName())
                         .fileUrl(file.getFileUrl())
                         .fileSize(file.getFileSize())
@@ -385,7 +385,7 @@ public class MeetingService {
         }
 
         return MeetingResponse.builder()
-                .id(meeting.getId())
+                .meetingId(meeting.getId())
                 .title(meeting.getTitle())
                 .meetingDateTime(meeting.getMeetingDateTime())
                 .location(meeting.getLocation())
@@ -519,5 +519,46 @@ public class MeetingService {
                 .description(template.getDescription())
                 .content(template.getContentTemplate())
                 .build();
+    }
+
+    /**
+     * 회의록 첨부파일 삭제 (soft delete)
+     */
+    @Transactional
+    public void deleteMeetingFile(Long meetingId, Long fileId, Long userId) {
+        Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
+
+        // 1. 첨부파일 존재 여부 및 해당 회의록에 속하는지 확인
+        MeetingFile meetingFile = meetingFileRepository.findById(fileId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.FILE_NOT_FOUND));
+
+        if (!meetingFile.getMeeting().getId().equals(meetingId)) {
+            throw new BaseException(BaseResponseStatus.FILE_NOT_FOUND);
+        }
+
+        // 2. 회의록 정보 가져오기 (권한 검증용)
+        Meeting meeting = meetingFile.getMeeting();
+
+        // 3. 첨부파일이 이미 삭제된 상태인지 확인
+        if (meetingFile.getStatus() == BaseEntity.Status.INACTIVE) {
+            throw new BaseException(BaseResponseStatus.FILE_ALREADY_DELETED);
+        }
+
+        // 4. 사용자 권한 확인 (회의록 작성자만 삭제 가능)
+        CouncilMember councilMember = councilMemberRepository
+                .findByUserUserPkIdAndCouncilIdAndStatus(userId, councilId, BaseEntity.Status.ACTIVE)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MEMBER_NOT_FOUND));
+
+        // 회의록 작성자인 경우에만 삭제 가능
+        if (!meeting.getCreatedBy().getId().equals(councilMember.getId())) {
+            throw new BaseException(BaseResponseStatus.ACCESS_DENIED);
+        }
+
+        // 5. 첨부파일 soft delete 실행
+        meetingFile.delete();
+        meetingFileRepository.save(meetingFile);
+
+        log.info("회의록 첨부파일 삭제 완료: 회의록 ID {}, 파일 ID {}, 삭제자 ID {}",
+                meetingId, fileId, userId);
     }
 }
