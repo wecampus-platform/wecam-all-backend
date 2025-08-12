@@ -14,6 +14,10 @@ import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.dto.request.meeting.MeetingUpsertRequest;
 import org.example.wecambackend.dto.response.meeting.MeetingResponse;
+import org.example.wecambackend.dto.request.meeting.MeetingListRequest;
+import org.example.wecambackend.dto.response.meeting.MeetingListResponse;
+import org.example.wecambackend.dto.response.meeting.MeetingTemplateListResponse;
+import org.example.wecambackend.dto.response.meeting.MeetingTemplateResponse;
 import org.example.wecambackend.repos.category.CategoryAssignmentRepository;
 import org.example.wecambackend.repos.category.CategoryRepository;
 import org.example.wecambackend.repos.council.CouncilMemberRepository;
@@ -25,12 +29,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.Optional;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -44,6 +44,7 @@ public class MeetingService {
     private final CategoryRepository categoryRepository;
     private final CategoryAssignmentRepository categoryAssignmentRepository;
     private final FileStorageService fileStorageService;
+    private final MeetingTemplateRepository meetingTemplateRepository;
 
     /**
      * 회의록 생성
@@ -349,7 +350,7 @@ public class MeetingService {
         List<MeetingAttendee> attendees = meetingAttendeeRepository.findByMeetingIdOrderByCreatedAtAsc(meeting.getId());
         List<MeetingResponse.MeetingAttendeeResponse> attendeeResponses = attendees.stream()
                 .map(attendee -> MeetingResponse.MeetingAttendeeResponse.builder()
-                        .id(attendee.getId())
+                        .attendeeId(attendee.getId())
                         .memberName(attendee.getCouncilMember().getUser().getName())
                         .attendanceStatus(attendee.getAttendanceStatus())
                         .role(attendee.getRole())
@@ -361,7 +362,7 @@ public class MeetingService {
                 meeting.getId(), BaseEntity.Status.ACTIVE);
         List<MeetingResponse.MeetingFileResponse> fileResponses = files.stream()
                 .map(file -> MeetingResponse.MeetingFileResponse.builder()
-                        .id(file.getId())
+                        .fildId(file.getId())
                         .fileName(file.getFileName())
                         .fileUrl(file.getFileUrl())
                         .fileSize(file.getFileSize())
@@ -384,7 +385,7 @@ public class MeetingService {
         }
 
         return MeetingResponse.builder()
-                .id(meeting.getId())
+                .meetingId(meeting.getId())
                 .title(meeting.getTitle())
                 .meetingDateTime(meeting.getMeetingDateTime())
                 .location(meeting.getLocation())
@@ -398,5 +399,166 @@ public class MeetingService {
                 .createdAt(meeting.getCreatedAt())
                 .updatedAt(meeting.getUpdatedAt())
                 .build();
+    }
+
+    /**
+     * 회의록 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<MeetingListResponse> getMeetingList(MeetingListRequest request) {
+        Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
+
+        List<Meeting> meetings = meetingRepository.findMeetingsWithFilters(
+                councilId, 
+                request.getCategoryId(), 
+                request.getAttendeeId(), 
+                request.getSortOrder().name());
+
+        List<MeetingListResponse> response = meetings.stream()
+                .map(this::convertToMeetingListResponse)
+                .collect(Collectors.toList());
+        
+        return response;
+    }
+
+    /**
+     * 회의록 상세 조회
+     */
+    @Transactional(readOnly = true)
+    public MeetingResponse getMeeting(Long meetingId) {
+        Optional<Meeting> meeting = meetingRepository.findById(meetingId);
+
+        return convertToResponse(meeting.get());
+    }
+
+    /**
+     * 회의록 템플릿 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<MeetingTemplateListResponse> getTemplateList() {
+        Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
+
+        List<MeetingTemplate> templates = meetingTemplateRepository.findByCouncilIdOrCommon(councilId);
+
+        return templates.stream()
+                .map(this::convertToTemplateListResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 회의록 템플릿 상세 조회
+     */
+    @Transactional(readOnly = true)
+    public MeetingTemplateResponse getTemplateDetail(Long templateId) {
+        Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
+        
+        MeetingTemplate template = meetingTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.TEMPLATE_NOT_FOUND));
+        
+        // 해당 템플릿이 현재 학생회에 속하거나 전체 공통 템플릿인지 확인
+        if (template.getCouncil() != null && !template.getCouncil().getId().equals(councilId)) {
+            throw new BaseException(BaseResponseStatus.TEMPLATE_ACCESS_DENIED);
+        }
+        
+        return convertToTemplateResponse(template);
+    }
+
+    /**
+     * Meeting 엔티티를 MeetingListResponse로 변환
+     */
+    private MeetingListResponse convertToMeetingListResponse(Meeting meeting) {
+        // 카테고리 정보 조회
+        List<CategoryAssignment> categoryAssignments = categoryAssignmentRepository
+                .findAllByEntityTypeAndEntityIdAndStatus(
+                        CategoryAssignment.EntityType.MEETING, 
+                        meeting.getId(), 
+                        BaseEntity.Status.ACTIVE);
+        
+        List<String> categoryNames = categoryAssignments.stream()
+                .map(ca -> ca.getCategory().getName())
+                .collect(java.util.stream.Collectors.toList());
+
+        // 작성자 프로필 썸네일 이미지 URL 생성
+        String profileThumbnailUrl = null;
+        if (meeting.getCreatedBy().getUser().getUserInformation() != null 
+            && meeting.getCreatedBy().getUser().getUserInformation().getProfileImagePath() != null) {
+            String profilePath = meeting.getCreatedBy().getUser().getUserInformation().getProfileImagePath();
+            profileThumbnailUrl = "/uploads/" + profilePath.replaceFirst("PROFILE/", "PROFILE_THUMB/");
+        }
+
+        return MeetingListResponse.builder()
+                .meetingId(meeting.getId())
+                .title(meeting.getTitle())
+                .meetingDateTime(meeting.getMeetingDateTime())
+                .categoryNames(categoryNames)
+                .authorName(meeting.getCreatedBy().getUser().getName())
+                .authorId(meeting.getCreatedBy().getUser().getUserPkId())
+                .authorProfileThumbnailUrl(profileThumbnailUrl)
+                .createdAt(meeting.getCreatedAt())
+                .build();
+    }
+
+    /**
+     * MeetingTemplate 엔티티를 MeetingTemplateListResponse 변환
+     */
+    private MeetingTemplateListResponse convertToTemplateListResponse(MeetingTemplate template) {
+        return MeetingTemplateListResponse.builder()
+                .templateId(template.getId())
+                .templateName(template.getName())
+                .isDefault(template.getIsDefault())
+                .build();
+    }
+
+    /**
+     * MeetingTemplate 엔티티를 MeetingTemplateResponse 변환
+     */
+    private MeetingTemplateResponse convertToTemplateResponse(MeetingTemplate template) {
+        return MeetingTemplateResponse.builder()
+                .templateId(template.getId())
+                .templateName(template.getName())
+                .description(template.getDescription())
+                .content(template.getContentTemplate())
+                .build();
+    }
+
+    /**
+     * 회의록 첨부파일 삭제 (soft delete)
+     */
+    @Transactional
+    public void deleteMeetingFile(Long meetingId, Long fileId, Long userId) {
+        Long councilId = org.example.wecambackend.common.context.CouncilContextHolder.getCouncilId();
+
+        // 1. 첨부파일 존재 여부 및 해당 회의록에 속하는지 확인
+        MeetingFile meetingFile = meetingFileRepository.findById(fileId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.FILE_NOT_FOUND));
+
+        if (!meetingFile.getMeeting().getId().equals(meetingId)) {
+            throw new BaseException(BaseResponseStatus.FILE_NOT_FOUND);
+        }
+
+        // 2. 회의록 정보 가져오기 (권한 검증용)
+        Meeting meeting = meetingFile.getMeeting();
+
+        // 3. 첨부파일이 이미 삭제된 상태인지 확인
+        if (meetingFile.getStatus() == BaseEntity.Status.INACTIVE) {
+            throw new BaseException(BaseResponseStatus.FILE_ALREADY_DELETED);
+        }
+
+        // 4. 사용자 권한 확인 (회의록 작성자만 삭제 가능)
+        CouncilMember councilMember = councilMemberRepository
+                .findByUserUserPkIdAndCouncilIdAndStatus(userId, councilId, BaseEntity.Status.ACTIVE)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MEMBER_NOT_FOUND));
+
+        // 회의록 작성자인 경우에만 삭제 가능
+        if (!meeting.getCreatedBy().getId().equals(councilMember.getId())) {
+            throw new BaseException(BaseResponseStatus.ACCESS_DENIED);
+        }
+
+        // 5. 첨부파일 soft delete 실행
+        meetingFile.delete();
+        meetingFileRepository.save(meetingFile);
+
+        log.info("회의록 첨부파일 삭제 완료: 회의록 ID {}, 파일 ID {}, 삭제자 ID {}",
+                meetingId, fileId, userId);
     }
 }

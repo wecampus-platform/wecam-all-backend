@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.model.council.CouncilDepartment;
 import org.example.model.council.CouncilDepartmentRole;
 import org.example.model.council.CouncilMember;
+import org.example.model.common.BaseEntity;
 import org.example.model.enums.MemberRole;
 import org.example.model.enums.ExitType;
 import org.example.model.enums.UserRole;
@@ -16,6 +17,7 @@ import org.example.wecambackend.dto.request.DepartmentAssignmentRequest;
 import org.example.wecambackend.dto.response.council.CouncilCompositionResponse;
 import org.example.wecambackend.dto.response.councilMember.CouncilMemberResponse;
 import org.example.wecambackend.dto.response.councilMember.CouncilMemberSearchResponse;
+import org.example.wecambackend.dto.response.councilMember.MemberSelectionResponse;
 import org.example.wecambackend.repos.council.CouncilDepartmentRepository;
 import org.example.wecambackend.repos.council.CouncilDepartmentRoleRepository;
 import org.example.wecambackend.repos.council.CouncilMemberRepository;
@@ -233,5 +235,63 @@ public class CouncilMemberService {
 
     public List<CouncilMemberResponse> getAllCouncilMembers(Long councilId) {
         return councilMemberRepository.findAllActiveMembersByCouncilId(councilId);
+    }
+
+    /**
+     * 회의록/캘린더/할일 할당 시 구성원 선택용 목록 조회
+     * 정렬: 본인 → 같은부서 → 나머지 (각 그룹 내 가나다순)
+     */
+    @Transactional(readOnly = true)
+    public List<MemberSelectionResponse> getMemberSelectionList(Long currentUserId) {
+        Long councilId = CouncilContextHolder.getCouncilId();
+
+        // 1. 현재 사용자의 CouncilMember 정보 조회
+        CouncilMember currentMember = councilMemberRepository
+                .findByUserUserPkIdAndCouncilIdAndStatus(currentUserId, councilId, BaseEntity.Status.ACTIVE)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_MEMBER_NOT_FOUND));
+        
+        // 2. 현재 학생회의 모든 활성 구성원 조회
+        List<CouncilMember> allMembers = councilMemberRepository.findAllActiveMembersWithDetailsByCouncilId(councilId);
+        
+        // 3. 정렬 로직: 본인 → 같은부서 → 나머지 (각 그룹 내 가나다순)
+        List<MemberSelectionResponse> sortedMembers = allMembers.stream()
+                .map(member -> {
+                    // 프로필 썸네일 URL 생성
+                    String profileThumbnailUrl = null;
+                    if (member.getUser().getUserInformation() != null 
+                        && member.getUser().getUserInformation().getProfileImagePath() != null) {
+                        String profilePath = member.getUser().getUserInformation().getProfileImagePath();
+                        profileThumbnailUrl = "/uploads/" + profilePath.replaceFirst("PROFILE/", "PROFILE_THUMB/");
+                    }
+                    
+                    return MemberSelectionResponse.builder()
+                            .councilMemberId(member.getId())
+                            .name(member.getUser().getName())
+                            .departmentName(member.getDepartment() != null ? member.getDepartment().getName() : null)
+                            .profileThumbnailUrl(profileThumbnailUrl)
+                            .build();
+                })
+                .sorted((m1, m2) -> {
+                    // 1순위: 본인
+                    if (m1.getCouncilMemberId().equals(currentMember.getId())) return -1;
+                    if (m2.getCouncilMemberId().equals(currentMember.getId())) return 1;
+                    
+                    // 2순위: 같은 부서
+                    boolean m1SameDept = m1.getDepartmentName() != null && 
+                                       m1.getDepartmentName().equals(currentMember.getDepartment() != null ? 
+                                           currentMember.getDepartment().getName() : null);
+                    boolean m2SameDept = m2.getDepartmentName() != null && 
+                                       m2.getDepartmentName().equals(currentMember.getDepartment() != null ? 
+                                           currentMember.getDepartment().getName() : null);
+                    
+                    if (m1SameDept && !m2SameDept) return -1;
+                    if (!m1SameDept && m2SameDept) return 1;
+                    
+                    // 3순위: 가나다순
+                    return m1.getName().compareTo(m2.getName());
+                })
+                .collect(java.util.stream.Collectors.toList());
+        
+        return sortedMembers;
     }
 }

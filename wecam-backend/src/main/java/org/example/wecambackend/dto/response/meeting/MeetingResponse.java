@@ -16,7 +16,7 @@ import java.util.List;
 public class MeetingResponse {
 
     @Schema(description = "회의록 고유 번호", example = "1")
-    private Long id;
+    private Long meetingId;
 
     @Schema(description = "회의록 제목", example = "2024년 1학기 정기회의")
     private String title;
@@ -61,7 +61,7 @@ public class MeetingResponse {
     @Schema(description = "회의 참석자 응답 DTO")
     public static class MeetingAttendeeResponse {
         @Schema(description = "참석자 고유 번호", example = "1")
-        private Long id;
+        private Long attendeeId;
         
         @Schema(description = "학생회 멤버 이름", example = "김학생")
         private String memberName;
@@ -80,7 +80,7 @@ public class MeetingResponse {
     @Schema(description = "회의 첨부파일 응답 DTO")
     public static class MeetingFileResponse {
         @Schema(description = "파일 고유 번호", example = "1")
-        private Long id;
+        private Long fildId;
         
         @Schema(description = "원본 파일명", example = "회의자료.pdf")
         private String fileName;

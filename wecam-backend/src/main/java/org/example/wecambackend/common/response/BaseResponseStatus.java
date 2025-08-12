@@ -65,6 +65,7 @@ public enum BaseResponseStatus {
     // 404: Not Found
     REQUEST_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 요청을 찾을 수 없습니다."),
     FILE_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "삭제하려는 파일이 존재하지 않습니다."),
+    FILE_ALREADY_DELETED(false, HttpStatus.NOT_FOUND.value(), "이미 삭제된 파일입니다."),
     ENTITY_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 대상을 찾을 수 없습니다."),
     COUNCIL_NOT_FOUND(false,  HttpStatus.NOT_FOUND.value(), "학생회 정보가 없습니다."),
     ORGANIZATION_NOT_FOUND(false,  HttpStatus.NOT_FOUND.value(), "해당 조직을 찾을 수 없습니다."),
@@ -73,6 +74,7 @@ public enum BaseResponseStatus {
     COUNCIL_MEMBER_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 구성원을 찾을 수 없습니다."),
     CATEGORY_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 카테고리가 존재하지 않습니다."),
     MEETING_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 회의가 존재하지 않습니다."),
+    TEMPLATE_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 템플릿이 존재하지 않습니다."),
     INVITE_CODE_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "해당 초대코드가 존재하지 않습니다."),
     PHONE_INFO_NOT_FOUND(false, HttpStatus.NOT_FOUND.value(), "전화번호 정보가 없습니다."),
     //로그인 시 이메일 정보 일치하지 않을 떄
@@ -89,6 +91,7 @@ public enum BaseResponseStatus {
     ROLE_REQUIRED(false, HttpStatus.FORBIDDEN.value(), "접근을 위해 필요한 권한이 부족합니다."),
     ONLY_AUTHOR_CAN_MODIFY(false, HttpStatus.FORBIDDEN.value(), "작성자만 수정할 수 있습니다."),
     INVALID_COUNCIL_ACCESS(false, HttpStatus.FORBIDDEN.value(), "요청한 조직에 대한 접근 권한이 없습니다."),
+    TEMPLATE_ACCESS_DENIED(false, HttpStatus.FORBIDDEN.value(), "해당 템플릿에 대한 접근 권한이 없습니다."),
 
 
     /**

@@ -11,6 +11,7 @@ import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
 import org.example.wecambackend.dto.response.councilMember.CouncilMemberResponse;
 import org.example.wecambackend.dto.response.councilMember.CouncilMemberSearchResponse;
+import org.example.wecambackend.dto.response.councilMember.MemberSelectionResponse;
 import org.example.wecambackend.service.admin.CouncilMemberService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -132,6 +133,24 @@ public class CouncilMemberController {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         List<CouncilMemberSearchResponse> response = councilMemberService.searchCouncilMembers(name);
+        return new BaseResponse<>(response);
+    }
+
+    @GetMapping("/selection")
+    @IsCouncil
+    @Operation(
+            summary = "구성원 선택용 목록 조회",
+            description = "회의록/캘린더/할일 할당 시 구성원을 선택할 수 있는 목록을 조회합니다. 정렬: 본인 → 같은부서 → 나머지 (각 그룹 내 가나다순)",
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
+            }
+    )
+    public BaseResponse<List<MemberSelectionResponse>> getMemberSelectionList(
+            @PathVariable("councilName") String councilName,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        
+        List<MemberSelectionResponse> response = councilMemberService.getMemberSelectionList(userDetails.getId());
         return new BaseResponse<>(response);
     }
 }
