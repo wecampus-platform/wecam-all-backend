@@ -30,11 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -423,6 +419,16 @@ public class MeetingService {
                 .collect(Collectors.toList());
         
         return response;
+    }
+
+    /**
+     * 회의록 상세 조회
+     */
+    @Transactional(readOnly = true)
+    public MeetingResponse getMeeting(Long meetingId) {
+        Optional<Meeting> meeting = meetingRepository.findById(meetingId);
+
+        return convertToResponse(meeting.get());
     }
 
     /**

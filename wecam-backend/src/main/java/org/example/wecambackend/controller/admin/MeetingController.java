@@ -126,4 +126,25 @@ public class MeetingController {
         List<MeetingListResponse> response = meetingService.getMeetingList(request);
         return new BaseResponse<>(response);
     }
+
+    @IsCouncil
+    @CheckCouncilEntity(idParam = "meetingId", entityClass = Meeting.class)
+    @GetMapping(value = "/{meetingId}")
+    @Operation(
+            summary = "회의록 상세 조회",
+            description = "특정 회의록 내용을 상세 조회합니다. (첨부파일 제외)",
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "meetingId", description = "회의록 ID", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
+            }
+    )
+    public BaseResponse<MeetingResponse> getMeeting(
+            @PathVariable("meetingId") Long meetingId,
+            @PathVariable("councilName") String councilName,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        MeetingResponse response = meetingService.getMeeting(meetingId);
+        return new BaseResponse<>(response);
+    }
 }
