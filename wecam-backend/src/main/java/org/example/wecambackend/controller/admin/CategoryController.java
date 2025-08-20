@@ -33,6 +33,7 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final CategoryQueryRepository categoryQueryRepository;
 
     // 특정 학생회에 속한 모든 카테고리를 조회
     @IsCouncil
@@ -76,5 +77,25 @@ public class CategoryController {
         return new BaseResponse<> (PageResponse.of(result));
     }
 
-    private final CategoryQueryRepository categoryQueryRepository;
+    @IsCouncil
+    @PostMapping("/create")
+    @Operation(
+            summary = "특정 학생회의 카테고리 생성",
+            description = "특정 학생회가 생성한 카테고리 생성. 생성할 카테고리 명만 받음!",
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
+            }
+    )
+    public BaseResponse<?> createCategory(
+            @RequestParam String categoryName,
+            @PathVariable String councilName,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long memberId = userDetails.getId();
+        Long councilId = CouncilContextHolder.getCouncilId();
+        categoryService.create(councilId, memberId, categoryName);
+        return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+    }
+
+
 }

@@ -117,7 +117,7 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
 """)
     List<Map<Long,String>> findUnassignedMembersByCouncilId(Long councilId);
 
-
+    Optional<CouncilMember> findByUserUserPkId(Long memberId);
 
     @Query( "SELECT new org.example.wecambackend.dto.response.council.CouncilCompositionResponse(" +
             "u.name, cm.memberRole, u.userPkId, u.enrollYear, d.name, dr.name)" +
@@ -178,5 +178,4 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
       AND cm.exit_type     = 'ACTIVE'
     """, nativeQuery = true)
     List<CompositionFlatRow> findCompositionFlat(@Param("councilId") Long councilId);
-
 }
