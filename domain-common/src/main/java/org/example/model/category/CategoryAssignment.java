@@ -9,8 +9,19 @@ import org.example.model.common.BaseEntity;
  * 할 일, 회의록, 일정 등 다양한 엔티티에 카테고리를 할당할 수 있도록 하는 중간 테이블.
  */
 @Entity
-@Table(name = "category_assignment")
-@Getter
+@Table(
+        name = "category_assignment",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_assignment_unique",
+                        columnNames = {"category_id", "entity_type", "entity_id"}
+                )
+        },
+        indexes = {
+                @Index(name = "idx_assignment_category", columnList = "category_id"),
+                @Index(name = "idx_assignment_entity", columnList = "entity_type, entity_id")
+        }
+)@Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
