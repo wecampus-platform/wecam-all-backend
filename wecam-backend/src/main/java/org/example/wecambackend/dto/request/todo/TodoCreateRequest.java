@@ -11,5 +11,6 @@ public class TodoCreateRequest {
     private LocalDateTime dueAt;
     private String title;
     private String content;
+    private List<Long> categoryIds;
     private List<Long> managers;
 }

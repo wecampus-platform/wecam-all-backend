@@ -4,6 +4,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.model.category.Category;
+import org.example.model.category.CategoryAssignment;
+import org.example.model.common.BaseEntity;
 import org.example.model.council.Council;
 import org.example.model.enums.ProgressStatus;
 import org.example.model.todo.Todo;
@@ -21,6 +24,8 @@ import org.example.wecambackend.dto.response.admin.AdminFileResponse;
 import org.example.wecambackend.dto.response.todo.TodoDetailResponse;
 import org.example.wecambackend.dto.response.todo.TodoSimpleResponse;
 import org.example.wecambackend.dto.response.todo.TodoSummaryResponse;
+import org.example.wecambackend.repos.category.CategoryAssignmentRepository;
+import org.example.wecambackend.repos.category.CategoryRepository;
 import org.example.wecambackend.repos.council.CouncilMemberRepository;
 import org.example.wecambackend.repos.todo.TodoFileRepository;
 import org.example.wecambackend.repos.todo.TodoManagerRepository;
@@ -55,9 +60,10 @@ public class TodoService {
     private final TodoFileRepository todoFileRepository;
     private final CouncilMemberRepository councilMemberRepository;
     private final UserInformationRepository userInformationRepository;
-
+    private final CategoryAssignmentRepository categoryAssignmentRepository;
     @PersistenceContext
     private EntityManager entityManager;
+    private final CategoryRepository categoryRepository;
 
     /**
      * [설명]
@@ -123,7 +129,63 @@ public class TodoService {
             }
 
         }
+
+        // 4. 카테고리 할당
+        // 카테고리 업데이트 (필드 전달 시에만)
+        if (request.getCategoryIds() != null) {
+            saveOrUpdateCategoryAssignments(request.getCategoryIds(), todo.getTodoId(), councilId);
+        }
+
+
     }
+
+
+
+    /**
+     * 카테고리 할당 여러 개 저장 (기존 할당과 비교하여 다를 때만 INACTIVE로 변경하고 새로운 할당 생성)
+     */
+    private void saveOrUpdateCategoryAssignments(List<Long> categoryIds, Long todoId, Long councilId) {
+        // 1. 기존 모든 ACTIVE 상태의 할당 조회
+        List<CategoryAssignment> existingAssignments = categoryAssignmentRepository
+                .findAllByEntityTypeAndEntityIdAndStatus(CategoryAssignment.EntityType.TODO, todoId, BaseEntity.Status.ACTIVE);
+
+        // 2. 기존 할당의 카테고리 ID 집합
+        java.util.Set<Long> existingCategoryIds = existingAssignments.stream()
+                .map(assignment -> assignment.getCategory().getId())
+                .collect(java.util.stream.Collectors.toSet());
+
+        // 3. 요청된 카테고리 ID 집합
+        java.util.Set<Long> requestedCategoryIds = new java.util.HashSet<>(categoryIds);
+
+        // 4. 카테고리 비교: 다를 때만 기존 할당을 삭제하고 새로 생성
+        if (!existingCategoryIds.equals(requestedCategoryIds)) {
+            log.info("카테고리 변경 감지: 기존 {} -> 요청 {}", existingCategoryIds, requestedCategoryIds);
+
+            // 기존 할당들을 모두 삭제 (Soft Delete가 아닌 Hard Delete)
+            if (!existingAssignments.isEmpty()) {
+                categoryAssignmentRepository.deleteAll(existingAssignments);
+                log.info("기존 카테고리 할당 {}개 삭제 완료", existingAssignments.size());
+            }
+
+            // 새로운 할당 생성 (ACTIVE)
+            for (Long categoryId : categoryIds) {
+                Category category = categoryRepository.findByIdAndCouncilId(categoryId, councilId)
+                        .orElseThrow(() -> new BaseException(BaseResponseStatus.CATEGORY_NOT_FOUND));
+
+                CategoryAssignment newAssignment = CategoryAssignment.create(
+                        category,
+                        CategoryAssignment.EntityType.TODO,
+                        todoId
+                );
+                categoryAssignmentRepository.save(newAssignment);
+
+                log.info("새로운 카테고리 할당 생성: 회의록 ID {}, 카테고리 ID {}", todoId, categoryId);
+            }
+        } else {
+            log.info("카테고리 변경 없음: 기존과 동일한 카테고리 유지");
+        }
+    }
+
 
 
     /**
