@@ -21,6 +21,7 @@ import org.example.wecambackend.dto.projection.TodoFileInfo;
 import org.example.wecambackend.dto.request.todo.TodoCreateRequest;
 import org.example.wecambackend.dto.request.todo.TodoUpdateRequest;
 import org.example.wecambackend.dto.response.admin.AdminFileResponse;
+import org.example.wecambackend.dto.response.category.CategoryListResponse;
 import org.example.wecambackend.dto.response.todo.TodoDetailResponse;
 import org.example.wecambackend.dto.response.todo.TodoSimpleResponse;
 import org.example.wecambackend.dto.response.todo.TodoSummaryResponse;
@@ -64,6 +65,7 @@ public class TodoService {
     @PersistenceContext
     private EntityManager entityManager;
     private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
     /**
      * [설명]
@@ -281,7 +283,7 @@ public class TodoService {
             entityManager.clear();
         }
 
-        // 🧠 todo가 clear 이후 detach되므로 다시 붙여야 함
+        // todo가 clear 이후 detach되므로 다시 붙여야 함
         Todo mergedTodo = entityManager.merge(todo);
 
         if (newIds.isEmpty()) {
@@ -321,6 +323,8 @@ public class TodoService {
                 .map(f -> new TodoFileInfo(f.getTodoFileId(), f.getOriginalFileName(), f.getFileUrl()))
                 .collect(Collectors.toList());
 
+        List<CategoryListResponse> categoryListResponses = categoryService.getCategories();
+
         return new TodoDetailResponse(
                 todo.getTodoId(),
                 todo.getTitle(),
@@ -330,7 +334,8 @@ public class TodoService {
                 managers,
                 createUserId,
                 createUserName,
-                files
+                files,
+                categoryListResponses
         );
     }
     //TODO: 다운로드 API 는 추후 구현
