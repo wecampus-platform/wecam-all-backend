@@ -179,7 +179,7 @@ public class TodoService {
                 );
                 categoryAssignmentRepository.save(newAssignment);
 
-                log.info("새로운 카테고리 할당 생성: 회의록 ID {}, 카테고리 ID {}", todoId, categoryId);
+                log.info("새로운 카테고리 할당 생성: 할일 ID {}, 카테고리 ID {}", todoId, categoryId);
             }
         } else {
             log.info("카테고리 변경 없음: 기존과 동일한 카테고리 유지");
@@ -237,6 +237,12 @@ public class TodoService {
                         .build();
                 todoFileRepository.save(todoFile);
             }
+        }
+
+
+        // 카테고리 업데이트 (필드 전달 시에만)
+        if (request.getCategoryIds() != null) {
+            saveOrUpdateCategoryAssignments(request.getCategoryIds(), todo.getTodoId(), councilId);
         }
     }
 
