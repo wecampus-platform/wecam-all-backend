@@ -44,11 +44,11 @@ public class FileAsset extends BaseEntity {
     private String fileUrl;
 
     @ManyToOne
-    @Column(name = "council",nullable = false)
+    @JoinColumn(name = "council_id",nullable = false)
     private Council council;
 
     @ManyToOne
-    @Column(name = "user",nullable = false)
+    @JoinColumn(name = "user_pk_id",nullable = false)
     private User user;
 
 
