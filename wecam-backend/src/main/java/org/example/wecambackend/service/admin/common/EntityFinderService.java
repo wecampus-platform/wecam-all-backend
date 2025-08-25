@@ -2,9 +2,11 @@ package org.example.wecambackend.service.admin.common;
 
 import lombok.RequiredArgsConstructor;
 import org.example.model.council.Council;
+import org.example.model.council.CouncilMember;
 import org.example.model.user.User;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
+import org.example.wecambackend.repos.council.CouncilMemberRepository;
 import org.example.wecambackend.repos.council.CouncilRepository;
 import org.example.wecambackend.repos.user.UserRepository;
 import org.springframework.stereotype.Service;
@@ -50,4 +52,11 @@ public class EntityFinderService {
         return councilRepository.findById(councilId)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
     }
+
+    public CouncilMember getCouncilMemberByIdOrThrow(Long memberId) {
+        return councilMemberRepository.findByUserUserPkId(memberId)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.COUNCIL_NOT_FOUND));
+    }
+
+    private final CouncilMemberRepository councilMemberRepository;
 }

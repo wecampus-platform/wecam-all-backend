@@ -12,7 +12,15 @@ import org.example.model.council.CouncilMember;
  * 같은 학생회 내에서는 카테고리명이 중복될 수 없습니다.
  */
 @Entity
-@Table(name = "category")
+@Table(
+        name = "category",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_category_council_name", columnNames = {"council_id", "name"})
+        },
+        indexes = {
+                @Index(name = "idx_category_council", columnList = "council_id")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor

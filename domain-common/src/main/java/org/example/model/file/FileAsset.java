@@ -1,4 +1,4 @@
-package org.example.model.todo;
+package org.example.model.file;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -6,20 +6,28 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.model.common.BaseEntity;
+import org.example.model.council.Council;
+import org.example.model.user.User;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Getter
-@Table(name = "todo_file")
+@Table(name = "file_Asset")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TodoFile extends BaseEntity {
+public class FileAsset extends BaseEntity {
 
-    // 파일 고유 ID (UUID, 16바이트 바이너리 저장)
+
+    // 파일 고유 번호
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "file_id")
+    private Long id;
+
+
     @Column(nullable = false, unique = true, columnDefinition = "BINARY(16)")
-    private UUID todoFileId;
+    private UUID uuid;
 
     // 원본 파일명
     @Column(name = "original_file_name", nullable = false)
@@ -37,29 +45,15 @@ public class TodoFile extends BaseEntity {
     @Column(name = "file_url")
     private String fileUrl;
 
-    // 연관된 할일 (FK)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "todo_id", nullable = false)
-    private Todo todo;
+    @ManyToOne
+    @JoinColumn(name = "council_id",nullable = false)
+    private Council council;
+
+    @ManyToOne
+    @JoinColumn(name = "user_pk_id",nullable = false)
+    private User user;
 
     @Column(name = "is_final", nullable = false)
     private boolean isFinal = false;              // TINYINT(1) ↔ boolean 자동 매핑
-
-    @Column(name = "final_set_by")
-    private Long finalSetBy;              // 굳이 연관관계 아니어도 OK (필요하면 @ManyToOne(User)로 변경)
-
-    @Column(name = "final_set_at")
-    private LocalDateTime finalSetAt;
-
-    @Builder
-    public TodoFile(UUID todoFileId, Todo todo, String originalFileName,
-                    String storedFileName, String filePath, String fileUrl) {
-        this.todoFileId = todoFileId;
-        this.todo = todo;
-        this.originalFileName = originalFileName;
-        this.storedFileName = storedFileName;
-        this.filePath = filePath;
-        this.fileUrl = fileUrl;
-    }
 
 }

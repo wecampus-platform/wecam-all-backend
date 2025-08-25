@@ -3,12 +3,19 @@ package org.example.wecambackend.service.admin;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.category.Category;
+import org.example.model.council.Council;
+import org.example.model.council.CouncilMember;
+import org.example.model.user.User;
+import org.example.wecambackend.common.exceptions.BaseException;
+import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.dto.response.category.CategoryListResponse;
 import org.example.wecambackend.repos.category.CategoryRepository;
+import org.example.wecambackend.service.admin.common.EntityFinderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -33,4 +40,25 @@ public class CategoryService {
                         .build())
                 .toList();
     }
+
+
+    @Transactional
+    public void create(Long councilId, Long memberId, String name) {
+        // 같은 이름이 ACTIVE로 이미 있으면 방어
+        if (categoryRepository.existsByCouncilIdAndName(
+                councilId, name)) {
+            throw new BaseException(BaseResponseStatus.REQUEST_DUPLICATED);
+        }
+        Council council = entityFinderService.getCouncilByIdOrThrow(councilId);
+        CouncilMember councilMember = entityFinderService.getCouncilMemberByIdOrThrow(memberId);
+        categoryRepository.save(
+                Category.builder()
+                        .council(council)
+                        .name(name)
+                        .createdMember(councilMember)
+                        .build()
+        );
+    }
+
+    private final EntityFinderService entityFinderService;
 }
