@@ -2,12 +2,14 @@ package org.example.model.file;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.model.common.BaseEntity;
 import org.example.model.council.Council;
 import org.example.model.user.User;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -51,5 +53,7 @@ public class FileAsset extends BaseEntity {
     @JoinColumn(name = "user_pk_id",nullable = false)
     private User user;
 
+    @Column(name = "is_final", nullable = false)
+    private boolean isFinal = false;              // TINYINT(1) ↔ boolean 자동 매핑
 
 }

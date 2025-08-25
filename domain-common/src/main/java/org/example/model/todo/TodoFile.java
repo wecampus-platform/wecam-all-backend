@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.model.common.BaseEntity;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -40,6 +41,15 @@ public class TodoFile extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "todo_id", nullable = false)
     private Todo todo;
+
+    @Column(name = "is_final", nullable = false)
+    private boolean isFinal = false;              // TINYINT(1) ↔ boolean 자동 매핑
+
+    @Column(name = "final_set_by")
+    private Long finalSetBy;              // 굳이 연관관계 아니어도 OK (필요하면 @ManyToOne(User)로 변경)
+
+    @Column(name = "final_set_at")
+    private LocalDateTime finalSetAt;
 
     @Builder
     public TodoFile(UUID todoFileId, Todo todo, String originalFileName,

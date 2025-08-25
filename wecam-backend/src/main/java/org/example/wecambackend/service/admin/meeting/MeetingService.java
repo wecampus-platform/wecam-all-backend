@@ -284,7 +284,7 @@ public class MeetingService {
             // MeetingFile 엔티티 생성
             return MeetingFile.builder()
                     .meeting(meeting)
-                    .fileName(file.getOriginalFilename())
+                    .originalFileName(file.getOriginalFilename())
                     .filePath(fileInfo.get("filePath"))
                     .fileUrl(fileInfo.get("fileUrl"))
                     .fileSize(file.getSize())
@@ -363,7 +363,7 @@ public class MeetingService {
         List<MeetingResponse.MeetingFileResponse> fileResponses = files.stream()
                 .map(file -> MeetingResponse.MeetingFileResponse.builder()
                         .fildId(file.getId())
-                        .fileName(file.getFileName())
+                        .fileName(file.getOriginalFileName())
                         .fileUrl(file.getFileUrl())
                         .fileSize(file.getFileSize())
                         .fileType(file.getFileType())
