@@ -15,10 +15,10 @@ import org.example.model.council.CouncilDepartmentRole;
 @Schema(description = "부서 역할 정보 응답 DTO")
 public class DepartmentRoleResponse {
     @Schema(description = "역할 ID", example = "1")
-    private Long id;
+    private Long roleId;
     
     @Schema(description = "역할명", example = "부장")
-    private String name;
+    private String roleName;
     
     @Schema(description = "역할 레벨 (숫자가 클수록 높은 권한)", example = "1")
     private Integer level;
