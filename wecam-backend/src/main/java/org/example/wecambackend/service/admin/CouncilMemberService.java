@@ -55,7 +55,7 @@ public class CouncilMemberService {
             if (r.getDepartmentId() == null) {
                 // 미배치
                 unassigned.add(new MemberItem(
-                        r.getUserId(), r.getUserName(), r.getUserCouncilRole(),
+                        r.getCouncilMemberId(), r.getUserName(), r.getUserCouncilRole(),
                         r.getDepartmentRoleId(), r.getDepartmentRoleName()
                 ));
                 continue;
@@ -67,10 +67,10 @@ public class CouncilMemberService {
             );
 
             // 부서만 있고 멤버가 없을 수 있음
-            if (r.getUserId() != null) {
+            if (r.getCouncilMemberId() != null) {
                 boolean isLead = isLeadRole(r.getUserCouncilRole());
                 (isLead ? block.lead() : block.sub()).add(new MemberItem(
-                        r.getUserId(), r.getUserName(), r.getUserCouncilRole(),
+                        r.getCouncilMemberId(), r.getUserName(), r.getUserCouncilRole(),
                         r.getDepartmentRoleId(), r.getDepartmentRoleName()
                 ));
             }
@@ -101,7 +101,7 @@ public class CouncilMemberService {
         }
     }
     public record MemberItem(
-            Long userId, String userName, String userCouncilRole,
+            Long councilMemberId, String userName, String userCouncilRole,
             Long departmentRoleId, String departmentRoleName
     ) {}
 
