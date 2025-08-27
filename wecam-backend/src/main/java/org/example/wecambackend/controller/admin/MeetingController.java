@@ -36,7 +36,7 @@ public class MeetingController {
     private final MeetingService meetingService;
 
     @IsCouncil  // 현재 로그인한 사용자가 X-Council-Id 헤더의 학생회에 소속되어 있는지 검증
-    @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
+        @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
             summary = "회의록 생성",
             description = "새로운 회의록을 생성합니다.",
