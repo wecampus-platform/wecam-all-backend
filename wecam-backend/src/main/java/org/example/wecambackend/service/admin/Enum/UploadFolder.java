@@ -4,6 +4,7 @@ public enum UploadFolder {
     TODO("todo"),
     NOTICE("notice"),
     AFFILIATION("affiliation"),
+    FILE_ASSET("fileAsset"),
     MEETING("meeting");
 
     private final String folderName;

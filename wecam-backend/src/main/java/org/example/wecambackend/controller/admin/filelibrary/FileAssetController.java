@@ -1,18 +1,24 @@
 package org.example.wecambackend.controller.admin.filelibrary;
 
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.wecambackend.common.context.CouncilContextHolder;
+import org.example.wecambackend.common.response.BaseResponse;
+import org.example.wecambackend.common.response.BaseResponseStatus;
+import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
 import org.example.wecambackend.dto.projection.FileItemDto;
 import org.example.wecambackend.dto.projection.FileLibraryFilter;
+import org.example.wecambackend.dto.request.FileUploadRequest;
+import org.example.wecambackend.dto.response.FileAssetResponse;
 import org.example.wecambackend.service.admin.filelibrary.FileLibraryService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -21,6 +27,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/admin/council/{councilName}/fileAsset")
@@ -109,5 +116,94 @@ public class FileAssetController {
         var filter = new FileLibraryFilter(councilId, sourceType, categoryId, finalOnly, q);
         return service.search(filter, PageRequest.of(page, size));
     }
+
+
+    @IsCouncil
+    @Operation(
+            summary = "새 파일 업로드",
+            description = """
+            file_asset에 파일을 저장하고, 선택한 카테고리를 category_assignment로 매핑합니다.
+            - entity_type은 'FILE_ASSET'로 고정됩니다.
+            - 파일 외의 텍스트 필드는 multipart form-data의 다른 파트로 전달하세요.
+            """
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description  = "업로드 성공",
+            content      = @Content(
+                    mediaType = "application/json",
+                    schema    = @Schema(implementation = FileAssetResponse.class)
+            )
+    )
+    @ApiResponse(responseCode = "400", description = "잘못된 요청(파일 누락/형식 오류 등)")
+    @ApiResponse(responseCode = "401", description = "인증 실패")
+    @ApiResponse(responseCode = "403", description = "권한 없음(다른 학생회 접근)")
+    @PostMapping(
+            value    = "/create",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public BaseResponse<?> createFileAsset(
+            @Parameter(
+                    name = "X-Council-Id",
+                    description = "현재 로그인한 학생회 ID",
+                    required = true,
+                    in = ParameterIn.HEADER,
+                    example = "303"
+            )
+            @RequestHeader("X-Council-Id") Long councilId,
+            @AuthenticationPrincipal UserDetailsImpl me,
+            @Parameter(
+                    description = "업로드할 실제 파일 (PDF/DOCX/이미지 등)",
+                    required = true,
+                    content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                            schema = @Schema(type = "string", format = "binary"))
+            )
+            @RequestPart("file") MultipartFile file,
+            @Parameter(
+                    description = """
+                파일의 부가 정보.
+                - categoryIds: 카테고리 ID 배열 (같은 키를 여러 번 보내거나 JSON 배열 모두 허용)
+                - isFinal: 최종본 여부
+                """,
+                    required = false,
+                    content = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(implementation = FileUploadRequest.class),
+                            examples = {
+                                    @ExampleObject(name="기본 예시",
+                                            value="""
+                        --boundary
+                        Content-Disposition: form-data; name="title"
+
+                        학생회_회의록_정리본
+                        --boundary
+                        Content-Disposition: form-data; name="description"
+
+                        8월 정례회의 정리본
+                        --boundary
+                        Content-Disposition: form-data; name="categoryIds"
+
+                        1
+                        --boundary
+                        Content-Disposition: form-data; name="categoryIds"
+
+                        2
+                        --boundary
+                        Content-Disposition: form-data; name="isFinal"
+
+                        false
+                        --boundary--
+                        """)
+                            }
+                    )
+            )
+            @ModelAttribute @Valid FileUploadRequest form
+    ) {
+        fileLibraryService.upload(councilId, me.getId(), file, form);
+        return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+    }
+
+    private final FileLibraryService fileLibraryService;
 }
 

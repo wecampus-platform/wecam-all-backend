@@ -8,12 +8,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.wecambackend.common.context.CouncilContextHolder;
 import org.example.wecambackend.common.response.PageResponse;
-import org.example.wecambackend.dto.response.category.CategoryListResponse;
+import org.example.wecambackend.dto.response.category.*;
 import org.example.wecambackend.common.response.BaseResponse;
 import org.example.wecambackend.common.response.BaseResponseStatus;
 import org.example.wecambackend.config.security.UserDetailsImpl;
 import org.example.wecambackend.config.security.annotation.IsCouncil;
-import org.example.wecambackend.dto.response.category.CategorySummary;
 import org.example.wecambackend.repos.category.CategoryQueryRepository;
 import org.example.wecambackend.service.admin.CategoryService;
 import org.springframework.data.domain.Page;
@@ -95,6 +94,41 @@ public class CategoryController {
         Long councilId = CouncilContextHolder.getCouncilId();
         categoryService.create(councilId, memberId, categoryName);
         return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+    }
+
+
+
+
+    @IsCouncil
+    @GetMapping("/{categoryId}/items")
+    @Operation(
+            summary = "카테고리 상세 아이템 목록 (파일)",
+            description = """
+        카테고리 내부의 파일 목록을 페이지네이션으로 조회합니다.
+        - entityType은 현재 FILE_ASSET만 지원 (상단 카운터 제외)
+        - query로 파일명 부분검색 가능
+        """,
+            parameters = {
+                    @Parameter(name = "councilName", description = "학생회 이름", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "categoryId", description = "카테고리 ID", in = ParameterIn.PATH, required = true),
+                    @Parameter(name = "X-Council-Id", description = "현재 접속한 학생회 ID", in = ParameterIn.HEADER, required = true)
+            }
+    )
+    public BaseResponse<PageResponse<CategoryDetailResponse.Item>> getCategoryFileItems(
+            @PathVariable String councilName,
+            @PathVariable Long categoryId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "ALL") CategoryItemFilter filter,
+            @RequestParam(defaultValue = "DESC") SortOption sort,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
+        Long councilId = CouncilContextHolder.getCouncilId();
+
+
+        Page<CategoryDetailResponse.Item> result =
+                categoryService.listItems(councilId, categoryId, filter, sort, pageable);
+        return new BaseResponse<>(PageResponse.of(result));
     }
 
 

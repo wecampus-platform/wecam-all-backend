@@ -8,9 +8,13 @@ import org.example.model.council.CouncilMember;
 import org.example.model.user.User;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
-import org.example.wecambackend.dto.response.category.CategoryListResponse;
+import org.example.wecambackend.dto.response.category.*;
+import org.example.wecambackend.repos.category.CategoryDetailNativeRepository;
 import org.example.wecambackend.repos.category.CategoryRepository;
 import org.example.wecambackend.service.admin.common.EntityFinderService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,4 +65,32 @@ public class CategoryService {
     }
 
     private final EntityFinderService entityFinderService;
+
+
+    @Transactional(readOnly = true)
+    public Page<CategoryDetailResponse.Item> listItems(
+            Long councilId, Long categoryId,
+            CategoryItemFilter filter, SortOption sort,
+            Pageable pageable
+    ) {
+        // 1) 전체 개수
+        long total = categoryDetailNativeRepository.countItems(councilId, categoryId, filter); // 권장: councilId 포함 버전
+
+        // 2) 페이지 범위 밖이면 빈 페이지
+        if (total == 0 || pageable.getOffset() >= total) {
+            return new PageImpl<>(List.of(), pageable, total);
+        }
+
+        // 3) 실제 목록 조회
+        int offset = (int) pageable.getOffset();
+        int limit  = pageable.getPageSize();
+
+        List<CategoryDetailResponse.Item> content =
+                categoryDetailNativeRepository.findItems(councilId, categoryId, filter, sort, offset, limit); // 권장: councilId 포함 버전
+
+        // 4) Page로 포장
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    private final CategoryDetailNativeRepository categoryDetailNativeRepository;
 }

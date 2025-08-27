@@ -52,6 +52,7 @@ public class CategoryAssignment extends BaseEntity {
     public enum EntityType {
         TODO("할 일"),
         MEETING("회의록"),
+        FILE_ASSET("파일 운영함"),
         SCHEDULE("일정");
 
         private final String description;
