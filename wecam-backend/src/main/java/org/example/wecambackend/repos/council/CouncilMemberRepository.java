@@ -140,7 +140,7 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
     SELECT
       d.id                      AS departmentId,
       d.name                    AS departmentName,
-      u.user_pk_id              AS userId,
+      cm.council_member_pk_id   AS councilMemberId,
       u.name                    AS userName,
       cm.member_role            AS userCouncilRole,
       dr.id                     AS departmentRoleId,
@@ -163,7 +163,7 @@ public interface CouncilMemberRepository extends JpaRepository<CouncilMember,Lon
     SELECT
       NULL                      AS departmentId,
       NULL                      AS departmentName,
-      u.user_pk_id              AS userId,
+      cm.council_member_pk_id   AS councilMemberId,
       u.name                    AS userName,
       cm.member_role            AS userCouncilRole,
       cm.department_role_id     AS departmentRoleId,

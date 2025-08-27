@@ -19,10 +19,10 @@ import java.util.stream.Collectors;
 @Schema(description = "부서 정보 응답 DTO")
 public class DepartmentResponse {
     @Schema(description = "부서 ID", example = "1")
-    private Long id;
+    private Long departmentId;
 
     @Schema(description = "부서명", example = "기획부")
-    private String name;
+    private String departmentName;
 
     @Schema(description = "부서 내 역할 목록")
     private List<DepartmentRoleResponse> roles;
