@@ -16,7 +16,7 @@ public interface AffiliationCertificationRepository extends
 
 
     //조직별 요청서 확인
-    List<AffiliationCertification> findByOrganizationOrganizationIdAndStatusOrderByRequestedAtDesc(Long organizationId, AuthenticationStatus status);
+    List<AffiliationCertification> findByOrganizationOrganizationIdAndAuthenticationStatusOrderByRequestedAtDesc(Long organizationId, AuthenticationStatus status);
 
     // 유저 당 신입생 인증 한번, 재학생 인증 한번
     boolean existsByUserAndAuthenticationType(User user, AuthenticationType authenticationType);

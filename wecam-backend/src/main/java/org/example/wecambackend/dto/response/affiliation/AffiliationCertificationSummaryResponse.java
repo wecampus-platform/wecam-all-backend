@@ -1,6 +1,7 @@
 package org.example.wecambackend.dto.response.affiliation;
 
 import lombok.*;
+import org.example.model.enums.AuthenticationStatus;
 import org.example.model.enums.AuthenticationType;
 import org.example.model.enums.OcrResult;
 
@@ -18,7 +19,7 @@ public class AffiliationCertificationSummaryResponse {
     private String inputEnrollYear;
     private AuthenticationType authenticationType;
     private OcrResult ocrResult;
-    private String status;
+    private AuthenticationStatus status;
     private LocalDateTime requestedAt;
 
 }
