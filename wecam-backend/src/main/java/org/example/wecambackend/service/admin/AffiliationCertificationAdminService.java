@@ -48,7 +48,7 @@ public class AffiliationCertificationAdminService {
     // 전체 조회만
     public List<AffiliationCertificationSummaryResponse> getRequestsForOrganizationList(Long organizationId) {
         List<AffiliationCertification> certifications =
-                affiliationCertificationRepository.findByOrganizationOrganizationIdAndStatusOrderByRequestedAtDesc(organizationId,AuthenticationStatus.PENDING);
+                affiliationCertificationRepository.findByOrganizationOrganizationIdAndAuthenticationStatusOrderByRequestedAtDesc(organizationId,AuthenticationStatus.PENDING);
 
         return certifications.stream().map(ac -> {
             // 복합키 구성 정보
@@ -62,7 +62,7 @@ public class AffiliationCertificationAdminService {
                     ac.getSelEnrollYear(),
                     authenticationType,
                     ac.getOcrResult(),
-                    ac.getAuthenticationStatus().name(),
+                    ac.getAuthenticationStatus(),
                     ac.getRequestedAt()
             );
         }).toList();
