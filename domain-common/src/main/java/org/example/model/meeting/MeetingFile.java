@@ -62,6 +62,7 @@ public class MeetingFile extends BaseEntity {
     private LocalDateTime finalSetAt;
 
     // ✅ 현재 승인 상태 캐시
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "final_status", nullable = false, length = 20)
     private FinalStatus finalStatus = FinalStatus.DRAFT;

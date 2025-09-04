@@ -36,7 +36,7 @@ public class MeetingController {
     private final MeetingService meetingService;
 
     @IsCouncil  // 현재 로그인한 사용자가 X-Council-Id 헤더의 학생회에 소속되어 있는지 검증
-        @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
+        @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(
             summary = "회의록 생성",
             description = "새로운 회의록을 생성합니다.",
@@ -46,12 +46,15 @@ public class MeetingController {
             }
     )
     public BaseResponse<MeetingResponse> createMeetingJson(
-            @RequestBody MeetingUpsertRequest request,
+            @RequestPart MeetingUpsertRequest request,
             @PathVariable("councilName") String councilName,
+            @RequestPart(value = "files", required = true) List<MultipartFile> files,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
             MeetingResponse response = meetingService.createMeeting(request, userDetails.getId());
-            return new BaseResponse<>(response);
+            MeetingResponse response1 = meetingService.addFilesToMeeting(response.getMeetingId(), userDetails.getId(), files);
+
+        return new BaseResponse<>(response);
     }
 
     @IsCouncil  // 현재 로그인한 사용자가 X-Council-Id 헤더의 학생회에 소속되어 있는지 검증
