@@ -8,6 +8,8 @@ import org.example.model.category.CategoryAssignment;
 import org.example.model.common.BaseEntity;
 import org.example.model.council.Council;
 import org.example.model.file.FileAsset;
+import org.example.model.file.FileAssetFinalization;
+import org.example.model.file.FinalStatus;
 import org.example.model.user.User;
 import org.example.wecambackend.common.exceptions.BaseException;
 import org.example.wecambackend.common.response.BaseResponseStatus;
@@ -18,6 +20,7 @@ import org.example.wecambackend.dto.response.FileAssetResponse;
 import org.example.wecambackend.dto.response.admin.AdminFileResponse;
 import org.example.wecambackend.repos.category.CategoryAssignmentRepository;
 import org.example.wecambackend.repos.category.CategoryRepository;
+import org.example.wecambackend.repos.filelibrary.FileAssetFinalizationRepository;
 import org.example.wecambackend.repos.filelibrary.FileAssetRepository;
 import org.example.wecambackend.repos.filelibrary.FileLibraryQueryRepository;
 import org.example.wecambackend.repos.filelibrary.FileLibraryQueryRepositoryImpl;
@@ -27,10 +30,12 @@ import org.example.wecambackend.service.admin.common.AdminFileStorageService;
 import org.example.wecambackend.service.admin.common.EntityFinderService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,7 +44,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileLibraryService {
     private final FileLibraryQueryRepository fileLibraryQueryRepository;
-
+    private final FileAssetFinalizationRepository fileAssetFinalizationRepository;
     private final AdminFileStorageService adminFileStorageService;
     private final CategoryAssignmentRepository categoryAssignmentRepository;
     private final EntityFinderService entityFinderService;
@@ -50,6 +55,8 @@ public class FileLibraryService {
 
     @Transactional
     public void upload(Long councilId, Long userId, MultipartFile file, FileUploadRequest req){
+
+
         AdminFileResponse adminFileResponses= adminFileStorageService.saveFile(file, UploadFolder.FILE_ASSET); //파일 저장
         Council council = entityFinderService.getCouncilByIdOrThrow(councilId);
         User user = entityFinderService.getUserByIdOrThrow(userId);
@@ -61,27 +68,71 @@ public class FileLibraryService {
                 .storedFileName(adminFileResponses.getStoredFileName())
                 .filePath(adminFileResponses.getFilePath())
                 .fileUrl(adminFileResponses.getUrl())
+                .description(req.description())
                 .council(council)
                 .user(user)
-                .isFinal(Boolean.TRUE.equals(req.isFinal()))
+                .isFinal(req.isFinal())
                 .build();
 
         FileAsset save = fileAssetRepository.save(fa);
+
+        boolean wantFinalize = Boolean.TRUE.equals(req.isFinal());
+        boolean wantRequest  = Boolean.TRUE.equals(req.requestFinal());
+
+        if (wantFinalize) {
+            // 권한 있으면 즉시 확정, 없으면 요청으로 다운그레이드
+            tryFinalizeNow(fa, userId);        // <- 아래 @PreAuthorize 메서드 호출
+        } else if (wantRequest) {
+            createPendingRequest(fa.getId(), userId, CategoryAssignment.EntityType.FILE_ASSET);
+        }
 
         if (req.categoryIds() != null) {
             saveOrUpdateCategoryAssignments(req.categoryIds(), save.getId(), councilId);
         }
 
+
+
+    }
+
+
+//    @PreAuthorize("@authz.canFinalizeImmediately(authentication)")
+    public void tryFinalizeNow(FileAsset fa, Long userId) {
+        fa.setFinal(true);
+        fa.setFinalStatus(FinalStatus.APPROVED);
+        fa.setFinalSetBy(userId);
+        fa.setFinalSetAt(LocalDateTime.now());
+        fileAssetRepository.save(fa);
+        // 즉시확정은 요청 레코드 만들지 않음
+    }
+
+    public void createPendingRequest(Long entityId, Long userId, CategoryAssignment.EntityType type) {
+
+        User user = entityFinderService.getUserByIdOrThrow(userId);
+
+        FileAssetFinalization req = FileAssetFinalization.builder()
+                .entityType(type)
+                .entityId(entityId)
+                .finalStatus(FinalStatus.PENDING)
+                .requestedBy(user)  // 편의 팩토리 또는 엔티티 로딩
+                .requestedAt(LocalDateTime.now())
+                .build();
+        fileAssetFinalizationRepository.save(req);
+
+        // 본체 상태를 PENDING으로 올려서 목록/상세에서 “승인 대기중” 노출
+        fileAssetRepository.findById(entityId).ifPresent(f -> {
+            f.setFinalStatus(FinalStatus.PENDING);
+            fileAssetRepository.save(f);
+        });
     }
 
 
     /**
      * 카테고리 할당 여러 개 저장 (기존 할당과 비교하여 다를 때만 INACTIVE로 변경하고 새로운 할당 생성)
      */
-    private void saveOrUpdateCategoryAssignments(List<Long> categoryIds, Long todoId, Long councilId) {
+    private void saveOrUpdateCategoryAssignments(List<Long> categoryIds, Long fileId, Long councilId) {
         // 1. 기존 모든 ACTIVE 상태의 할당 조회
         List<CategoryAssignment> existingAssignments = categoryAssignmentRepository
-                .findAllByEntityTypeAndEntityIdAndStatus(CategoryAssignment.EntityType.TODO, todoId, BaseEntity.Status.ACTIVE);
+                .findAllByEntityTypeAndEntityIdAndStatus(CategoryAssignment.EntityType.FILE_ASSET, fileId, BaseEntity.Status.ACTIVE);
 
         // 2. 기존 할당의 카테고리 ID 집합
         java.util.Set<Long> existingCategoryIds = existingAssignments.stream()
@@ -108,12 +159,12 @@ public class FileLibraryService {
 
                 CategoryAssignment newAssignment = CategoryAssignment.create(
                         category,
-                        CategoryAssignment.EntityType.TODO,
-                        todoId
+                        CategoryAssignment.EntityType.FILE_ASSET,
+                        fileId
                 );
                 categoryAssignmentRepository.save(newAssignment);
 
-                log.info("새로운 카테고리 할당 생성: 할일 ID {}, 카테고리 ID {}", todoId, categoryId);
+                log.info("새로운 카테고리 할당 생성: 할일 ID {}, 카테고리 ID {}", fileId, categoryId);
             }
         } else {
             log.info("카테고리 변경 없음: 기존과 동일한 카테고리 유지");

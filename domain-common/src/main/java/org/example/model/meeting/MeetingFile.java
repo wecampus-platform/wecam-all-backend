@@ -3,6 +3,7 @@ package org.example.model.meeting;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.model.common.BaseEntity;
+import org.example.model.file.FinalStatus;
 
 import java.time.LocalDateTime;
 
@@ -59,4 +60,10 @@ public class MeetingFile extends BaseEntity {
 
     @Column(name = "final_set_at")
     private LocalDateTime finalSetAt;
+
+    // ✅ 현재 승인 상태 캐시
+    @Enumerated(EnumType.STRING)
+    @Column(name = "final_status", nullable = false, length = 20)
+    private FinalStatus finalStatus = FinalStatus.DRAFT;
+
 }

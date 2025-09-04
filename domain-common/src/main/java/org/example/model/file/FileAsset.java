@@ -54,5 +54,21 @@ public class FileAsset extends BaseEntity {
     @Column(name = "is_final", nullable = false)
     private boolean isFinal = false;              // TINYINT(1) ↔ boolean 자동 매핑
 
+    @Builder.Default
+    // 현재 최종본 워크플로 상태 캐시
+    @Enumerated(EnumType.STRING)
+    @Column(name = "final_status", nullable = false, length = 20)
+    private FinalStatus finalStatus = FinalStatus.DRAFT; // DRAFT/PENDING/APPROVED/REJECTED
+
+    // ✅ Meeting/Todo와 동일 명명으로 통일
+    @Column(name = "final_set_by")
+    private Long finalSetBy;
+
+    @Column(name = "final_set_at")
+    private LocalDateTime finalSetAt;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
+
 
 }

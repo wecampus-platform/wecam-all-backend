@@ -33,45 +33,65 @@ public class FileLibraryQueryRepositoryImpl implements FileLibraryQueryRepositor
             where.append(" AND F.is_final = 1 ");
         }
         if (f.categoryId() != null) {
+            // ✅ 부모/파일자체 둘 다 인식하는 카테고리 필터
             where.append("""
-                    AND EXISTS (
-                      SELECT 1 FROM category_assignment ca
-                       WHERE ca.status='ACTIVE'
-                         AND ca.entity_type = F.entity_type
-                         AND ca.entity_id   = F.entity_id
-                         AND ca.category_id = :categoryId
-                    )
-                    """);
+            AND (
+              EXISTS (
+                SELECT 1 FROM category_assignment ca
+                 WHERE ca.status='ACTIVE'
+                   AND ca.entity_type = F.entity_type
+                   AND ca.entity_id   = F.entity_id
+                   AND ca.category_id = :categoryId
+              )
+              OR
+              EXISTS (
+                SELECT 1 FROM category_assignment ca
+                 WHERE ca.status='ACTIVE'
+                   AND ca.entity_type = 'FILE_ASSET'
+                   AND ca.entity_id   = F.file_id
+                   AND ca.category_id = :categoryId
+              )
+            )
+            """);
+            // 만약 category_assignment.entity_id가 BINARY(16)이면 위 F.file_id 대신
+            // AND ca.entity_id = UUID_TO_BIN(F.file_id, 1)
         }
         if (f.query() != null && !f.query().isBlank()) {
-            // 파일명 또는 업로더명 like
             where.append(" AND (F.file_name LIKE :q OR U.name LIKE :q) ");
         }
 
-        // 데이터 쿼리
+        // ✅ SELF + PARENT 둘 다 조인해서 합치기
         String dataSql = """
-            SELECT
-              F.source_type,
-              F.entity_type,
-              F.entity_id,
-              F.file_id,
-              F.source_title,
-              F.file_name,
-              F.council_id,
-              F.uploader_id,
-              U.name AS uploader_name,
-              CA.category_names,
-              F.uploaded_at,
-              F.is_final
-            FROM v_file_library F
-            LEFT JOIN v_category_agg CA
-                   ON CA.entity_type = F.entity_type AND CA.entity_id = F.entity_id
-            LEFT JOIN user U
-                   ON U.user_pk_id = F.uploader_id
-            """ + where + """
-            ORDER BY F.uploaded_at DESC, F.file_id DESC
-            LIMIT :limit OFFSET :offset
-            """;
+        SELECT
+          F.source_type,
+          F.entity_type,
+          F.entity_id,
+          F.file_id,
+          F.source_title,
+          F.file_name,
+          F.council_id,
+          F.uploader_id,
+          U.name AS uploader_name,
+          NULLIF(CONCAT_WS(',', CAP.category_names, CAS.category_names), '') AS category_names,
+          F.uploaded_at,
+          F.is_final
+        FROM v_file_library F
+        LEFT JOIN user U
+               ON U.user_pk_id = F.uploader_id
+        -- 부모 카테고리
+        LEFT JOIN v_category_agg CAP
+               ON CAP.entity_type = F.entity_type
+              AND CAP.entity_id   = F.entity_id
+        -- 파일 자체 카테고리
+        LEFT JOIN v_category_agg CAS
+               ON CAS.entity_type = 'FILE_ASSET'
+              AND CAS.entity_id   = F.file_id
+        """ + where + """
+        ORDER BY F.uploaded_at DESC, F.file_id DESC
+        LIMIT :limit OFFSET :offset
+        """;
+        // BINARY(16) UUID 사용 시:
+        // AND CAS.entity_id = UUID_TO_BIN(F.file_id, 1)
 
         Query dq = em.createNativeQuery(dataSql);
         bindParams(dq, f);
@@ -83,30 +103,55 @@ public class FileLibraryQueryRepositoryImpl implements FileLibraryQueryRepositor
 
         List<FileItemDto> items = new ArrayList<>(rows.size());
         for (Object[] r : rows) {
+            // uploaded_at 타입 안전 변환
+            LocalDateTime uploadedAt = null;
+            Object upObj = r[10];
+            if (upObj != null) {
+                if (upObj instanceof java.sql.Timestamp ts) uploadedAt = ts.toLocalDateTime();
+                else if (upObj instanceof LocalDateTime ldt) uploadedAt = ldt;
+                else throw new IllegalStateException("Unexpected type for uploaded_at: " + upObj.getClass());
+            }
+            boolean isFinal;
+            Object isFinalObj = r[11];
+            if (isFinalObj instanceof Boolean b) isFinal = b; else isFinal = ((Number) isFinalObj).intValue() != 0;
+
             items.add(new FileItemDto(
-                    (String) r[0],                         // source_type
-                    (String) r[1],                         // entity_type
-                    ((Number) r[2]).longValue(),           // entity_id
-                    (String) r[3],                         // file_id
-                    (String) r[4],                         // source_title
-                    (String) r[5],                         // file_name
-                    ((Number) r[6]).longValue(),           // council_id
+                    (String) r[0],                          // source_type
+                    (String) r[1],                          // entity_type
+                    // entity_id가 정수라면:
+                    ((Number) r[2]).longValue(),            // entity_id
+                    // 만약 entity_id가 UUID 문자열로 바뀐다면 DTO/매핑 타입도 String으로 바꿔주세요.
+                    (String) r[3],                          // file_id (CHAR(36))
+                    (String) r[4],                          // source_title
+                    (String) r[5],                          // file_name
+                    ((Number) r[6]).longValue(),            // council_id
                     r[7] == null ? null : ((Number) r[7]).longValue(), // uploader_id
-                    (String) r[8],                         // uploader_name
-                    (String) r[9],                         // category_names
-                    (java.sql.Timestamp) r[10],                 // uploaded_at
-                    ((Number) r[11]).intValue() == 1       // is_final
+                    (String) r[8],                          // uploader_name
+                    (String) r[9],                          // category_names (SELF+PARENT 합친 값)
+                    uploadedAt,                             // LocalDateTime
+                    isFinal
             ));
         }
 
-        // 카운트 쿼리 (SQL_CALC_FOUND_ROWS 금지)
-        String countSql = "SELECT COUNT(*) FROM v_file_library F " +
-                " LEFT JOIN user U ON U.user_pk_id=F.uploader_id " + where;
+        String countSql = """
+        SELECT COUNT(*)
+        FROM v_file_library F
+        LEFT JOIN user U
+               ON U.user_pk_id = F.uploader_id
+        -- 부모
+        LEFT JOIN v_category_agg CAP
+               ON CAP.entity_type = F.entity_type
+              AND CAP.entity_id   = F.entity_id
+        -- 파일자체
+        LEFT JOIN v_category_agg CAS
+               ON CAS.entity_type = 'FILE_ASSET'
+              AND CAS.entity_id   = F.file_id
+        """ + where;
 
         Query cq = em.createNativeQuery(countSql);
         bindParams(cq, f);
-
         long total = ((Number) cq.getSingleResult()).longValue();
+
         return new PageImpl<>(items, pageable, total);
     }
 
@@ -122,4 +167,5 @@ public class FileLibraryQueryRepositoryImpl implements FileLibraryQueryRepositor
             q.setParameter("q", "%" + f.query().trim() + "%");
         }
     }
+
 }

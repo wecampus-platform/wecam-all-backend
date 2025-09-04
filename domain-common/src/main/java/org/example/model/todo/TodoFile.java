@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.model.common.BaseEntity;
+import org.example.model.file.FinalStatus;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -50,6 +51,12 @@ public class TodoFile extends BaseEntity {
 
     @Column(name = "final_set_at")
     private LocalDateTime finalSetAt;
+
+    // 현재 최종본 워크플로 상태 캐시
+    @Enumerated(EnumType.STRING)
+    @Column(name = "final_status", nullable = false, length = 20)
+    private FinalStatus finalStatus = FinalStatus.DRAFT; // DRAFT/PENDING/APPROVED/REJECTED
+
 
     @Builder
     public TodoFile(UUID todoFileId, Todo todo, String originalFileName,

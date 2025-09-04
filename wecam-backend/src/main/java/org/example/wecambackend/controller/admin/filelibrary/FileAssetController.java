@@ -41,7 +41,7 @@ public class FileAssetController {
     @Operation(
             summary = "통합 파일 목록 조회",
             description = """
-            TODO/MEETING/STANDALONE 파일을 통합 조회합니다.
+            TODO/MEETING/FILE_ASSET 파일을 통합 조회합니다.
             - 검색(q): 파일명/소스제목에 공백 AND 매칭
             - 최종문서(finalOnly=true) 필터 지원
             - 카테고리/소스 타입 필터 지원
@@ -56,7 +56,7 @@ public class FileAssetController {
                             description = "소스 타입 필터 (콤마 없이 단일 값).",
                             in = ParameterIn.QUERY,
                             required = false,
-                            schema = @Schema(type = "string", allowableValues = {"TODO","MEETING","STANDALONE"}, example = "TODO")
+                            schema = @Schema(type = "string", allowableValues = {"TODO","MEETING","FILE_ASSET"}, example = "TODO")
                     ),
                     @Parameter(
                             name = "categoryId",
@@ -105,7 +105,7 @@ public class FileAssetController {
     })
     @GetMapping
     public Page<FileItemDto> list(
-            @RequestParam(required = false) String sourceType,   // TODO|MEETING|STANDALONE
+            @RequestParam(required = false) String sourceType,   // TODO|MEETING|FILE_ASSET
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false, defaultValue = "false") boolean finalOnly,
             @RequestParam(required = false) String q,
@@ -114,6 +114,7 @@ public class FileAssetController {
     ) {
         Long councilId = CouncilContextHolder.getCouncilId();
         var filter = new FileLibraryFilter(councilId, sourceType, categoryId, finalOnly, q);
+        System.out.println(filter);
         return service.search(filter, PageRequest.of(page, size));
     }
 
@@ -198,7 +199,7 @@ public class FileAssetController {
                             }
                     )
             )
-            @ModelAttribute @Valid FileUploadRequest form
+            @RequestPart(value="form",required = false) FileUploadRequest form
     ) {
         fileLibraryService.upload(councilId, me.getId(), file, form);
         return new BaseResponse<>(BaseResponseStatus.SUCCESS);
